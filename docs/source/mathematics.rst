@@ -44,3 +44,20 @@ When feasible in sRGB,
 .. math::
 
    S=\frac{T-(1-\alpha)B}{\alpha}.
+
+
+Gamut-limited alpha compensation
+--------------------------------
+
+The inverse source color may leave the sRGB cube. Exact recovery is then
+impossible for that opacity/background pair. The default fallback minimizes
+
+.. math::
+
+   \Delta E_{OK}\left(
+      \alpha S + (1-\alpha)B,\,T
+   \right)
+
+over representable source colors :math:`S\in[0,1]^3`, using Euclidean
+distance in OKLab. The analytical inverse is still used whenever it is
+feasible, so optimization introduces no approximation in the exact case.
