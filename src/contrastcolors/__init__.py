@@ -1,6 +1,6 @@
 """Contrast-controlled color palettes for scientific Python."""
 
-from .alpha import AlphaCompensation, compensate_alpha, composite
+from .alpha import AlphaCompensation, compensate_alpha, composite, minimum_alpha
 from .color_spaces import contrast_ratio, relative_luminance, to_hex, to_rgb
 from .contrast import luminance_contrast, luminance_ladder
 from .palette import (
@@ -25,6 +25,7 @@ __all__ = [
     "contrast_ratio",
     "luminance_contrast",
     "luminance_ladder",
+    "minimum_alpha",
     "relative_luminance",
     "to_hex",
     "to_rgb",
