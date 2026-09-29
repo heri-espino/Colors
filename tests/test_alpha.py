@@ -35,3 +35,21 @@ def test_minimum_alpha_is_sufficient():
     alpha = minimum_alpha(target, background="white")
     result = compensate_alpha(target, alpha=max(alpha, 1e-12), background="white")
     assert result.feasible
+
+
+def test_perceptual_fallback_is_no_worse_than_channel_clipping():
+    target = "#00A7BC"
+    perceptual = compensate_alpha(
+        target,
+        alpha=0.75,
+        background="white",
+        strategy="perceptual",
+    )
+    clipped = compensate_alpha(
+        target,
+        alpha=0.75,
+        background="white",
+        strategy="clip",
+    )
+    assert not perceptual.feasible
+    assert perceptual.delta_e_ok <= clipped.delta_e_ok + 1e-12
