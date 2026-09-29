@@ -88,6 +88,22 @@ function linearToSrgb(x){
 function srgbToLinear(x){
   return x <= 0.04045 ? x/12.92 : Math.pow((x+0.055)/1.055,2.4);
 }
+function oklab(rgb){
+  const [r,g,b]=rgb.map(srgbToLinear);
+  const l=.4122214708*r+.5363325363*g+.0514459929*b;
+  const m=.2119034982*r+.6806995451*g+.1073969566*b;
+  const s=.0883024619*r+.2817188376*g+.6299787005*b;
+  const lp=Math.cbrt(l),mp=Math.cbrt(m),sp=Math.cbrt(s);
+  return [
+    .2104542553*lp+.7936177850*mp-.0040720468*sp,
+    1.9779984951*lp-2.4285922050*mp+.4505937099*sp,
+    .0259040371*lp+.7827717662*mp-.8086757660*sp
+  ];
+}
+function deltaOk(a,b){
+  const x=oklab(a),y=oklab(b);
+  return Math.hypot(x[0]-y[0],x[1]-y[1],x[2]-y[2]);
+}
 function rgbY(rgb){
   const [r,g,b]=rgb.map(srgbToLinear);
   return .2126*r+.7152*g+.0722*b;
@@ -135,8 +151,31 @@ function composite(fg,bg,a){ return fg.map((x,i)=>a*x+(1-a)*bg[i]); }
 function compensate(target,bg,a){
   const raw=target.map((x,i)=>(x-(1-a)*bg[i])/a);
   const feasible=raw.every(x=>x>=0&&x<=1);
-  const source=raw.map(x=>clamp(x,0,1));
-  return {source,displayed:composite(source,bg,a),feasible};
+  if(feasible) return {source:raw,displayed:target.slice(),feasible:true};
+
+  let current=raw.map(x=>clamp(x,0,1));
+  const error=source=>deltaOk(composite(source,bg,a),target);
+  let best=error(current),step=.25;
+
+  for(let level=0;level<11;level++){
+    for(let sweep=0;sweep<4;sweep++){
+      let winner=current,improved=false;
+      for(const dx of [-1,0,1]) for(const dy of [-1,0,1]) for(const dz of [-1,0,1]){
+        if(dx===0&&dy===0&&dz===0) continue;
+        const candidate=[
+          clamp(current[0]+dx*step,0,1),
+          clamp(current[1]+dy*step,0,1),
+          clamp(current[2]+dz*step,0,1)
+        ];
+        const e=error(candidate);
+        if(e+1e-14<best){ best=e; winner=candidate; improved=true; }
+      }
+      current=winner;
+      if(!improved) break;
+    }
+    step*=.5;
+  }
+  return {source:current,displayed:composite(current,bg,a),feasible:false};
 }
 function crY(a,b){ const hi=Math.max(a,b),lo=Math.min(a,b); return (hi+.05)/(lo+.05); }
 
