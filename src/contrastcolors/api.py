@@ -8,7 +8,7 @@ from .palette import Palette, color_for_luminance
 from .contrast import luminance_ladder
 
 
-def palette(
+def contrast_palette(
     hues: Sequence[float],
     *,
     ratio: float = 1.5,
@@ -67,7 +67,7 @@ def color_palette(
     opaque hexadecimal target colors; in that mode alpha-related arguments are
     not applied.
     """
-    p = palette(
+    p = contrast_palette(
         hues,
         ratio=ratio,
         start_luminance=start_luminance,
@@ -97,7 +97,7 @@ def show_palette(
     import matplotlib.pyplot as plt
     from matplotlib.patches import Rectangle
 
-    p = palette(
+    p = contrast_palette(
         hues,
         ratio=ratio,
         start_luminance=start_luminance,
