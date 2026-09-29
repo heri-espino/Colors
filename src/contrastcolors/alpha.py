@@ -85,3 +85,27 @@ def compensate_alpha(
         alpha=float(alpha),
         feasible=feasible,
     )
+
+
+def minimum_alpha(target: RGBLike, *, background: RGBLike = "#FFFFFF") -> float:
+    """Return the smallest alpha allowing exact apparent-color recovery.
+
+    For each channel, the inverse source color must remain inside ``[0, 1]``.
+    The returned value is the smallest opacity for which that is true for all
+    three channels.
+    """
+    target_rgb = to_rgb(target)
+    background_rgb = to_rgb(background)
+    bounds: list[float] = [0.0]
+
+    for target_channel, background_channel in zip(
+        target_rgb, background_rgb, strict=True
+    ):
+        if target_channel < background_channel and background_channel > 0:
+            bounds.append((background_channel - target_channel) / background_channel)
+        elif target_channel > background_channel and background_channel < 1:
+            bounds.append(
+                (target_channel - background_channel) / (1 - background_channel)
+            )
+
+    return float(np.clip(max(bounds), 0, 1))
