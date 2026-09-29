@@ -87,6 +87,7 @@ class Palette(Sequence[ColorCell]):
         alpha: float = 1.0,
         background: str | Sequence[float] = "#FFFFFF",
         preserve_apparent: bool = True,
+        alpha_strategy: str = "perceptual",
     ) -> list[RenderedColor]:
         """Prepare colors for rendering over ``background``.
 
@@ -96,7 +97,12 @@ class Palette(Sequence[ColorCell]):
         rendered: list[RenderedColor] = []
         for cell in self:
             if preserve_apparent:
-                compensation = compensate_alpha(cell.rgb, alpha=alpha, background=background)
+                compensation = compensate_alpha(
+                    cell.rgb,
+                    alpha=alpha,
+                    background=background,
+                    strategy=alpha_strategy,
+                )
             else:
                 from .alpha import composite
                 from .color_spaces import to_rgb
@@ -110,6 +116,7 @@ class Palette(Sequence[ColorCell]):
                     background_rgb=to_rgb(background),
                     alpha=float(alpha),
                     feasible=True,
+                    strategy="clip",
                 )
             rendered.append(RenderedColor(target=cell, compensation=compensation))
         return rendered
@@ -120,6 +127,7 @@ class Palette(Sequence[ColorCell]):
         alpha: float = 1.0,
         background: str | Sequence[float] = "#FFFFFF",
         preserve_apparent: bool = True,
+        alpha_strategy: str = "perceptual",
     ) -> list[tuple[float, float, float, float]]:
         """Return RGBA tuples ready for Matplotlib."""
         return [
@@ -128,6 +136,7 @@ class Palette(Sequence[ColorCell]):
                 alpha=alpha,
                 background=background,
                 preserve_apparent=preserve_apparent,
+                alpha_strategy=alpha_strategy,
             )
         ]
 
