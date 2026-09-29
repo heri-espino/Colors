@@ -2,7 +2,7 @@
 
 from .alpha import AlphaCompensation, compensate_alpha, composite, minimum_alpha
 from .api import color_palette, contrast_palette, show_palette
-from .color_spaces import contrast_ratio, relative_luminance, to_hex, to_rgb
+from .color_spaces import contrast_ratio, delta_e_ok, relative_luminance, srgb_to_oklab, to_hex, to_rgb
 from .contrast import luminance_contrast, luminance_ladder
 from .palette import (
     ColorCell,
@@ -25,11 +25,13 @@ __all__ = [
     "composite",
     "contrast_grid",
     "contrast_ratio",
+    "delta_e_ok",
     "luminance_contrast",
     "luminance_ladder",
     "minimum_alpha",
     "contrast_palette",
     "relative_luminance",
+    "srgb_to_oklab",
     "show_palette",
     "to_hex",
     "to_rgb",
