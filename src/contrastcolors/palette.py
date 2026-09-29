@@ -312,7 +312,7 @@ def contrast_grid(
     chroma:
         Requested OKLCH chroma. It is automatically reduced near gamut edges.
     """
-    if not hues:
+    if len(hues) == 0:
         raise ValueError("At least one hue is required.")
     luminances = luminance_ladder(levels, ratio, start_luminance=start_luminance)
     cells = [
