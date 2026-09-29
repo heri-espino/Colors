@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from .palette import Palette, color_for_luminance
+from .color_spaces import relative_luminance
 from .contrast import luminance_ladder
 
 
@@ -34,7 +35,7 @@ def contrast_palette(
         Requested OKLCH chroma. Chroma is reduced automatically when necessary
         to remain inside sRGB.
     """
-    if not hues:
+    if len(hues) == 0:
         raise ValueError("At least one hue is required.")
     ys = luminance_ladder(
         len(hues),
@@ -114,11 +115,7 @@ def show_palette(
     for i, item in enumerate(rendered):
         r, g, b, a = item.rgba
         ax.add_patch(Rectangle((i, 0), 1, 1, facecolor=(r, g, b, a), edgecolor="none"))
-        displayed_y = (
-            0.2126 * item.compensation.displayed_rgb[0]
-            + 0.7152 * item.compensation.displayed_rgb[1]
-            + 0.0722 * item.compensation.displayed_rgb[2]
-        )
+        displayed_y = relative_luminance(item.compensation.displayed_rgb)
         text_color = "black" if displayed_y > 0.55 else "white"
         ax.text(
             i + 0.5,
