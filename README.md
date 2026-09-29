@@ -1,25 +1,21 @@
 # Colors
 
-`contrastcolors` is a small Python library for building color palettes whose
-**adjacent WCAG contrast ratios are controlled by construction**, while hue can
-change independently. It is designed for scientific plotting and depends on
-Matplotlib in the same spirit that higher-level plotting libraries build on it.
+`contrastcolors` builds scientific plotting palettes whose **adjacent WCAG
+contrast ratios are controlled by construction** while hue can change
+independently. It is designed as a small layer on top of Matplotlib, in the
+same general role that palette helpers play in higher-level plotting libraries.
 
-The core object is an `i × j` hue–luminance grid:
+For relative luminance levels (Y_k) and a requested adjacent contrast ratio
+(r),
 
-\[
-C_{k\ell}=C(Y_k,h_\ell),
-\]
+[
+rac{Y_k+0.05}{Y_{k+1}+0.05}=r,
+qquad
+Y_k=rac{Y_0+0.05}{r^k}-0.05.
+]
 
-where every color in row `k` has the same relative luminance `Y_k`, every
-column corresponds to a chosen hue `h_ell`, and adjacent rows satisfy
-
-\[
-\frac{Y_k+0.05}{Y_{k+1}+0.05}=r.
-\]
-
-Therefore **any selection of one hue per row preserves the same adjacent
-contrast ratio**.
+The library then solves for an sRGB-representable OKLCH color at each requested
+luminance and hue.
 
 ## Install locally
 
@@ -36,58 +32,99 @@ pytest
 
 ## Quick start
 
+For the ordinary case, supply one hue per desired color:
+
 ```python
 import contrastcolors as cc
 
-# 5 luminance levels × 5 hue choices = 25 candidate colors.
+colors = cc.color_palette(
+    hues=[55, 20, 145, 210, 290],
+    ratio=1.4,
+)
+
+# Matplotlib-ready RGBA tuples
+for y, color in zip(series, colors):
+    plt.plot(x, y, color=color)
+```
+
+Use `contrast_palette` when you want diagnostics and metadata:
+
+```python
+palette = cc.contrast_palette(
+    hues=[55, 20, 145, 210, 290],
+    ratio=1.4,
+)
+
+print(palette.hex)
+print(palette.adjacent_contrast)
+print(palette.minimum_alpha(background="white"))
+```
+
+## Exploring hue combinations
+
+The lower-level object is an (i 	imes j) hue-luminance grid:
+
+[
+C_{kell}=C(Y_k,h_ell).
+]
+
+Every color in row (k) has the same relative luminance (Y_k), while each
+column corresponds to a candidate hue. Therefore any selection of one hue per
+row preserves the prescribed adjacent contrast ratio.
+
+```python
 grid = cc.contrast_grid(
     levels=5,
     hues=[55, 20, 145, 210, 290],
     ratio=1.4,
-    start_luminance=0.95,
 )
 
-# Choose one hue from each row. Hue may change at every level.
 palette = grid.select([0, 1, 2, 3, 4])
-
-print(palette.hex)
-print(palette.adjacent_contrast)
+grid.plot()
 ```
 
-### Matplotlib
+The Sphinx documentation includes an interactive picker inspired by the
+workflow of tools such as Evil Martians Harmonizer. The picker lets you change
+levels, contrast ratio, hues, chroma, alpha and background, click one candidate
+per row, and copy the resulting `contrastcolors` Python call.
 
-```python
-colors = palette.mpl_colors(
-    alpha=0.75,
-    background="white",
-    preserve_apparent=True,
-)
-```
+## Alpha compensation
 
 With `preserve_apparent=True`, the library solves
 
-\[
-T=\alpha S+(1-\alpha)B
-\]
+[
+T=alpha S+(1-alpha)B
+]
 
-for the source color `S`, so the composited color approaches the original
-target `T` on background `B`. When the exact inverse falls outside sRGB, the
-source is clipped and the result explicitly reports that exact reconstruction
-was not feasible.
+for the source color (S), where (T) is the desired apparent color and (B)
+is the background:
 
-## Design goals
+[
+S=rac{T-(1-alpha)B}{alpha}.
+]
+
+If the inverse lies outside the sRGB gamut, exact reconstruction is physically
+impossible at that alpha/background combination. The result reports
+`feasible=False` rather than claiming the original color was preserved.
+
+## Current features
 
 - constant adjacent WCAG contrast ratios;
-- hue chosen independently at each luminance level;
-- OKLCH-based hue/chroma construction with automatic sRGB gamut reduction;
+- independently selectable hue at every luminance level;
+- OKLCH hue/chroma construction with automatic sRGB gamut reduction;
 - alpha compensation against a known background;
+- minimum-alpha feasibility calculation;
 - Matplotlib-ready RGBA output and `ListedColormap` export;
-- a Sphinx documentation site, with an interactive palette picker planned as a
-  separate web layer inspired by tools such as Harmonizer.
+- `color_palette`, `contrast_palette`, `show_palette`, and
+  `ContrastGrid` APIs;
+- interactive Sphinx palette picker;
+- tests and Sphinx builds in GitHub Actions.
 
-## Status
+## Planned
 
-Early MVP. The mathematical core, Matplotlib adapter, tests, and Sphinx docs are
-being built first. APCA, perceptual gamut optimization for infeasible alpha
-compensation, color-vision simulation, and the interactive web picker belong to
-later milestones.
+- perceptual optimization for gamut-limited alpha compensation instead of
+  channel clipping;
+- optional APCA contrast model;
+- color-vision-deficiency simulation/diagnostics;
+- richer Matplotlib integration and named reusable palettes;
+- package publishing after the API stabilizes.
