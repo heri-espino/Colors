@@ -28,11 +28,11 @@ Use the result anywhere Matplotlib accepts a color:
    for y, color in zip(series, colors):
        plt.plot(x, y, color=color)
 
-To retain metadata and diagnostics, use :func:`contrastcolors.palette`:
+To retain metadata and diagnostics, use :func:`contrastcolors.contrast_palette`:
 
 .. code-block:: python
 
-   palette = cc.palette(
+   palette = cc.contrast_palette(
        hues=[55, 20, 145, 210, 290],
        ratio=1.4,
    )
