@@ -24,3 +24,9 @@ def test_color_palette_returns_matplotlib_rgba():
 def test_color_palette_can_return_hex():
     colors = cc.color_palette([55, 145, 290], ratio=1.3, as_hex=True)
     assert all(color.startswith("#") and len(color) == 7 for color in colors)
+
+
+def test_numpy_hue_array_is_supported():
+    p = cc.contrast_palette(np.array([30.0, 150.0, 270.0]), ratio=1.25)
+    assert len(p) == 3
+    np.testing.assert_allclose(p.adjacent_contrast, 1.25, atol=2e-8)
