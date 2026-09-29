@@ -138,3 +138,26 @@ def in_srgb_gamut(linear_rgb: Sequence[float] | np.ndarray, *, tol: float = 1e-1
     """Return whether linear RGB lies inside the sRGB gamut."""
     rgb = np.asarray(linear_rgb, dtype=float)
     return bool(np.all(rgb >= -tol) and np.all(rgb <= 1 + tol))
+
+
+def srgb_to_oklab(color: RGBLike) -> np.ndarray:
+    """Convert an sRGB color to OKLab coordinates."""
+    r, g, b = srgb_to_linear(color)
+    l = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b
+    m = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b
+    s = 0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b
+
+    l_, m_, s_ = np.cbrt([l, m, s])
+    return np.array(
+        [
+            0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_,
+            1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_,
+            0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_,
+        ],
+        dtype=float,
+    )
+
+
+def delta_e_ok(color_a: RGBLike, color_b: RGBLike) -> float:
+    """Euclidean color distance in OKLab."""
+    return float(np.linalg.norm(srgb_to_oklab(color_a) - srgb_to_oklab(color_b)))
