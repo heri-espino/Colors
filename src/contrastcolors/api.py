@@ -57,6 +57,7 @@ def color_palette(
     alpha: float = 1.0,
     background: str | Sequence[float] = "white",
     preserve_apparent: bool = True,
+    alpha_strategy: str = "perceptual",
     as_hex: bool = False,
 ):
     """Return plotting-ready colors from a contrast-controlled palette.
@@ -80,6 +81,7 @@ def color_palette(
         alpha=alpha,
         background=background,
         preserve_apparent=preserve_apparent,
+        alpha_strategy=alpha_strategy,
     )
 
 
@@ -92,6 +94,7 @@ def show_palette(
     alpha: float = 1.0,
     background: str | Sequence[float] = "white",
     preserve_apparent: bool = True,
+    alpha_strategy: str = "perceptual",
     ax=None,
 ):
     """Draw a compact Matplotlib swatch preview and return its axes."""
@@ -108,6 +111,7 @@ def show_palette(
         alpha=alpha,
         background=background,
         preserve_apparent=preserve_apparent,
+        alpha_strategy=alpha_strategy,
     )
     if ax is None:
         _, ax = plt.subplots(figsize=(max(4.0, len(p) * 1.25), 1.7))
