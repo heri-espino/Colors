@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Contrast Colors Picker</title>
+<style>
+  :root { color-scheme: light dark; font-family: ui-sans-serif, system-ui, sans-serif; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 20px; background: Canvas; color: CanvasText; }
+  h1 { margin: 0 0 4px; font-size: 1.5rem; }
+  .sub { opacity: .72; margin-bottom: 18px; }
+  .panel { border: 1px solid color-mix(in srgb, CanvasText 18%, transparent); border-radius: 12px; padding: 14px; margin-bottom: 14px; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit,minmax(170px,1fr)); gap: 12px; }
+  label { display: grid; gap: 5px; font-size: .86rem; }
+  input, button, textarea { font: inherit; }
+  input[type="number"], input[type="text"] { width: 100%; padding: 7px 9px; border: 1px solid color-mix(in srgb, CanvasText 22%, transparent); border-radius: 7px; background: Canvas; color: CanvasText; }
+  input[type="range"] { width: 100%; }
+  .grid-wrap { overflow-x: auto; }
+  .grid { display: grid; gap: 4px; min-width: 620px; }
+  .cell { min-height: 86px; border: 3px solid transparent; border-radius: 8px; cursor: pointer; padding: 8px; display:flex; flex-direction:column; justify-content:space-between; transition: transform .08s ease, border-color .08s ease; }
+  .cell:hover { transform: translateY(-1px); }
+  .cell.selected { border-color: currentColor; outline: 2px solid color-mix(in srgb, CanvasText 30%, transparent); outline-offset: 1px; }
+  .cell .hex { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 700; }
+  .cell .meta { font-size: .72rem; opacity: .82; }
+  .row-label { display:flex; align-items:center; justify-content:flex-end; padding-right:8px; font-family:ui-monospace,monospace; font-size:.78rem; opacity:.72; }
+  .palette { display:flex; min-height:72px; border-radius:10px; overflow:hidden; border:1px solid color-mix(in srgb, CanvasText 15%, transparent); }
+  .swatch { flex:1; min-width:60px; display:flex; align-items:end; padding:7px; font-family:ui-monospace,monospace; font-size:.72rem; }
+  .status { margin-top:8px; font-size:.82rem; }
+  textarea { width:100%; min-height:180px; resize:vertical; padding:10px; border-radius:8px; background: color-mix(in srgb, Canvas 94%, CanvasText 6%); color:CanvasText; border:1px solid color-mix(in srgb, CanvasText 18%, transparent); font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+  button { padding:8px 12px; border-radius:8px; border:1px solid color-mix(in srgb, CanvasText 22%, transparent); background:Canvas; color:CanvasText; cursor:pointer; }
+  .inline { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .small { font-size:.78rem; opacity:.72; }
+</style>
+</head>
+<body>
+<h1>Contrast Colors</h1>
+<div class="sub">Constant adjacent WCAG contrast, independently selectable hue, optional alpha compensation.</div>
+
+<div class="panel controls">
+  <label>Levels
+    <input id="levels" type="number" min="2" max="10" step="1" value="5" />
+  </label>
+  <label>Adjacent CR
+    <input id="ratio" type="number" min="1" max="4" step="0.05" value="1.4" />
+  </label>
+  <label>Start luminance Y₀
+    <input id="startY" type="number" min="0" max="1" step="0.01" value="0.95" />
+  </label>
+  <label>OKLCH chroma
+    <input id="chroma" type="number" min="0" max="0.35" step="0.01" value="0.13" />
+  </label>
+  <label style="grid-column:span 2">Hues in degrees, comma-separated
+    <input id="hues" type="text" value="55, 20, 145, 210, 290" />
+  </label>
+  <label>Alpha <span id="alphaText">1.00</span>
+    <input id="alpha" type="range" min="0.05" max="1" step="0.01" value="1" />
+  </label>
+  <label>Background
+    <input id="background" type="color" value="#ffffff" />
+  </label>
+  <label class="inline"><input id="preserve" type="checkbox" checked /> Preserve apparent color</label>
+</div>
+
+<div class="panel">
+  <div class="small">Click exactly one hue in each luminance row. Every row has fixed relative luminance, so any such selection preserves the requested adjacent CR before alpha compositing.</div>
+  <div class="grid-wrap"><div id="grid" class="grid"></div></div>
+</div>
+
+<div class="panel">
+  <strong>Selected palette</strong>
+  <div id="palette" class="palette" style="margin-top:10px"></div>
+  <div id="status" class="status"></div>
+</div>
+
+<div class="panel">
+  <div class="inline" style="justify-content:space-between"><strong>Python</strong><button id="copy">Copy</button></div>
+  <textarea id="code" readonly></textarea>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const clamp = (x,a,b) => Math.min(b,Math.max(a,x));
+
+function linearToSrgb(x){
+  return x <= 0.0031308 ? 12.92*x : 1.055*Math.pow(Math.max(x,0),1/2.4)-0.055;
+}
+function srgbToLinear(x){
+  return x <= 0.04045 ? x/12.92 : Math.pow((x+0.055)/1.055,2.4);
+}
+function rgbY(rgb){
+  const [r,g,b]=rgb.map(srgbToLinear);
+  return .2126*r+.7152*g+.0722*b;
+}
+function oklchLinear(L,C,h){
+  const a=C*Math.cos(h*Math.PI/180), b=C*Math.sin(h*Math.PI/180);
+  const l_=L+.3963377774*a+.2158037573*b;
+  const m_=L-.1055613458*a-.0638541728*b;
+  const s_=L-.0894841775*a-1.2914855480*b;
+  const l=l_**3,m=m_**3,s=s_**3;
+  return [
+    4.0767416621*l-3.3077115913*m+.2309699292*s,
+    -1.2684380046*l+2.6097574011*m-.3413193965*s,
+    -.0041960863*l-.7034186147*m+1.7076147010*s
+  ];
+}
+function linY(rgb){ return .2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2]; }
+function inGamut(rgb){ return rgb.every(x=>x>=-1e-10 && x<=1+1e-10); }
+function solveL(Y,C,h){
+  let lo=0,hi=1;
+  for(let i=0;i<64;i++){
+    const mid=(lo+hi)/2, y=linY(oklchLinear(mid,C,h));
+    if(y<Y) lo=mid; else hi=mid;
+  }
+  const L=(lo+hi)/2;
+  return [L,oklchLinear(L,C,h)];
+}
+function colorForY(Y,h,C){
+  let [L,lin]=solveL(Y,C,h), actualC=C;
+  if(!inGamut(lin)){
+    let lo=0,hi=C,best=[0,...solveL(Y,0,h)];
+    for(let i=0;i<48;i++){
+      const mid=(lo+hi)/2,[lm,rm]=solveL(Y,mid,h);
+      if(inGamut(rm)){ lo=mid; best=[mid,lm,rm]; } else hi=mid;
+    }
+    [actualC,L,lin]=best;
+  }
+  const rgb=lin.map(x=>clamp(linearToSrgb(x),0,1));
+  return {rgb,h,Y:rgbY(rgb),C:actualC,L};
+}
+function hex(rgb){ return '#'+rgb.map(x=>Math.round(clamp(x,0,1)*255).toString(16).padStart(2,'0')).join('').toUpperCase(); }
+function parseHex(s){ return [1,3,5].map(i=>parseInt(s.slice(i,i+2),16)/255); }
+function textColor(rgb){ return rgbY(rgb)>.35 ? '#111111' : '#ffffff'; }
+function composite(fg,bg,a){ return fg.map((x,i)=>a*x+(1-a)*bg[i]); }
+function compensate(target,bg,a){
+  const raw=target.map((x,i)=>(x-(1-a)*bg[i])/a);
+  const feasible=raw.every(x=>x>=0&&x<=1);
+  const source=raw.map(x=>clamp(x,0,1));
+  return {source,displayed:composite(source,bg,a),feasible};
+}
+function crY(a,b){ const hi=Math.max(a,b),lo=Math.min(a,b); return (hi+.05)/(lo+.05); }
+
+let cells=[], selected=[];
+function inputs(){
+  const levels=+$('levels').value, ratio=+$('ratio').value, startY=+$('startY').value, C=+$('chroma').value;
+  const hues=$('hues').value.split(',').map(x=>+x.trim()).filter(Number.isFinite).map(x=>((x%360)+360)%360);
+  const alpha=+$('alpha').value, bg=$('background').value, preserve=$('preserve').checked;
+  return {levels,ratio,startY,C,hues,alpha,bg,preserve};
+}
+function rebuild(){
+  const p=inputs(); $('alphaText').textContent=p.alpha.toFixed(2);
+  const ys=[];
+  for(let k=0;k<p.levels;k++) ys.push((p.startY+.05)/(p.ratio**k)-.05);
+  if(!p.hues.length || ys.some(y=>y<0||y>1)){
+    $('grid').innerHTML='<div style="padding:14px">Invalid configuration: add at least one hue and keep all luminance levels inside [0,1].</div>';
+    cells=[]; selected=[]; renderSelection(); return;
+  }
+  cells=ys.map(y=>p.hues.map(h=>colorForY(y,h,p.C)));
+  selected=ys.map((_,i)=>Math.min(selected[i] ?? (i%p.hues.length),p.hues.length-1));
+  const grid=$('grid');
+  grid.style.gridTemplateColumns='90px repeat('+p.hues.length+', minmax(105px,1fr))';
+  grid.innerHTML='';
+  cells.forEach((row,i)=>{
+    const lab=document.createElement('div'); lab.className='row-label'; lab.textContent='Y='+row[0].Y.toFixed(3); grid.appendChild(lab);
+    row.forEach((c,j)=>{
+      const d=document.createElement('div'); d.className='cell'+(selected[i]===j?' selected':'');
+      d.style.background=hex(c.rgb); d.style.color=textColor(c.rgb);
+      d.innerHTML='<div class="hex">'+hex(c.rgb)+'</div><div class="meta">h='+c.h.toFixed(0)+'° · C='+c.C.toFixed(3)+'</div>';
+      d.onclick=()=>{selected[i]=j; renderGridSelection(); renderSelection();};
+      d.dataset.row=i; d.dataset.col=j; grid.appendChild(d);
+    });
+  });
+  renderSelection();
+}
+function renderGridSelection(){
+  document.querySelectorAll('.cell').forEach(el=>el.classList.toggle('selected', selected[+el.dataset.row]===+el.dataset.col));
+}
+function renderSelection(){
+  const p=inputs(), box=$('palette'), status=$('status'); box.innerHTML='';
+  if(!cells.length){ status.textContent=''; $('code').value=''; return; }
+  const bg=parseHex(p.bg), picked=selected.map((j,i)=>cells[i][j]);
+  let feasibleAll=true;
+  picked.forEach(c=>{
+    const comp=p.preserve ? compensate(c.rgb,bg,p.alpha) : {source:c.rgb,displayed:composite(c.rgb,bg,p.alpha),feasible:true};
+    feasibleAll = feasibleAll && comp.feasible;
+    const s=document.createElement('div'); s.className='swatch';
+    s.style.background='rgba('+comp.source.map(x=>Math.round(x*255)).join(',')+','+p.alpha+')';
+    s.style.color=textColor(comp.displayed); s.textContent=hex(c.rgb); box.appendChild(s);
+  });
+  const ratios=picked.slice(0,-1).map((c,i)=>crY(c.Y,picked[i+1].Y));
+  status.textContent='Adjacent CR: '+ratios.map(x=>x.toFixed(3)).join(', ')+' · alpha compensation: '+(feasibleAll?'exact for all selected colors':'gamut-limited for at least one color');
+  $('code').value='import contrastcolors as cc\n\ngrid = cc.contrast_grid(\n    levels='+p.levels+',\n    hues=['+p.hues.join(', ')+'],\n    ratio='+p.ratio+',\n    start_luminance='+p.startY+',\n    chroma='+p.C+',\n)\npalette = grid.select(['+selected.join(', ')+'])\ncolors = palette.mpl_colors(\n    alpha='+p.alpha+',\n    background="'+p.bg+'",\n    preserve_apparent='+(p.preserve?'True':'False')+',\n)\n';
+}
+['levels','ratio','startY','chroma','hues','alpha','background','preserve'].forEach(id=>$(id).addEventListener('input', id==='alpha'||id==='background'||id==='preserve'?renderSelection:rebuild));
+$('copy').onclick=async()=>{ await navigator.clipboard.writeText($('code').value); $('copy').textContent='Copied'; setTimeout(()=>$('copy').textContent='Copy',900); };
+rebuild();
+</script>
+</body>
+</html>
