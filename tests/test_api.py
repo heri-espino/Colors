@@ -4,7 +4,7 @@ import contrastcolors as cc
 
 
 def test_palette_maps_one_hue_to_each_luminance_level():
-    p = cc.palette(
+    p = cc.contrast_palette(
         [55, 20, 145, 210, 290],
         ratio=1.4,
         start_luminance=0.95,
