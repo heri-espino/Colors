@@ -113,6 +113,7 @@ impossible at that alpha/background combination. The result reports
 - independently selectable hue at every luminance level;
 - OKLCH hue/chroma construction with automatic sRGB gamut reduction;
 - alpha compensation against a known background;
+- perceptual OKLab optimization when exact alpha compensation is outside sRGB;
 - minimum-alpha feasibility calculation;
 - Matplotlib-ready RGBA output and `ListedColormap` export;
 - `color_palette`, `contrast_palette`, `show_palette`, and
@@ -122,8 +123,6 @@ impossible at that alpha/background combination. The result reports
 
 ## Planned
 
-- perceptual optimization for gamut-limited alpha compensation instead of
-  channel clipping;
 - optional APCA contrast model;
 - color-vision-deficiency simulation/diagnostics;
 - richer Matplotlib integration and named reusable palettes;
