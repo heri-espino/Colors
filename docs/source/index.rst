@@ -25,6 +25,8 @@ User guide
    style
    picker
    mathematics
+   color_spaces
+   limitations
    examples
 
 API reference
