@@ -60,6 +60,45 @@ print(palette.adjacent_contrast)
 print(palette.minimum_alpha(background="white"))
 ```
 
+## Publication style
+
+The package also includes the plotting style used across Heriberto's research
+figures:
+
+```python
+import matplotlib.pyplot as plt
+import contrastcolors as cc
+
+cc.set_style("heri")
+
+fig, ax = plt.subplots()
+ax.plot(x, y)
+ax.set_xlabel(r"$x$")
+ax.set_ylabel(r"$f(x)$")
+
+cc.save_figure(fig, "figure.pdf")
+```
+
+The preset hides the top/right Matplotlib spines, uses serif mathematical
+typography, transparent backgrounds, and publication-scale sizing. By default,
+data-heavy artists are rasterized inside PDF output while axes, text, ticks,
+legends, and annotations remain vector.
+
+External LaTeX is detected automatically:
+
+```python
+cc.set_style("heri")                 # auto
+cc.set_style("heri", use_tex=False)  # pure Matplotlib
+cc.set_style("heri", rasterize=False)
+```
+
+For local use without changing global settings permanently:
+
+```python
+with cc.style_context("heri"):
+    ...
+```
+
 ## Exploring hue combinations
 
 The lower-level object is an (i 	imes j) hue-luminance grid:
@@ -118,6 +157,7 @@ impossible at that alpha/background combination. The result reports
 - Matplotlib-ready RGBA output and `ListedColormap` export;
 - `color_palette`, `contrast_palette`, `show_palette`, and
   `ContrastGrid` APIs;
+- `set_style("heri")`, `style_context`, and hybrid-PDF `save_figure` helpers;
 - interactive Sphinx palette picker;
 - tests and Sphinx builds in GitHub Actions.
 
