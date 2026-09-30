@@ -1,9 +1,9 @@
-"""Matplotlib style presets for publication-quality figures.
+"""Matplotlib publication styles for contrastcolors.
 
-The Heri preset is distilled from the shared paper_figure_style.py modules used
-across Heriberto Espino Montelongo's research repositories: transparent paper
-figures, serif/LaTeX typography, minimal spines, and hybrid PDF output where
-data-heavy artists are rasterized while axes and text remain vector.
+The Heri preset follows the publication figures in
+heri-espino/Bayesian-Uncertainty-in-WTI-APOs: compact Wiley-like typography,
+white-grid axes, Paul Tol categorical colors, an iridescent continuous map,
+and hybrid PDF output with only dense artists rasterized.
 """
 
 from __future__ import annotations
@@ -17,54 +17,77 @@ from typing import Iterator, Literal
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
+from matplotlib.colors import LinearSegmentedColormap
 
 
 StyleName = Literal["heri", "default", "matplotlib"]
 
 HERI_LATEX_PREAMBLE = (
     r"\usepackage[T1]{fontenc}"
-    r"\usepackage{lmodern}"
-    r"\usepackage{stix}"
+    r"\usepackage{utopia}"
+    r"\usepackage[defaultmathsizes,italic]{mathastext}"
+    r"\usepackage{amsmath,amssymb}"
 )
 
+# Paul Tol high-contrast categorical palette used by the WTI publication figures.
 HERI_PALETTE = (
-    "#1565C0",
-    "#FF9800",
-    "#009688",
-    "#F44336",
-    "#448AFF",
-    "#8BC34A",
-    "#AD1457",
-    "#FFC107",
+    "#97001c",
+    "#0083f9",
+    "#00b49c",
+    "#ffc600",
+    "#f198ff",
 )
+
+HERI_NEUTRAL = {
+    "black": "#111111",
+    "dark": "#3A3A3A",
+    "mid": "#777777",
+    "light": "#B0B0B0",
+    "grid": "#D8D8D8",
+}
+
+HERI_IRIDESCENT_HEX = (
+    "#FEFBE9", "#FCF7D5", "#F5F3C1", "#EAF0B5", "#DDECBF", "#D0E7CA",
+    "#C2E3D2", "#B5DDD8", "#A8D8DC", "#9BD2E1", "#8DCBE4", "#81C4E7",
+    "#7BBCE7", "#7EB2E4", "#88A5DD", "#9398D2", "#9B8AC4", "#9D7DB2",
+    "#9A709E", "#906388", "#805770", "#684957", "#46353A",
+)
+
+HERI_BAD_DATA_COLOR = "#999999"
+HERI_CMAP = LinearSegmentedColormap.from_list(
+    "heri_iridescent",
+    HERI_IRIDESCENT_HEX,
+    N=256,
+)
+HERI_CMAP.set_bad(HERI_BAD_DATA_COLOR)
 
 HERI_SAVEFIG_KWARGS = {
-    "facecolor": "none",
-    "edgecolor": "none",
-    "transparent": True,
+    "dpi": 600,
     "bbox_inches": "tight",
-    "pad_inches": 0.02,
+    "pad_inches": 0.035,
+    "facecolor": "white",
+    "edgecolor": "white",
+    "transparent": False,
 }
 
 _RASTER_PATCHED = False
-_RASTERIZE_DATA = False
+_RASTERIZE_DENSE = False
 
 
 def available_styles() -> tuple[str, ...]:
-    """Return the style names understood by set_style."""
+    """Return style names understood by set_style."""
     return ("heri", "default")
 
 
 def _latex_stack_available() -> bool:
-    """Return whether the LaTeX packages required by the Heri preset exist."""
+    """Return whether the Wiley-like Utopia TeX stack is available."""
     if shutil.which("latex") is None:
         return False
-
     kpsewhich = shutil.which("kpsewhich")
     if kpsewhich is None:
         return False
 
-    for package in ("lmodern.sty", "stix.sty"):
+    for package in ("utopia.sty", "mathastext.sty", "amsmath.sty", "amssymb.sty"):
         try:
             result = subprocess.run(
                 [kpsewhich, package],
@@ -77,7 +100,6 @@ def _latex_stack_available() -> bool:
             return False
         if result.returncode != 0 or not result.stdout.strip():
             return False
-
     return True
 
 
@@ -91,7 +113,7 @@ def _set_rasterized(artist):
 
 
 def _install_rasterized_defaults() -> None:
-    """Install conditional rasterization wrappers once per Python process."""
+    """Rasterize dense artists conditionally while leaving ordinary lines vector."""
     global _RASTER_PATCHED
     if _RASTER_PATCHED or getattr(Axes, "_contrastcolors_rasterized_defaults", False):
         _RASTER_PATCHED = True
@@ -100,43 +122,43 @@ def _install_rasterized_defaults() -> None:
     _RASTER_PATCHED = True
     Axes._contrastcolors_rasterized_defaults = True
 
-    original_plot = Axes.plot
     original_scatter = Axes.scatter
+    original_hexbin = Axes.hexbin
     original_contourf = Axes.contourf
     original_pcolormesh = Axes.pcolormesh
     original_imshow = Axes.imshow
     original_fill_between = Axes.fill_between
 
-    def plot(self, *args, **kwargs):
-        if _RASTERIZE_DATA:
-            kwargs.setdefault("rasterized", True)
-        return original_plot(self, *args, **kwargs)
-
     def scatter(self, *args, **kwargs):
-        if _RASTERIZE_DATA:
+        if _RASTERIZE_DENSE:
             kwargs.setdefault("rasterized", True)
         return original_scatter(self, *args, **kwargs)
 
+    def hexbin(self, *args, **kwargs):
+        if _RASTERIZE_DENSE:
+            kwargs.setdefault("rasterized", True)
+        return original_hexbin(self, *args, **kwargs)
+
     def contourf(self, *args, **kwargs):
         artist = original_contourf(self, *args, **kwargs)
-        return _set_rasterized(artist) if _RASTERIZE_DATA else artist
+        return _set_rasterized(artist) if _RASTERIZE_DENSE else artist
 
     def pcolormesh(self, *args, **kwargs):
-        if _RASTERIZE_DATA:
+        if _RASTERIZE_DENSE:
             kwargs.setdefault("rasterized", True)
         return original_pcolormesh(self, *args, **kwargs)
 
     def imshow(self, *args, **kwargs):
-        if _RASTERIZE_DATA:
+        if _RASTERIZE_DENSE:
             kwargs.setdefault("rasterized", True)
         return original_imshow(self, *args, **kwargs)
 
     def fill_between(self, *args, **kwargs):
         artist = original_fill_between(self, *args, **kwargs)
-        return _set_rasterized(artist) if _RASTERIZE_DATA else artist
+        return _set_rasterized(artist) if _RASTERIZE_DENSE else artist
 
-    Axes.plot = plot
     Axes.scatter = scatter
+    Axes.hexbin = hexbin
     Axes.contourf = contourf
     Axes.pcolormesh = pcolormesh
     Axes.imshow = imshow
@@ -155,12 +177,12 @@ def _install_rasterized_defaults() -> None:
     original_plot_trisurf = Axes3D.plot_trisurf
 
     def plot_surface(self, *args, **kwargs):
-        if _RASTERIZE_DATA:
+        if _RASTERIZE_DENSE:
             kwargs.setdefault("rasterized", True)
         return original_plot_surface(self, *args, **kwargs)
 
     def plot_trisurf(self, *args, **kwargs):
-        if _RASTERIZE_DATA:
+        if _RASTERIZE_DENSE:
             kwargs.setdefault("rasterized", True)
         return original_plot_trisurf(self, *args, **kwargs)
 
@@ -168,74 +190,129 @@ def _install_rasterized_defaults() -> None:
     Axes3D.plot_trisurf = plot_trisurf
 
 
-def _heri_rcparams(*, use_tex: bool) -> dict:
+def _font_rcparams(font: str, *, use_tex: bool) -> dict:
+    """Return rcParams for the requested text family."""
+    requested = font.strip()
+    key = requested.lower()
+
+    if use_tex:
+        return {
+            "font.family": "serif",
+            "text.usetex": True,
+            "text.latex.preamble": HERI_LATEX_PREAMBLE,
+        }
+
+    if key in {"utopia", "wiley", "wiley utopia"}:
+        return {
+            "font.family": "serif",
+            "font.serif": ["Utopia", "STIX Two Text", "STIXGeneral", "DejaVu Serif"],
+            "mathtext.fontset": "stix",
+            "text.usetex": False,
+        }
+
+    if key in {"stix", "stix two text"}:
+        return {
+            "font.family": "serif",
+            "font.serif": ["STIX Two Text", "STIXGeneral", "DejaVu Serif"],
+            "mathtext.fontset": "stix",
+            "text.usetex": False,
+        }
+
+    if key in {"serif", "default serif"}:
+        return {
+            "font.family": "serif",
+            "mathtext.fontset": "stix",
+            "text.usetex": False,
+        }
+
+    if key in {"sans", "sans-serif", "default sans"}:
+        return {
+            "font.family": "sans-serif",
+            "mathtext.fontset": "stix",
+            "text.usetex": False,
+        }
+
+    # Arbitrary Matplotlib font name, e.g. Arial, Helvetica, Aptos or Calibri.
+    return {
+        "font.family": requested,
+        "mathtext.fontset": "stix",
+        "text.usetex": False,
+    }
+
+
+def _heri_rcparams(*, font: str, use_tex: bool) -> dict:
+    """Return the WTI publication rcParams with a user-selectable font."""
     params = {
-        "font.family": "serif",
-        "font.size": 16,
-        "axes.titlesize": 21,
-        "axes.labelsize": 16,
-        "legend.fontsize": 13,
-        "xtick.labelsize": 14,
-        "ytick.labelsize": 14,
-        "axes.spines.top": False,
-        "axes.spines.right": False,
-        "axes.linewidth": 0.75,
-        "axes.facecolor": "none",
-        "figure.facecolor": "none",
-        "figure.dpi": 300,
-        "savefig.dpi": 300,
-        "savefig.facecolor": "none",
-        "savefig.edgecolor": "none",
-        "savefig.transparent": True,
+        "font.size": 8.5,
+        "axes.labelsize": 8.5,
+        "axes.titlesize": 9.0,
+        "legend.fontsize": 7.5,
+        "xtick.labelsize": 7.5,
+        "ytick.labelsize": 7.5,
+        "axes.unicode_minus": False,
+        "figure.dpi": 180,
+        "savefig.dpi": 600,
         "savefig.bbox": "tight",
-        "savefig.pad_inches": 0.02,
+        "savefig.pad_inches": 0.035,
+        "savefig.facecolor": "white",
+        "savefig.edgecolor": "white",
+        "savefig.transparent": False,
         "pdf.fonttype": 42,
         "ps.fonttype": 42,
         "svg.fonttype": "none",
-        "lines.linewidth": 1.5,
+        "axes.spines.top": False,
+        "axes.spines.right": False,
+        "axes.linewidth": 0.85,
+        "axes.edgecolor": HERI_NEUTRAL["dark"],
+        "axes.facecolor": "white",
+        "figure.facecolor": "white",
+        "axes.axisbelow": True,
+        "axes.grid": True,
+        "grid.color": HERI_NEUTRAL["grid"],
+        "grid.linewidth": 0.50,
+        "grid.alpha": 0.72,
+        "xtick.direction": "out",
+        "ytick.direction": "out",
+        "xtick.major.size": 3.0,
+        "ytick.major.size": 3.0,
+        "xtick.major.width": 0.7,
+        "ytick.major.width": 0.7,
+        "lines.linewidth": 1.60,
+        "lines.markersize": 4.5,
+        "legend.frameon": False,
+        "legend.borderaxespad": 0.25,
+        "legend.handlelength": 1.8,
         "axes.prop_cycle": mpl.cycler(color=HERI_PALETTE),
-        "text.usetex": use_tex,
     }
-
-    if use_tex:
-        params["text.latex.preamble"] = HERI_LATEX_PREAMBLE
-    else:
-        params.update(
-            {
-                "font.serif": [
-                    "Latin Modern Roman",
-                    "STIX Two Text",
-                    "STIXGeneral",
-                    "DejaVu Serif",
-                ],
-                "mathtext.fontset": "stix",
-            }
-        )
-
+    params.update(_font_rcparams(font, use_tex=use_tex))
     return params
 
 
 def set_style(
     style: StyleName | str = "heri",
     *,
+    font: str = "utopia",
     use_tex: bool | Literal["auto"] = "auto",
     rasterize: bool = True,
 ) -> None:
     """Apply a named global Matplotlib style.
 
-    style="heri" applies the publication preset. "default" and "matplotlib"
-    restore Matplotlib defaults.
+    The Heri style matches the WTI APO publication figures. The font is an
+    independent choice, for example font="arial", font="stix", or
+    font="utopia".
 
-    use_tex="auto" enables external LaTeX only when the required stack exists.
-    When rasterize=True, data-heavy artists created after this call are
-    rasterized by default while axes, text, ticks, titles, and legends stay
-    vector. Individual plotting calls can override rasterized=False.
+    With use_tex="auto", external LaTeX is attempted only for the Utopia font.
+    Custom fonts are rendered directly by Matplotlib so their family choice is
+    respected.
+
+    With rasterize=True, only dense artists are rasterized. Ordinary plot
+    lines, errorbars, axes, text, ticks, legends, and annotations remain vector.
     """
-    global _RASTERIZE_DATA
+    global _RASTERIZE_DENSE
 
     name = str(style).strip().lower()
     if name in {"default", "matplotlib"}:
-        _RASTERIZE_DATA = False
+        _RASTERIZE_DENSE = False
         mpl.rcdefaults()
         return
 
@@ -243,37 +320,81 @@ def set_style(
         choices = ", ".join(repr(x) for x in available_styles())
         raise ValueError(f"Unknown style {style!r}. Available styles: {choices}.")
 
-    _install_rasterized_defaults()
-    _RASTERIZE_DATA = bool(rasterize)
+    if not isinstance(font, str) or not font.strip():
+        raise ValueError("font must be a non-empty Matplotlib font-family name.")
 
+    try:
+        plt.style.use("seaborn-v0_8-whitegrid")
+    except OSError:
+        plt.style.use("default")
+
+    _install_rasterized_defaults()
+    _RASTERIZE_DENSE = bool(rasterize)
+
+    font_key = font.strip().lower()
     if use_tex == "auto":
-        resolved_use_tex = _latex_stack_available()
+        resolved_use_tex = (
+            font_key in {"utopia", "wiley", "wiley utopia"}
+            and _latex_stack_available()
+        )
     elif isinstance(use_tex, bool):
         resolved_use_tex = use_tex
     else:
         raise ValueError("use_tex must be True, False, or 'auto'.")
 
-    mpl.rcParams.update(_heri_rcparams(use_tex=resolved_use_tex))
+    if resolved_use_tex and font_key not in {"utopia", "wiley", "wiley utopia"}:
+        raise ValueError(
+            "Custom fonts cannot be guaranteed through the Heri LaTeX stack. "
+            "Use use_tex=False (or use_tex='auto') for fonts such as Arial."
+        )
+
+    mpl.rcParams.update(_heri_rcparams(font=font, use_tex=resolved_use_tex))
 
 
 @contextmanager
 def style_context(
     style: StyleName | str = "heri",
     *,
+    font: str = "utopia",
     use_tex: bool | Literal["auto"] = "auto",
     rasterize: bool = True,
 ) -> Iterator[None]:
-    """Temporarily apply a style and restore previous rcParams afterwards."""
-    global _RASTERIZE_DATA
+    """Temporarily apply a style and restore previous Matplotlib state."""
+    global _RASTERIZE_DENSE
 
     previous = mpl.rcParams.copy()
-    previous_rasterize = _RASTERIZE_DATA
+    previous_rasterize = _RASTERIZE_DENSE
     try:
-        set_style(style, use_tex=use_tex, rasterize=rasterize)
+        set_style(
+            style,
+            font=font,
+            use_tex=use_tex,
+            rasterize=rasterize,
+        )
         yield
     finally:
-        _RASTERIZE_DATA = previous_rasterize
+        _RASTERIZE_DENSE = previous_rasterize
         mpl.rcParams.update(previous)
+
+
+def panel_label(
+    ax,
+    label: str,
+    *,
+    x: float = -0.12,
+    y: float = 1.05,
+    **kwargs,
+):
+    """Add the bold A/B/C panel label used by the WTI publication figures."""
+    options = {
+        "transform": ax.transAxes,
+        "fontweight": "bold",
+        "va": "bottom",
+        "ha": "left",
+        "color": HERI_NEUTRAL["dark"],
+    }
+    options.update(kwargs)
+    return ax.text(x, y, label, **options)
 
 
 def save_figure(
@@ -282,13 +403,13 @@ def save_figure(
     *,
     dpi: int | None = None,
     close: bool = False,
+    metadata: dict | None = None,
     **kwargs,
 ) -> Path:
-    """Save a publication figure, defaulting to a hybrid transparent PDF.
+    """Save a Heri-style hybrid publication figure.
 
-    If path has no suffix, .pdf is appended. Under the Heri style, rasterized
-    artists are embedded as raster layers at the requested DPI while axes,
-    text, labels, ticks, and other vector artists remain vector.
+    If path has no suffix, .pdf is appended. Dense artists remain raster layers
+    at 600 dpi by default while ordinary lines and typography remain vector.
     """
     target = Path(path)
     if not target.suffix:
@@ -299,6 +420,8 @@ def save_figure(
     save_kwargs.update(kwargs)
     if dpi is not None:
         save_kwargs["dpi"] = dpi
+    if metadata is not None and target.suffix.lower() == ".pdf":
+        save_kwargs["metadata"] = metadata
 
     fig.savefig(target, **save_kwargs)
     if close:
