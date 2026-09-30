@@ -9,6 +9,7 @@ contrast ratios for Matplotlib and scientific visualization.
    :caption: Contents
 
    quickstart
+   style
    picker
    mathematics
    api
