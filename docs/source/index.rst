@@ -36,9 +36,3 @@ API reference
 
    api
 
-Indices
--------
-
-* :ref:genindex
-* :ref:modindex
-* :ref:search
