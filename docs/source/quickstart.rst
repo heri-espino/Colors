@@ -1,34 +1,72 @@
 Quickstart
 ==========
 
-Ordinary plotting
------------------
+Installation
+------------
 
-For the common case, provide one hue per desired color:
+From a local checkout:
+
+.. code-block:: bash
+
+   python -m pip install -e .
+
+For development and documentation:
+
+.. code-block:: bash
+
+   python -m pip install -e ".[dev,docs]"
+   pytest
+   sphinx-build -W -b html docs/source docs/_build/html
+
+A complete first plot
+---------------------
 
 .. code-block:: python
 
+   import numpy as np
+   import matplotlib.pyplot as plt
    import contrastcolors as cc
+
+   cc.set_style("heri", font="Arial")
 
    colors = cc.color_palette(
        hues=[55, 20, 145, 210, 290],
        ratio=1.4,
    )
 
-The first hue receives the lightest luminance level, the second hue receives
-the next level, and so on. Adjacent colors therefore keep the requested WCAG
-contrast ratio even though every hue may be different.
+   x = np.linspace(0, 2 * np.pi, 500)
 
-Use the result anywhere Matplotlib accepts a color:
+   fig, ax = plt.subplots()
+   for k, color in enumerate(colors):
+       ax.plot(
+           x,
+           np.sin(x + 0.35 * k),
+           color=color,
+           label=f"series {k + 1}",
+       )
 
-.. code-block:: python
+   ax.set_xlabel("x")
+   ax.set_ylabel("value")
+   ax.legend()
 
-   import matplotlib.pyplot as plt
+   cc.save_figure(fig, "example.pdf")
 
-   for y, color in zip(series, colors):
-       plt.plot(x, y, color=color)
+What happened
+-------------
 
-To retain metadata and diagnostics, use :func:`contrastcolors.contrast_palette`:
+The hue list defines one hue per output color. The library creates a decreasing
+relative-luminance ladder whose adjacent WCAG contrast ratio is 1.4, then solves
+for an sRGB color at each hue and luminance.
+
+The Heri style changes Matplotlib presentation independently of palette
+construction. In the example above, Arial affects typography but does not alter
+the palette mathematics.
+
+Inspecting the palette
+----------------------
+
+Use contrast_palette when you want the solved colors and diagnostics rather
+than only Matplotlib RGBA tuples.
 
 .. code-block:: python
 
@@ -38,14 +76,28 @@ To retain metadata and diagnostics, use :func:`contrastcolors.contrast_palette`:
    )
 
    print(palette.hex)
+   print(palette.luminances)
    print(palette.adjacent_contrast)
-   print(palette.minimum_alpha(background="white"))
 
-Exploring combinations
-----------------------
+Alpha-aware colors
+------------------
 
-Use a :class:`contrastcolors.ContrastGrid` when you want several candidate
-hues at every luminance level:
+.. code-block:: python
+
+   colors = cc.color_palette(
+       hues=[55, 20, 145, 210, 290],
+       ratio=1.4,
+       alpha=0.70,
+       background="white",
+       preserve_apparent=True,
+   )
+
+When exact apparent-color recovery is impossible at the requested alpha, the
+default perceptual strategy finds a representable source color with small
+OKLab error.
+
+Exploring multiple hue choices
+------------------------------
 
 .. code-block:: python
 
@@ -53,10 +105,33 @@ hues at every luminance level:
        levels=5,
        hues=[55, 20, 145, 210, 290],
        ratio=1.4,
-       start_luminance=0.95,
    )
 
+   grid.plot()
    palette = grid.select([0, 1, 2, 3, 4])
 
-The hue index may be chosen independently for each luminance level without
-changing the prescribed adjacent contrast ratio.
+Each row has a fixed relative luminance, so any one-color-per-row selection
+inherits the same adjacent contrast ladder.
+
+Where to go next
+----------------
+
+Library tour
+   A complete inventory of what the package contains.
+
+Palettes and grids
+   Palette objects, ColorCell metadata, ContrastGrid, colormaps, and hue
+   selection.
+
+Alpha and apparent color
+   Composition, compensation, feasibility, minimum alpha, and OKLab fallback.
+
+Heri publication style
+   Fonts, white-grid styling, panel labels, continuous colormap, and hybrid PDF
+   output.
+
+Mathematics
+   The equations behind the contrast ladder and alpha compensation.
+
+API reference
+   Exact signatures and class members for the complete library.
