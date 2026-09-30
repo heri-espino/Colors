@@ -12,32 +12,69 @@ def teardown_function():
     plt.close("all")
 
 
-def test_set_style_heri_applies_publication_spines_and_transparency():
+def test_set_style_heri_matches_wti_publication_rcparams():
     cc.set_style("heri", use_tex=False)
 
     assert mpl.rcParams["axes.spines.top"] is False
     assert mpl.rcParams["axes.spines.right"] is False
-    assert mpl.rcParams["figure.facecolor"] == "none"
-    assert mpl.rcParams["savefig.transparent"] is True
+    assert mpl.rcParams["axes.grid"] is True
+    assert mpl.rcParams["axes.facecolor"] == "white"
+    assert mpl.rcParams["figure.facecolor"] == "white"
+    assert mpl.rcParams["savefig.transparent"] is False
+    assert mpl.rcParams["savefig.dpi"] == 600
+    assert mpl.rcParams["font.size"] == 8.5
+    assert mpl.rcParams["lines.linewidth"] == 1.6
+    assert mpl.rcParams["lines.markersize"] == 4.5
     assert mpl.rcParams["pdf.fonttype"] == 42
 
 
-def test_heri_style_rasterizes_data_but_not_axis_text():
+def test_heri_palette_matches_wti_publication_palette():
+    assert cc.HERI_PALETTE == (
+        "#97001c",
+        "#0083f9",
+        "#00b49c",
+        "#ffc600",
+        "#f198ff",
+    )
+    assert cc.HERI_IRIDESCENT_HEX[0] == "#FEFBE9"
+    assert cc.HERI_IRIDESCENT_HEX[-1] == "#46353A"
+
+
+def test_heri_style_keeps_lines_vector_and_rasterizes_dense_artists():
     cc.set_style("heri", use_tex=False, rasterize=True)
     fig, ax = plt.subplots()
     (line,) = ax.plot([0, 1], [0, 1])
+    points = ax.scatter([0, 1], [1, 0])
     ax.set_xlabel("x")
 
-    assert line.get_rasterized() is True
+    assert line.get_rasterized() is False
+    assert points.get_rasterized() is True
     assert ax.xaxis.label.get_rasterized() is False
 
 
 def test_rasterization_can_be_disabled():
     cc.set_style("heri", use_tex=False, rasterize=False)
     fig, ax = plt.subplots()
-    (line,) = ax.plot([0, 1], [0, 1])
+    points = ax.scatter([0, 1], [0, 1])
 
-    assert line.get_rasterized() is False
+    assert points.get_rasterized() is False
+
+
+def test_custom_font_can_be_selected():
+    cc.set_style("heri", font="Arial", use_tex=False)
+    assert mpl.rcParams["font.family"] == ["Arial"]
+    assert mpl.rcParams["text.usetex"] is False
+
+
+def test_custom_font_auto_mode_avoids_latex():
+    cc.set_style("heri", font="Arial", use_tex="auto")
+    assert mpl.rcParams["font.family"] == ["Arial"]
+    assert mpl.rcParams["text.usetex"] is False
+
+
+def test_custom_font_cannot_be_forced_through_utopia_tex_stack():
+    with pytest.raises(ValueError):
+        cc.set_style("heri", font="Arial", use_tex=True)
 
 
 def test_save_figure_defaults_to_pdf(tmp_path: Path):
@@ -53,8 +90,9 @@ def test_save_figure_defaults_to_pdf(tmp_path: Path):
 
 def test_style_context_restores_previous_rcparams():
     before = mpl.rcParams["axes.spines.top"]
-    with cc.style_context("heri", use_tex=False):
+    with cc.style_context("heri", font="Arial", use_tex=False):
         assert mpl.rcParams["axes.spines.top"] is False
+        assert mpl.rcParams["font.family"] == ["Arial"]
     assert mpl.rcParams["axes.spines.top"] == before
 
 
