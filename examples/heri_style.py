@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 import contrastcolors as cc
 
-cc.set_style("heri")
+cc.set_style("heri", font="Arial")
 
 x = np.linspace(0, 2 * np.pi, 500)
 colors = cc.color_palette(
