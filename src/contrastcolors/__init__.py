@@ -4,6 +4,7 @@ from .alpha import AlphaCompensation, compensate_alpha, composite, minimum_alpha
 from .api import color_palette, contrast_palette, show_palette
 from .color_spaces import contrast_ratio, delta_e_ok, relative_luminance, srgb_to_oklab, to_hex, to_rgb
 from .contrast import luminance_contrast, luminance_ladder
+from .style import HERI_PALETTE, available_styles, save_figure, set_style, style_context
 from .palette import (
     ColorCell,
     ContrastGrid,
@@ -15,6 +16,7 @@ from .palette import (
 
 __all__ = [
     "AlphaCompensation",
+    "HERI_PALETTE",
     "ColorCell",
     "ContrastGrid",
     "Palette",
@@ -33,6 +35,10 @@ __all__ = [
     "relative_luminance",
     "srgb_to_oklab",
     "show_palette",
+    "available_styles",
+    "save_figure",
+    "set_style",
+    "style_context",
     "to_hex",
     "to_rgb",
 ]
