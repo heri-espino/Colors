@@ -64,7 +64,7 @@ print(palette.minimum_alpha(background="white"))
 
 The package includes the publication style used by the WTI APO paper:
 
-```python
+~~~python
 import matplotlib.pyplot as plt
 import contrastcolors as cc
 
@@ -76,45 +76,45 @@ ax.set_xlabel(r"$x$")
 ax.set_ylabel(r"$f(x)$")
 
 cc.save_figure(fig, "figure.pdf")
-```
+~~~
 
 The Heri preset matches that repository's publication figures: compact
 white-grid axes, 8--9 pt typography, top/right spines removed, 600-dpi hybrid
 PDF export, Paul Tol categorical colors, and the iridescent continuous map
-available as `cc.HERI_CMAP`.
+available as cc.HERI_CMAP.
 
 The visual style and the font are independent:
 
-```python
+~~~python
 cc.set_style("heri")                   # Utopia when available, STIX fallback
 cc.set_style("heri", font="Arial")
 cc.set_style("heri", font="Helvetica")
 cc.set_style("heri", font="STIX")
 cc.set_style("heri", font="DejaVu Sans")
-```
+~~~
 
-For arbitrary fonts, `use_tex="auto"` renders text directly through
-Matplotlib so the requested family is respected. The Utopia preset can use the
-Wiley-like LaTeX stack when it is installed:
+For arbitrary fonts, use_tex="auto" renders text directly through Matplotlib so
+the requested family is respected. The Utopia preset can use the Wiley-like
+LaTeX stack when it is installed:
 
-```python
+~~~python
 cc.set_style("heri", font="utopia", use_tex=True)
-```
+~~~
 
 By default, ordinary lines and typography remain vector, while dense artists
 such as scatter plots, heatmaps, filled contours, hexbins and 3D surfaces are
 rasterized inside the PDF. This can be disabled:
 
-```python
+~~~python
 cc.set_style("heri", font="Arial", rasterize=False)
-```
+~~~
 
 For local use without changing global settings permanently:
 
-```python
+~~~python
 with cc.style_context("heri", font="Arial"):
     ...
-```
+~~~
 
 ## Exploring hue combinations
 
