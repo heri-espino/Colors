@@ -87,17 +87,37 @@ Publication style
 Heri style constants
 --------------------
 
-.. autodata:: contrastcolors.HERI_PALETTE
-   :annotation:
+HERI_PALETTE
+    Five categorical colors used as the default Heri line cycle.
 
-.. autodata:: contrastcolors.HERI_NEUTRAL
-   :annotation:
+    .. code-block:: text
 
-.. autodata:: contrastcolors.HERI_IRIDESCENT_HEX
-   :annotation:
+       #97001c
+       #0083f9
+       #00b49c
+       #ffc600
+       #f198ff
 
-.. autodata:: contrastcolors.HERI_CMAP
-   :annotation:
+HERI_NEUTRAL
+    Neutral colors used for axes, reference lines, and grid styling.
+
+    .. code-block:: python
+
+       {
+           "black": "#111111",
+           "dark": "#3A3A3A",
+           "mid": "#777777",
+           "light": "#B0B0B0",
+           "grid": "#D8D8D8",
+       }
+
+HERI_IRIDESCENT_HEX
+    Twenty-three control colors used to construct the continuous Heri
+    iridescent colormap.
+
+HERI_CMAP
+    A 256-level Matplotlib LinearSegmentedColormap constructed from
+    HERI_IRIDESCENT_HEX. Missing/bad values use #999999.
 
 Advanced color-space helpers
 ----------------------------
@@ -117,10 +137,19 @@ re-exported at the package root.
 Advanced style constants
 ------------------------
 
-These are implementation-facing values from contrastcolors.style.
+contrastcolors.style.HERI_BAD_DATA_COLOR
+    Hex color #999999 used for bad/missing values in HERI_CMAP.
 
-.. autodata:: contrastcolors.style.HERI_BAD_DATA_COLOR
-   :annotation:
+contrastcolors.style.HERI_SAVEFIG_KWARGS
+    Default save settings used by save_figure:
 
-.. autodata:: contrastcolors.style.HERI_SAVEFIG_KWARGS
-   :annotation:
+    .. code-block:: python
+
+       {
+           "dpi": 600,
+           "bbox_inches": "tight",
+           "pad_inches": 0.035,
+           "facecolor": "white",
+           "edgecolor": "white",
+           "transparent": False,
+       }
