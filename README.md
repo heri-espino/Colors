@@ -30,6 +30,30 @@ python -m pip install -e ".[dev,docs]"
 pytest
 ```
 
+## Documentation
+
+The Sphinx site now documents the complete library:
+
+- library tour and function/object inventory;
+- quickstart and installation;
+- palette and ContrastGrid workflows;
+- alpha compositing and apparent-color compensation;
+- Heri publication style, selectable fonts, hybrid PDF export, and colormaps;
+- WCAG, sRGB, OKLab/OKLCH, and gamut behavior;
+- guarantees and limitations;
+- end-to-end Matplotlib examples;
+- interactive palette picker;
+- complete public API and advanced low-level helpers.
+
+Build it locally with:
+
+~~~bash
+python -m pip install -e ".[docs]"
+sphinx-build -W -b html docs/source docs/_build/html
+~~~
+
+Open docs/_build/html/index.html in a browser.
+
 ## Quick start
 
 For the ordinary case, supply one hue per desired color:
