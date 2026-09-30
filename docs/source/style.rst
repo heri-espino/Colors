@@ -1,18 +1,19 @@
 Heri publication style
 ======================
 
-The package includes the publication style used across Heriberto Espino
-Montelongo's figure-generation repositories.
+The Heri preset follows the publication figures in
+Bayesian-Uncertainty-in-WTI-APOs rather than the earlier transparent
+Proximity Graphs style.
 
-Global usage
-------------
+Basic usage
+-----------
 
 .. code-block:: python
 
    import matplotlib.pyplot as plt
    import contrastcolors as cc
 
-   cc.set_style("heri")
+   cc.set_style("heri", font="Arial")
 
    fig, ax = plt.subplots()
    ax.plot(x, y)
@@ -21,18 +22,57 @@ Global usage
 
    cc.save_figure(fig, "figure.pdf")
 
-The preset keeps the top and right spines hidden, uses serif mathematical
-typography, transparent figure/axes backgrounds, embedded TrueType-compatible
-PDF fonts, and publication-scale font sizes.
+The preset uses:
+
+- compact 8--9 pt publication typography;
+- white axes and figure background;
+- a light gray grid below the data;
+- hidden top and right spines;
+- 1.6 pt default lines and 4.5 pt markers;
+- 600 dpi saved raster layers;
+- embedded PDF/PS font type 42;
+- the Paul Tol high-contrast categorical palette;
+- the WTI iridescent continuous map as HERI_CMAP.
+
+Selecting the font
+------------------
+
+The visual style and font family are independent.
+
+.. code-block:: python
+
+   cc.set_style("heri", font="Arial")
+   cc.set_style("heri", font="Helvetica")
+   cc.set_style("heri", font="STIX")
+   cc.set_style("heri", font="DejaVu Sans")
+
+Any non-empty Matplotlib font-family name is accepted. Matplotlib handles its
+normal fallback behavior when that font is not installed.
+
+The default is:
+
+.. code-block:: python
+
+   cc.set_style("heri", font="utopia")
+
+With use_tex="auto", the Utopia font uses the Wiley-like external LaTeX stack
+only when the required packages are available. Arbitrary fonts such as Arial
+stay in native Matplotlib text mode so the requested family can actually be
+respected.
+
+.. code-block:: python
+
+   cc.set_style("heri", font="utopia", use_tex=True)
+   cc.set_style("heri", font="Arial", use_tex=False)
 
 Hybrid PDF rasterization
 ------------------------
 
-With the default rasterize=True, data-heavy Matplotlib artists are rasterized
-automatically:
+The WTI-style preset keeps normal plot lines vector. Only data-heavy artists
+are rasterized automatically:
 
-- plot
 - scatter
+- hexbin
 - contourf
 - pcolormesh
 - imshow
@@ -40,52 +80,42 @@ automatically:
 - 3D plot_surface
 - 3D plot_trisurf
 
-Axes, spines, tick labels, titles, legends, and annotations remain vector.
-This gives compact PDFs without turning the whole figure into an image.
+Axes, ordinary lines, errorbars, text, ticks, titles, legends and annotations
+remain vector.
 
-A plotting call can opt out:
-
-.. code-block:: python
-
-   ax.plot(x, y, rasterized=False)
-
-or rasterization can be disabled globally while keeping the rest of the style:
+Rasterization can be disabled globally:
 
 .. code-block:: python
 
-   cc.set_style("heri", rasterize=False)
-
-LaTeX
------
-
-use_tex="auto" is the default. External LaTeX is enabled only if the required
-LaTeX stack is available; otherwise the preset falls back to STIX /
-Latin-Modern-like Matplotlib typography.
-
-.. code-block:: python
-
-   cc.set_style("heri", use_tex=True)   # force LaTeX
-   cc.set_style("heri", use_tex=False)  # never use external LaTeX
+   cc.set_style("heri", font="Arial", rasterize=False)
 
 Temporary style
 ---------------
 
 .. code-block:: python
 
-   with cc.style_context("heri"):
+   with cc.style_context("heri", font="Arial"):
        fig, ax = plt.subplots()
        ax.scatter(x, y)
-
-After the block, the previous Matplotlib rcParams and rasterization state are
-restored.
 
 Saving
 ------
 
-save_figure appends .pdf when no suffix is supplied and defaults to a
-transparent, tightly cropped publication figure.
+save_figure appends .pdf when no suffix is supplied and uses the WTI publication
+defaults: tight crop, 0.035 inch padding, white background and 600 dpi raster
+layers.
 
 .. code-block:: python
 
    cc.save_figure(fig, "figures/result")
-   cc.save_figure(fig, "figures/result.pdf", dpi=600)
+   cc.save_figure(fig, "figures/result.pdf", dpi=900)
+
+Panel labels and colormap
+-------------------------
+
+.. code-block:: python
+
+   cc.panel_label(ax, "A")
+   image = ax.imshow(values, cmap=cc.HERI_CMAP)
+
+The categorical cycle is available as cc.HERI_PALETTE.
