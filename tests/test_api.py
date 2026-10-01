@@ -30,3 +30,28 @@ def test_numpy_hue_array_is_supported():
     p = cc.contrast_palette(np.array([30.0, 150.0, 270.0]), ratio=1.25)
     assert len(p) == 3
     np.testing.assert_allclose(p.adjacent_contrast, 1.25, atol=2e-8)
+
+
+def test_plot_scheme_combines_color_marker_and_linestyle():
+    scheme = cc.plot_scheme(
+        [55, 20, 145, 210, 290],
+        ratio=1.4,
+        markers=["o", "s"],
+        linestyles=["-", "--", ":"],
+    )
+    assert len(scheme) == 5
+    assert scheme[0]["marker"] == "o"
+    assert scheme[1]["marker"] == "s"
+    assert scheme[2]["marker"] == "o"
+    assert scheme[0]["linestyle"] == "-"
+    assert scheme[3]["linestyle"] == "-"
+    assert all("color" in item for item in scheme)
+
+
+def test_plot_scheme_rejects_empty_identifier_sequences():
+    import pytest
+
+    with pytest.raises(ValueError):
+        cc.plot_scheme([55, 145], markers=[])
+    with pytest.raises(ValueError):
+        cc.plot_scheme([55, 145], linestyles=[])
