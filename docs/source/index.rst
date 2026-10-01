@@ -19,6 +19,7 @@ User guide
    :caption: User guide
 
    overview
+   studio
    quickstart
    palettes
    alpha
