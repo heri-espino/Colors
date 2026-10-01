@@ -19,6 +19,14 @@ contrast_palette
     Builds the same palette but returns a Palette object with metadata,
     luminances, contrast diagnostics, alpha rendering, and colormap export.
 
+plot_scheme
+    Combines contrast-controlled colors with marker and line-style identifiers
+    for redundant scientific-plot encoding and grayscale robustness.
+
+DEFAULT_MARKERS and DEFAULT_LINESTYLES
+    Default identifier cycles used by plot_scheme when no custom sequences are
+    supplied.
+
 contrast_grid
     Builds an i by j matrix of candidate colors. Rows have fixed relative
     luminance and columns have fixed hue.
