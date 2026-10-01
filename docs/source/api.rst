@@ -13,6 +13,14 @@ High-level palette API
 
 .. autofunction:: contrastcolors.show_palette
 
+.. autofunction:: contrastcolors.plot_scheme
+
+DEFAULT_MARKERS
+    Default marker sequence used by plot_scheme.
+
+DEFAULT_LINESTYLES
+    Default line-style sequence used by plot_scheme.
+
 Core palette objects
 --------------------
 
