@@ -196,10 +196,11 @@ impossible at that alpha/background combination. The result reports
 - perceptual OKLab optimization when exact alpha compensation is outside sRGB;
 - minimum-alpha feasibility calculation;
 - Matplotlib-ready RGBA output and `ListedColormap` export;
-- `color_palette`, `contrast_palette`, `show_palette`, and
+- `color_palette`, `contrast_palette`, `plot_scheme`, `show_palette`, and
   `ContrastGrid` APIs;
 - `set_style("heri")`, `style_context`, and hybrid-PDF `save_figure` helpers;
 - interactive Sphinx palette picker;
+- interactive Palette & Plot Studio for hue order, markers, linestyles, grayscale/print preview, alpha, style, and code export;
 - tests and Sphinx builds in GitHub Actions.
 
 ## Planned
