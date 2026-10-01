@@ -185,8 +185,8 @@ def plot_scheme(
         preserve_apparent=preserve_apparent,
         alpha_strategy=alpha_strategy,
     )
-    marker_values = tuple(markers or DEFAULT_MARKERS)
-    line_values = tuple(linestyles or DEFAULT_LINESTYLES)
+    marker_values = tuple(DEFAULT_MARKERS if markers is None else markers)
+    line_values = tuple(DEFAULT_LINESTYLES if linestyles is None else linestyles)
     if not marker_values:
         raise ValueError("markers must contain at least one marker.")
     if not line_values:
