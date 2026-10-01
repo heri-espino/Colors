@@ -1,9 +1,12 @@
-Interactive picker
-==================
+Classic palette picker
+======================
 
-This browser tool mirrors the core ``contrastcolors`` model. Choose the
-luminance ladder, hue candidates, alpha and background; then click one cell per
-row. The generated Python snippet reproduces the selection in Matplotlib.
+This is the original compact hue/luminance picker. It remains useful when you
+only want to explore the palette mathematics.
+
+For the full workflow including hue order, markers, line styles, grayscale and
+print-stress preview, alpha, Heri style settings, and Python export, use
+:doc:`studio`.
 
 .. raw:: html
 
