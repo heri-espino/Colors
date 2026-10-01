@@ -1,7 +1,14 @@
 """Contrast-controlled color palettes for scientific Python."""
 
 from .alpha import AlphaCompensation, compensate_alpha, composite, minimum_alpha
-from .api import color_palette, contrast_palette, show_palette
+from .api import (
+    DEFAULT_LINESTYLES,
+    DEFAULT_MARKERS,
+    color_palette,
+    contrast_palette,
+    plot_scheme,
+    show_palette,
+)
 from .color_spaces import contrast_ratio, delta_e_ok, relative_luminance, srgb_to_oklab, to_hex, to_rgb
 from .contrast import luminance_contrast, luminance_ladder
 from .style import (
@@ -31,6 +38,8 @@ __all__ = [
     "HERI_NEUTRAL",
     "HERI_PALETTE",
     "ColorCell",
+    "DEFAULT_LINESTYLES",
+    "DEFAULT_MARKERS",
     "ContrastGrid",
     "Palette",
     "RenderedColor",
@@ -50,6 +59,7 @@ __all__ = [
     "show_palette",
     "available_styles",
     "panel_label",
+    "plot_scheme",
     "save_figure",
     "set_style",
     "style_context",
