@@ -181,6 +181,7 @@ Explore next
 
    overview
    gallery
+   notebooks/index
    studio
    customization
    quickstart

@@ -196,3 +196,50 @@ Need a particular recipe?
 The :doc:`customization` page shows how to change the number and order of
 colors, markers, line styles, fonts, alpha and style settings. The
 :doc:`studio` lets you do the same interactively and exports the Python.
+
+
+Notebook cookbook
+-----------------
+
+The gallery above is intentionally compact. The notebook cookbook contains
+many more plot families and keeps explanation, code, and rendered output
+together.
+
+.. grid:: 1 2 2 3
+   :gutter: 2
+
+   .. grid-item-card:: Lines & time series
+      :link: notebooks/01_lines_time_series
+      :link-type: doc
+
+      Multi-line schemes, rolling trends, steps, and time-series examples.
+
+   .. grid-item-card:: Histograms & distributions
+      :link: notebooks/02_histograms_distributions
+      :link-type: doc
+
+      Histograms, smoothed densities, ECDFs, and cumulative histograms.
+
+   .. grid-item-card:: Box / violin / ridge
+      :link: notebooks/03_box_violin_ridge
+      :link-type: doc
+
+      Grouped distributions, ridge plots, and jittered observations.
+
+   .. grid-item-card:: Scatter & relationships
+      :link: notebooks/04_scatter_relationships
+      :link-type: doc
+
+      Grouped scatter, fitted trends, hexbin density, and bubble plots.
+
+   .. grid-item-card:: Heatmaps & matrices
+      :link: notebooks/05_heatmaps_matrices
+      :link-type: doc
+
+      Heatmaps, correlation matrices, contours, and pcolormesh.
+
+   .. grid-item-card:: All notebooks
+      :link: notebooks/index
+      :link-type: doc
+
+      Open the complete executable example collection.

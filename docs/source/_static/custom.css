@@ -169,3 +169,19 @@ div.highlight-default {
     font-size: 0.65rem;
   }
 }
+
+
+.bd-content .cell_output img {
+  border: 1px solid var(--cc-line);
+  border-radius: 0.65rem;
+  background: white;
+}
+
+.bd-content .cell_input {
+  border: 1px solid var(--cc-line);
+  border-radius: 0.55rem;
+}
+
+.bd-content .cell_output {
+  margin-bottom: 2rem;
+}
