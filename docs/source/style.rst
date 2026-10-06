@@ -1,121 +1,181 @@
-Heri publication style
-======================
+Styles
+======
 
-The Heri preset follows the publication figures in
-Bayesian-Uncertainty-in-WTI-APOs rather than the earlier transparent
-Proximity Graphs style.
+``contrastcolors`` currently exposes two style states through
+``set_style``: the publication preset ``heri`` and Matplotlib
+``default``.
 
-Basic usage
------------
+Heri
+----
 
-.. code-block:: python
+``heri`` follows the visual system used in the WTI APO publication figures.
 
+.. raw:: html
+
+   <div class="cc-style-summary">
+     <div><strong>Background</strong>white + light gray grid</div>
+     <div><strong>Typography</strong>compact 8--9 pt paper scale</div>
+     <div><strong>Lines</strong>1.6 pt, top/right spines hidden</div>
+     <div><strong>Export</strong>600 dpi hybrid PDF defaults</div>
+   </div>
+
+.. plot::
+   :include-source:
+
+   import numpy as np
    import matplotlib.pyplot as plt
    import contrastcolors as cc
 
-   cc.set_style("heri", font="Arial")
+   cc.set_style("heri", font="DejaVu Sans")
 
-   fig, ax = plt.subplots()
-   ax.plot(x, y)
-   ax.set_xlabel(r"$x$")
-   ax.set_ylabel(r"$f(x)$")
+   x = np.linspace(0, 9, 260)
+   fig, ax = plt.subplots(figsize=(8.0, 4.1))
 
-   cc.save_figure(fig, "figure.pdf")
+   for i, color in enumerate(cc.HERI_PALETTE[:4]):
+       ax.plot(
+           x,
+           np.sin(x * 0.72 + i * 0.55) + i * 0.34,
+           color=color,
+           label=f"Series {i + 1}",
+       )
 
-The preset uses:
+   ax.set(
+       title="Heri publication style",
+       xlabel="Time",
+       ylabel="Response",
+   )
+   ax.legend(ncol=2)
+   fig.tight_layout()
 
-- compact 8--9 pt publication typography;
-- white axes and figure background;
-- a light gray grid below the data;
-- hidden top and right spines;
-- 1.6 pt default lines and 4.5 pt markers;
-- 600 dpi saved raster layers;
-- embedded PDF/PS font type 42;
-- the Paul Tol high-contrast categorical palette;
-- the WTI iridescent continuous map as HERI_CMAP.
-
-Selecting the font
-------------------
-
-The visual style and font family are independent.
+Use it with:
 
 .. code-block:: python
 
    cc.set_style("heri", font="Arial")
+
+Choose another font without changing the rest of the style:
+
+.. code-block:: python
+
    cc.set_style("heri", font="Helvetica")
    cc.set_style("heri", font="STIX")
    cc.set_style("heri", font="DejaVu Sans")
-
-Any non-empty Matplotlib font-family name is accepted. Matplotlib handles its
-normal fallback behavior when that font is not installed.
-
-The default is:
-
-.. code-block:: python
-
    cc.set_style("heri", font="utopia")
 
-With use_tex="auto", the Utopia font uses the Wiley-like external LaTeX stack
-only when the required packages are available. Arbitrary fonts such as Arial
-stay in native Matplotlib text mode so the requested family can actually be
-respected.
+The categorical cycle is ``cc.HERI_PALETTE`` and the continuous heatmap
+colormap is ``cc.HERI_CMAP``.
+
+Default
+-------
+
+``default`` restores Matplotlib rcParams and disables the automatic dense
+rasterization switch installed by the Heri preset.
+
+.. plot::
+   :include-source:
+
+   import numpy as np
+   import matplotlib.pyplot as plt
+   import contrastcolors as cc
+
+   cc.set_style("default")
+
+   x = np.linspace(0, 9, 260)
+   fig, ax = plt.subplots(figsize=(8.0, 4.1))
+
+   for i in range(4):
+       ax.plot(
+           x,
+           np.sin(x * 0.72 + i * 0.55) + i * 0.34,
+           label=f"Series {i + 1}",
+       )
+
+   ax.set(
+       title="Matplotlib default",
+       xlabel="Time",
+       ylabel="Response",
+   )
+   ax.legend(ncol=2)
+   fig.tight_layout()
+
+Restore it with:
 
 .. code-block:: python
 
-   cc.set_style("heri", font="utopia", use_tex=True)
-   cc.set_style("heri", font="Arial", use_tex=False)
+   cc.set_style("default")
+
+Heri with a custom palette
+--------------------------
+
+The plotting style does not force you to use the built-in Heri categorical
+colors. Generate a palette and pass its colors to the artists.
+
+.. plot::
+   :include-source:
+
+   import numpy as np
+   import matplotlib.pyplot as plt
+   import contrastcolors as cc
+
+   cc.set_style("heri", font="DejaVu Sans")
+
+   colors = cc.color_palette(
+       hues=[55, 20, 145, 210, 290],
+       ratio=1.20,
+       start_luminance=0.72,
+   )
+
+   x = np.linspace(0, 8, 250)
+   fig, ax = plt.subplots(figsize=(8.0, 4.1))
+
+   for i, color in enumerate(colors):
+       ax.plot(
+           x,
+           np.cos(0.72 * x + i * 0.45) + 0.28 * i,
+           color=color,
+           label=f"Series {i + 1}",
+       )
+
+   ax.set(
+       title="Heri layout + generated contrast palette",
+       xlabel="x",
+       ylabel="Value",
+   )
+   ax.legend(ncol=3)
+   fig.tight_layout()
+
+Publication details
+-------------------
 
 Hybrid PDF rasterization
-------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-The WTI-style preset keeps normal plot lines vector. Only data-heavy artists
-are rasterized automatically:
-
-- scatter
-- hexbin
-- contourf
-- pcolormesh
-- imshow
-- fill_between
-- 3D plot_surface
-- 3D plot_trisurf
-
-Axes, ordinary lines, errorbars, text, ticks, titles, legends and annotations
-remain vector.
-
-Rasterization can be disabled globally:
+With ``rasterize=True``, common dense artists such as scatter, hexbin,
+``imshow``, ``pcolormesh``, filled contours and 3D surfaces are rasterized.
+Ordinary plot lines, error bars, axes, text, ticks and legends stay vector.
 
 .. code-block:: python
 
-   cc.set_style("heri", font="Arial", rasterize=False)
+   cc.set_style("heri", font="Arial", rasterize=True)
+   cc.save_figure(fig, "result.pdf", dpi=600)
 
-Temporary style
----------------
+Panel labels
+~~~~~~~~~~~~
+
+.. code-block:: python
+
+   cc.panel_label(ax, "A")
+
+Temporary styling
+~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
    with cc.style_context("heri", font="Arial"):
        fig, ax = plt.subplots()
-       ax.scatter(x, y)
+       ax.plot(x, y)
 
-Saving
-------
+The previous Matplotlib state is restored after the block.
 
-save_figure appends .pdf when no suffix is supplied and uses the WTI publication
-defaults: tight crop, 0.035 inch padding, white background and 600 dpi raster
-layers.
-
-.. code-block:: python
-
-   cc.save_figure(fig, "figures/result")
-   cc.save_figure(fig, "figures/result.pdf", dpi=900)
-
-Panel labels and colormap
--------------------------
-
-.. code-block:: python
-
-   cc.panel_label(ax, "A")
-   image = ax.imshow(values, cmap=cc.HERI_CMAP)
-
-The categorical cycle is available as cc.HERI_PALETTE.
+See :doc:`customization` for hue order, additional colors, markers,
+linestyles, alpha and export options.
