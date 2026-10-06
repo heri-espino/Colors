@@ -14,6 +14,7 @@ extensions = [
     "sphinx.ext.mathjax",
     "matplotlib.sphinxext.plot_directive",
     "sphinx_design",
+    "myst_nb",
 ]
 
 autosummary_generate = True
@@ -56,3 +57,8 @@ plot_html_show_source_link = False
 plot_html_show_formats = False
 plot_formats = [("png", 180)]
 plot_apply_rcparams = True
+
+
+nb_execution_mode = "auto"
+nb_execution_timeout = 90
+nb_execution_raise_on_error = True

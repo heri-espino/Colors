@@ -26,6 +26,7 @@ docs = [
   "sphinx>=7",
   "pydata-sphinx-theme>=0.22,<0.24",
   "sphinx-design>=0.6",
+  "myst-nb>=1.1",
 ]
 
 [tool.setuptools.packages.find]
