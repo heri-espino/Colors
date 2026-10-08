@@ -296,6 +296,23 @@ font weight. Legend and tick labels use a smaller
 and can be changed, for example through
 \texttt{latex\_style(axis\_label\_scale=...)}.
 
+These settings are customizable. For example:
+\begin{verbatim}
+with cc.latex_style(
+    "paper/main.tex",
+    width="text",
+    font="auto",
+    axis_label_scale=1.0,
+    axis_label_weight="normal",
+) as pub:
+    ...
+\end{verbatim}
+The automatic font-family option is a best-effort
+Matplotlib preview setting. One may choose a
+different Matplotlib family for standalone output;
+to change the actual PGF glyphs, configure the
+font in the LaTeX document itself.
+
 The \emph{nominal point size} is not the same as the
 \emph{font's exact glyph outlines}. A PDF written
 independently by Matplotlib can be 10\,pt yet not
