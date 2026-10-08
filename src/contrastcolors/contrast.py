@@ -58,3 +58,31 @@ def luminance_contrast(y_a: float, y_b: float) -> float:
         raise ValueError("luminances must lie in [0, 1].")
     hi, lo = max(y_a, y_b), min(y_a, y_b)
     return (hi + 0.05) / (lo + 0.05)
+
+def print_safe_luminances(
+    levels: int,
+    *,
+    lightest: float = 0.50,
+    darkest: float = 0.035,
+) -> np.ndarray:
+    """Spread a small number of series across the usable gray scale.
+
+    Unlike a fixed ratio, the WCAG adjacent contrast is determined from
+    both luminance endpoints and the number of series. For three colors,
+    a larger contrast ratio is therefore used than for five or more.
+
+    These are relative sRGB luminances, not gamma-encoded RGB gray values.
+    Distinct luminances help but do not guarantee print/CVD accessibility.
+    Combine colors with marker shapes and line patterns.
+    """
+    if isinstance(levels, bool) or not isinstance(levels, (int, np.integer)) or levels < 1:
+        raise ValueError("levels must be a positive integer.")
+    if not (
+        math.isfinite(lightest) and math.isfinite(darkest)
+        and 0 <= darkest < lightest <= 1
+    ):
+        raise ValueError("Require 0 <= darkest < lightest <= 1.")
+    if levels == 1:
+        return np.array([(lightest + darkest) / 2], dtype=float)
+    ratio = ((lightest + .05) / (darkest + .05)) ** (1 / (levels - 1))
+    return luminance_ladder(levels, ratio, start_luminance=lightest)

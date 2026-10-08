@@ -55,3 +55,42 @@ def test_plot_scheme_rejects_empty_identifier_sequences():
         cc.plot_scheme([55, 145], markers=[])
     with pytest.raises(ValueError):
         cc.plot_scheme([55, 145], linestyles=[])
+
+
+def test_print_safe_defaults_separate_three_series_in_grayscale():
+    from contrastcolors.color_spaces import relative_luminance
+
+    values = cc.print_safe_luminances(3)
+    assert values[0] > values[1] > values[2]
+    np.testing.assert_allclose(values[[0, 2]], [0.5, 0.035], atol=1e-10)
+    assert values[0] / values[1] > 2.0
+    scheme = cc.plot_scheme([25, 150, 275])
+    ys = [relative_luminance(s["color"][:3]) for s in scheme]
+    np.testing.assert_allclose(ys, values, atol=0.0001)
+    assert len({s["marker"] for s in scheme}) == 3
+    assert len({str(s["linestyle"]) for s in scheme}) == 3
+
+
+def test_print_safe_scatter_defaults_and_manual_overrides():
+    from contrastcolors.color_spaces import relative_luminance
+
+    styles = cc.scatter_scheme([25, 150, 275])
+    values = [relative_luminance(s["color"][:3]) for s in styles]
+    np.testing.assert_allclose(values, cc.print_safe_luminances(3), atol=0.0001)
+    custom = cc.plot_scheme([25, 150, 275], ratio=1.2, start_luminance=0.75)
+    y = [relative_luminance(s["color"][:3]) for s in custom]
+    np.testing.assert_allclose(y, [.75, (.75+.05)/1.2-.05, (.75+.05)/1.2**2-.05], atol=1e-6)
+
+
+def test_print_safe_handles_different_counts_and_invalid_inputs():
+    import pytest
+    for count in [1, 2, 3, 5, 10]:
+        values = cc.print_safe_luminances(count)
+        assert len(values) == count
+        assert np.all((values >= 0) & (values <= 1))
+        if count > 1:
+            assert np.all(np.diff(values) < 0)
+    with pytest.raises(ValueError):
+        cc.print_safe_luminances(0)
+    with pytest.raises(ValueError):
+        cc.print_safe_luminances(3, lightest=.1, darkest=.2)

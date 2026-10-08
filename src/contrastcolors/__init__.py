@@ -39,6 +39,7 @@ from .publication import (
     fit_figure_to_latex,
     verify_latex_placement,
 )
+from .contrast import print_safe_luminances
 from .style import (
     HERI_CMAP,
     HERI_IRIDESCENT_HEX,
@@ -105,6 +106,7 @@ __all__ = [
     "available_styles",
     "panel_label",
     "plot_scheme",
+    "print_safe_luminances",
     "scatter_scheme",
     "DEFAULT_ACCESSIBILITY_MODES",
     "figure_to_rgba",
