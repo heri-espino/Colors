@@ -954,6 +954,19 @@ $('downloadPy').addEventListener('click',()=>{
 });
 savedOptions();
 renderAll();
+if(typeof ResizeObserver!=='undefined'){
+  const notifyHeight=()=>{
+    if(window.parent!==window){
+      window.parent.postMessage(
+        {type:'contrastcolors-studio-height',height:document.documentElement.scrollHeight},
+        window.location.origin
+      );
+    }
+  };
+  new ResizeObserver(notifyHeight).observe(document.body);
+  window.addEventListener('load',notifyHeight);
+  notifyHeight();
+}
 })();
 </script>
 </body>
