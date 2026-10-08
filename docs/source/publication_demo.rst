@@ -1,5 +1,5 @@
 Real LaTeX publication demonstration
-===================================
+======================================
 
 This is a reproducible, two-column LaTeX paper for testing publication-ready
 figures on macOS. It uses the manuscript's real column dimensions and its
