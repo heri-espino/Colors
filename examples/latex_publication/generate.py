@@ -185,6 +185,25 @@ def main() -> int:
         pub.savefig(fig, out / "dense.pdf", audit=False, dpi=300)
         plt.close(fig)
 
+    # A real ContrastGrid example: rows preserve the same WCAG relative
+    # luminance regardless of which OKLCH hue is selected in each column.
+    palette_grid = cc.contrast_grid(
+        levels=3, hues=[25, 115, 205, 295],
+        ratio=1.55, start_luminance=0.65, chroma=0.12,
+    )
+    with cc.latex_style(tex, width="text", engine=args.engine, rasterize=False) as pub:
+        fig, ax = pub.subplots(height_ratio=0.42)
+        palette_grid.plot(ax=ax, annotate=True)
+        ax.set_aspect("auto")
+        match_manuscript_axes(ax, layout.fontsize_pt)
+        audit(pub, fig, "palette_grid", diagnostics)
+        for extension in (".pdf", ".pgf", ".png"):
+            pub.savefig(
+                fig, out / ("palette_grid" + extension),
+                audit=False, dpi=250,
+            )
+        plt.close(fig)
+
     cc.verify_latex_placement(
         tex, out / "lines.pdf", width="column", engine=args.engine,
         proof_pdf=out / "lines_proof.pdf",
@@ -195,6 +214,7 @@ def main() -> int:
         "accessibility.pdf", "accessibility.pgf", "accessibility.png",
         "groups_accessibility.pdf", "groups_accessibility.pgf",
         "groups_accessibility.png",
+        "palette_grid.pdf", "palette_grid.pgf", "palette_grid.png",
     )
     for name in names:
         file = out / name
@@ -228,6 +248,12 @@ def main() -> int:
             "outline": str(font.outline_path) if font.outline_path else None,
             "metrics": str(font.metrics_path) if font.metrics_path else None,
             "status": font.source,
+        },
+        "palette_grid": {
+            "description": "WCAG luminance rows crossed with OKLCH hue columns",
+            "levels": 3, "hues_degrees": [25, 115, 205, 295],
+            "requested_adjacent_ratio": 1.55,
+            "luminances": palette_grid.luminances.tolist(),
         },
         "categorical_palette": [item["color"] for item in COLORBLIND3],
         "categorical_markers": [item["marker"] for item in COLORBLIND3],
