@@ -227,7 +227,7 @@ class ContrastGrid:
                     # during backend_pgf's text measurement. Plain "\\#"
                     # instead displays a literal backslash in non-TeX PDF.
                     # MathText's escaped hash works in both exporters.
-                    tex_safe_hex = r"$\\#$" + cell.hex[1:]
+                    tex_safe_hex = r"$\#$" + cell.hex[1:]
                     ax.text(
                         j + 0.5, rows - 0.5 - i, tex_safe_hex,
                         ha="center", va="center", color=text_color, fontsize=8,
