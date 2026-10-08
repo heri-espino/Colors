@@ -9,6 +9,8 @@ from pathlib import Path
 import nbformat
 from nbclient import NotebookClient
 
+from enrich_notebooks import enrich_notebook
+
 
 def stable_cell_id(index: int, source: str) -> str:
     digest = hashlib.sha1(source.encode("utf-8")).hexdigest()[:10]
@@ -17,6 +19,7 @@ def stable_cell_id(index: int, source: str) -> str:
 
 def execute_notebook(path: Path, *, cwd: Path, timeout: int) -> None:
     notebook = nbformat.read(path, as_version=4)
+    enrich_notebook(notebook)
 
     for index, cell in enumerate(notebook.cells):
         if not cell.get("id"):

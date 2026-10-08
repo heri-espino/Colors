@@ -101,6 +101,8 @@ try {
     Invoke-InEnvironment -Arguments @("-m", "pytest", "-q")
 
     if (-not $SkipNotebooks) {
+        Write-Host "=== ENSURE ACCESSIBILITY PANELS ===" -ForegroundColor Green
+        Invoke-InEnvironment -Arguments @("tools/enrich_notebooks.py")
         Write-Host ""
         Write-Host "=== EXECUTE AND SAVE ALL NOTEBOOKS ===" -ForegroundColor Green
         Invoke-InEnvironment -Arguments @(

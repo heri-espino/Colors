@@ -16,6 +16,16 @@ def verify_notebooks(directory: Path) -> int:
         notebook = nbformat.read(path, as_version=4)
         nbformat.validate(notebook)
         code_cells = [cell for cell in notebook.cells if cell.cell_type == "code"]
+        figure_indices = [
+            i for i, cell in enumerate(notebook.cells)
+            if cell.cell_type == "code" and
+            ("plt.subplots(" in cell.source or "plt.figure(" in cell.source
+             or "grid.plot(" in cell.source)
+        ]
+        for i in figure_indices:
+            if i + 1 >= len(notebook.cells) or "cc.show_accessibility_panel(" not in notebook.cells[i + 1].source:
+                errors.append(f"{path.name}: figure at cell {i+1} missing panel")
+
         if not code_cells:
             errors.append(f"{path.name}: no code cells")
             continue
