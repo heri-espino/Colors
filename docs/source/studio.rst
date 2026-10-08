@@ -38,19 +38,34 @@ Python interpreter, or account and works with the Sphinx site on GitHub Pages.
 What you can customize
 ----------------------
 
-- **Palette**: 2 to 10 hues, their order, OKLCH chroma, initial WCAG
-  luminance, and constant adjacent contrast ratio.
-- **Series identifiers**: marker and line style for each series.
+- **Palette**: 2 to 10 hues with equidistant, golden-angle,
+  balanced-family, analogous, single-hue or manual hue methods; hue
+  sliders and color pickers; OKLCH chroma and a WCAG luminance ladder.
+- **Contrast presets**: balanced, strong, subtle and manual adjacent
+  contrast ratios. Strong ratios are automatically capped if all
+  selected luminance levels cannot fit within the available range.
+- **Starting hue**: circular spectrum with markers, a hue slider, and a
+  native color picker (which extracts the hue only; the exact picked
+  RGB is not used because luminance and chroma are controlled).
+- **Series identifiers**: marker and line style for each series, with
+  drawn stroke patterns in the line-style picker and a visual atlas.
 - **Plot gallery**: lines, time series, histograms, box plots, violins,
   ridge plots, scatter, categorical heatmaps, and grouped bar charts.
-- **Print preview**: color, ideal luminance-preserving grayscale, and
-  a deliberately degraded print-stress simulation.
+- **Print and color vision**: original color, ideal grayscale, degraded
+  print-stress, deuteranopia, protanopia and tritanopia, with side-by-side
+  palette swatches.
+- **Animation**: subtle, nonessential plot and control transitions
+  (automatically disabled for reduced-motion preferences).
 - **Alpha**: opacity, background, and apparent-color compensation.
 - **Publication style**: Heri or Matplotlib default, custom font,
   dense-artist rasterization, and output DPI.
 
 The interactive preview is SVG generated in the browser. It is a fast visual
-approximation, not the Matplotlib renderer. The **Copy code** action generates
+approximation, not the Matplotlib renderer. Color-vision previews operate on
+the plotted swatch colors using approximate Machado-style linear-RGB matrices,
+not on every pixel of a rendered Matplotlib figure. For publication checks
+use ``contrastcolors.show_accessibility_panel(fig)``, which renders the
+complete figure with Colorspacious and includes annotations/labels. The **Copy code** action generates
 a complete, reproducible Python example for the selected plot family.
 
 Saving and importing designs
@@ -114,3 +129,17 @@ The standalone Studio is available within the Sphinx build at
 **Settings > Pages > Build and deployment > Source: GitHub Actions**, followed
 by the repository's manual ``pages`` deployment workflow. A default Jekyll
 workflow does not build the Sphinx documentation.
+
+Palette selection guidance
+--------------------------
+
+For **unrelated categories**, start with equidistant hue angles, then check
+actual contrast and grayscale distinguishability. Equal angles in OKLCH are
+not equally distant perceptually or under color-vision deficiencies. A
+**golden-angle** scheme can be useful when the number of categories changes.
+Use **analogous** or **single-hue** methods for related or ordered data,
+not large sets of unrelated categories. Color is not sufficient alone:
+use the contrasting markers and line styles for line/scatter figures.
+
+These presets are design starting points rather than certified accessible
+color schemes. No hue preset guarantees distinguishability for every viewer.

@@ -185,3 +185,24 @@ div.highlight-default {
 .bd-content .cell_output {
   margin-bottom: 2rem;
 }
+
+/* Subtle editorial motion for the Sphinx website; no animations are required
+   for navigation or meaning, and reduced-motion preferences are respected. */
+@keyframes cc-rise {from {opacity:.4;transform:translateY(9px)}to {opacity:1;transform:translateY(0)}}
+@keyframes cc-palette-rise {from {opacity:.55;transform:scaleY(.92)}to{opacity:1;transform:scaleY(1)}}
+.cc-hero h1,.cc-hero p,.cc-hero .cc-actions {animation:cc-rise .6s ease-out both}
+.cc-hero p{animation-delay:.1s}
+.cc-hero .cc-actions{animation-delay:.17s}
+.cc-hero-palette{animation:cc-palette-rise .75s cubic-bezier(.2,.8,.2,1) both;transform-origin:bottom}
+.cc-hero-palette span{transition:filter .24s ease,flex .24s ease}
+.cc-hero-palette span:hover{filter:brightness(1.09)}
+.cc-button,.sd-card{transition:border-color .2s ease,background-color .2s ease,transform .2s ease}
+.cc-button:hover{transform:translateY(-2px)}
+.cc-button:focus-visible,.sd-card:focus-visible{outline:2px solid var(--cc-blue);outline-offset:3px}
+div.plot-directive img,.bd-content .cell_output img{transition:box-shadow .24s ease}
+div.plot-directive img:hover,.bd-content .cell_output img:hover{box-shadow:0 5px 18px rgba(30,40,60,.09)}
+@media(prefers-reduced-motion:reduce){
+  .cc-hero h1,.cc-hero p,.cc-hero .cc-actions,.cc-hero-palette{animation:none!important}
+  .cc-hero-palette span,.cc-button,.sd-card,
+  div.plot-directive img,.bd-content .cell_output img{transition:none!important}
+}

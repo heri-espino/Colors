@@ -44,3 +44,27 @@ def test_studio_has_real_export_and_design_controls():
     assert "applyDesign(raw)" in content
     assert "_static/studio.html" in doc
     assert "contrastcolors-studio-height" in doc
+
+
+def test_palette_studio_has_visual_hue_methods_and_cvd_modes():
+    html = STUDIO.read_text(encoding="utf-8")
+    el = Elements()
+    el.feed(html)
+    assert {
+        "hueStrategy", "baseHue", "baseHueColor", "contrastPreset",
+        "applyStrategy", "hueWheel", "lineAtlas", "markerAtlas",
+        "visionComparison",
+    } <= el.ids
+    for method in (
+        "equidistant", "golden", "qualitative", "analogous",
+        "monochrome", "custom"
+    ):
+        assert f'value="{method}"' in html
+    for mode in ("deuteranopia", "protanopia", "tritanopia"):
+        assert f'data-mode="{mode}"' in html
+    for logic in ("function methodHues(", "function toCvdRgb(",
+                  "function renderVisionComparison(",
+                  "function linePreview(", "function hueFromHex("):
+        assert logic in html
+    assert "prefers-reduced-motion:reduce" in html
+    assert "frame.style.height" in STUDIO_PAGE.read_text(encoding="utf-8")
