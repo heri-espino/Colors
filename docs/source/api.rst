@@ -21,6 +21,38 @@ DEFAULT_MARKERS
 DEFAULT_LINESTYLES
     Default line-style sequence used by plot_scheme.
 
+Named palette presets
+---------------------
+
+Presets register palettes for the current Python process. Put the registration
+in a project module, then import it in each script that needs those names.
+
+.. autofunction:: contrastcolors.register_palette
+
+.. autofunction:: contrastcolors.get_palette
+
+.. autofunction:: contrastcolors.available_palettes
+
+.. autoclass:: contrastcolors.PalettePreset
+   :members:
+
+Example:
+
+.. code-block:: python
+
+   import contrastcolors as cc
+
+   cc.register_palette(
+       "paper_palette",
+       hues=[55, 20, 145, 210, 290],
+       ratio=1.25,
+       start_luminance=0.72,
+       markers=["o", "s", "^", "D", "X"],
+       linestyles=["-", "--", ":", "-.", (0, (5, 2))],
+   )
+   colors = cc.color_palette("paper_palette")
+   scheme = cc.plot_scheme("paper_palette")
+
 Core palette objects
 --------------------
 

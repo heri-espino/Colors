@@ -7,14 +7,15 @@ from collections.abc import Sequence
 from .palette import Palette, color_for_luminance
 from .color_spaces import relative_luminance
 from .contrast import luminance_ladder
+from .presets import get_palette
 
 
 def contrast_palette(
-    hues: Sequence[float],
+    hues: Sequence[float] | str,
     *,
-    ratio: float = 1.5,
-    start_luminance: float = 0.95,
-    chroma: float = 0.13,
+    ratio: float | None = None,
+    start_luminance: float | None = None,
+    chroma: float | None = None,
 ) -> Palette:
     """Build one contrast-controlled color per supplied hue.
 
@@ -35,6 +36,15 @@ def contrast_palette(
         Requested OKLCH chroma. Chroma is reduced automatically when necessary
         to remain inside sRGB.
     """
+    if isinstance(hues, str):
+        preset = get_palette(hues)
+        hues = preset.hues
+        ratio = preset.ratio if ratio is None else ratio
+        start_luminance = preset.start_luminance if start_luminance is None else start_luminance
+        chroma = preset.chroma if chroma is None else chroma
+    ratio = 1.5 if ratio is None else ratio
+    start_luminance = 0.95 if start_luminance is None else start_luminance
+    chroma = 0.13 if chroma is None else chroma
     if len(hues) == 0:
         raise ValueError("At least one hue is required.")
     ys = luminance_ladder(
@@ -49,11 +59,11 @@ def contrast_palette(
 
 
 def color_palette(
-    hues: Sequence[float],
+    hues: Sequence[float] | str,
     *,
-    ratio: float = 1.5,
-    start_luminance: float = 0.95,
-    chroma: float = 0.13,
+    ratio: float | None = None,
+    start_luminance: float | None = None,
+    chroma: float | None = None,
     alpha: float = 1.0,
     background: str | Sequence[float] = "white",
     preserve_apparent: bool = True,
@@ -86,11 +96,11 @@ def color_palette(
 
 
 def show_palette(
-    hues: Sequence[float],
+    hues: Sequence[float] | str,
     *,
-    ratio: float = 1.5,
-    start_luminance: float = 0.95,
-    chroma: float = 0.13,
+    ratio: float | None = None,
+    start_luminance: float | None = None,
+    chroma: float | None = None,
     alpha: float = 1.0,
     background: str | Sequence[float] = "white",
     preserve_apparent: bool = True,
@@ -144,11 +154,11 @@ DEFAULT_LINESTYLES = ("-", "--", ":", "-.", (0, (5, 2)), (0, (3, 1, 1, 1)))
 
 
 def plot_scheme(
-    hues: Sequence[float],
+    hues: Sequence[float] | str,
     *,
-    ratio: float = 1.5,
-    start_luminance: float = 0.95,
-    chroma: float = 0.13,
+    ratio: float | None = None,
+    start_luminance: float | None = None,
+    chroma: float | None = None,
     alpha: float = 1.0,
     background: str | Sequence[float] = "white",
     preserve_apparent: bool = True,
@@ -175,6 +185,7 @@ def plot_scheme(
         dotted, dash-dot, and custom dash patterns and cycles if shorter than
         the hue list.
     """
+    preset = get_palette(hues) if isinstance(hues, str) else None
     colors = color_palette(
         hues,
         ratio=ratio,
@@ -185,6 +196,10 @@ def plot_scheme(
         preserve_apparent=preserve_apparent,
         alpha_strategy=alpha_strategy,
     )
+    if markers is None and preset is not None:
+        markers = preset.markers
+    if linestyles is None and preset is not None:
+        linestyles = preset.linestyles
     marker_values = tuple(DEFAULT_MARKERS if markers is None else markers)
     line_values = tuple(DEFAULT_LINESTYLES if linestyles is None else linestyles)
     if not marker_values:

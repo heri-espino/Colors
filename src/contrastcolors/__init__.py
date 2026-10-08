@@ -11,6 +11,7 @@ from .api import (
 )
 from .color_spaces import contrast_ratio, delta_e_ok, relative_luminance, srgb_to_oklab, to_hex, to_rgb
 from .contrast import luminance_contrast, luminance_ladder
+from .presets import PalettePreset, register_palette, get_palette, available_palettes
 from .style import (
     HERI_CMAP,
     HERI_IRIDESCENT_HEX,
@@ -42,6 +43,10 @@ __all__ = [
     "DEFAULT_MARKERS",
     "ContrastGrid",
     "Palette",
+    "PalettePreset",
+    "register_palette",
+    "get_palette",
+    "available_palettes",
     "RenderedColor",
     "color_for_luminance",
     "color_palette",

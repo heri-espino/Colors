@@ -19,6 +19,11 @@ contrast_palette
     Builds the same palette but returns a Palette object with metadata,
     luminances, contrast diagnostics, alpha rendering, and colormap export.
 
+register_palette / get_palette / available_palettes
+    Register named palette specifications, retrieve them, and list
+    registrations in the current Python session. Save the registration
+    in a Python module for reuse across scripts.
+
 plot_scheme
     Combines contrast-controlled colors with marker and line-style identifiers
     for redundant scientific-plot encoding and grayscale robustness.
