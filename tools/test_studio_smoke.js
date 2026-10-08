@@ -71,7 +71,7 @@ const context = {
 };
 const code = scripts[0][1].replace(
   /\}\)\(\);\s*$/,
-  "globalThis.smoke={methodHues,toCvdRgb,series:()=>series,renderChart};})();"
+  "globalThis.smoke={methodHues,toCvdRgb,series:()=>series,renderChart,setPlotType:(v)=>{plotType=v;renderChart();}};})();"
 );
 assert.notEqual(code, scripts[0][1], "Could not expose Studio smoke hooks");
 vm.runInNewContext(code, context, { timeout: 120000 });
@@ -99,9 +99,15 @@ element("nColors").value = "5";
 element("hueStrategy").trigger("change");
 assert.deepEqual(Array.from(context.smoke.series(), s=>s.hue), [25,97,169,241,313]);
 
+context.smoke.setPlotType("pie");
+assert.ok(element("chart").innerHTML.includes('stroke="#ffffff"'), "Pie needs white sector boundaries");
+assert.ok((element("chart").innerHTML.match(/<path/g)||[]).length >= 3,
+          "Pie chart should draw at least three colored sectors");
+context.smoke.setPlotType("lines");
+
 const before = [1,0,0];
 const after = context.smoke.toCvdRgb(before, "deuteranopia");
 assert.equal(after.length, 3);
 assert.ok(after.every(x=>Number.isFinite(x)&&x>=0&&x<=1));
 assert.ok(after.some((v,i)=>Math.abs(v-before[i])>.1),"CVD preview did not modify red");
-console.log("PASS: Studio starts; 5/10 colors, hue methods, SVG plots, dash atlas and CVD");
+console.log("PASS: Studio starts; 5/10 colors, hue methods, SVG plots, white-edge pie, dash atlas and CVD");

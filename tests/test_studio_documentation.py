@@ -36,7 +36,7 @@ def test_studio_has_real_export_and_design_controls():
     assert required_ids <= elements.ids
     assert {
         "lines", "time", "histogram", "box", "violin", "ridge",
-        "scatter", "heatmap", "bar",
+        "scatter", "heatmap", "bar", "pie",
     } <= elements.types
     assert "cc.register_palette(" in content
     assert "plotPython(plotType)" in content

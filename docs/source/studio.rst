@@ -50,7 +50,8 @@ What you can customize
 - **Series identifiers**: marker and line style for each series, with
   drawn stroke patterns in the line-style picker and a visual atlas.
 - **Plot gallery**: lines, time series, histograms, box plots, violins,
-  ridge plots, scatter, categorical heatmaps, and grouped bar charts.
+  ridge plots, scatter, categorical heatmaps, grouped bar charts and
+  pie charts with white separators.
 - **Print and color vision**: original color, ideal grayscale, degraded
   print-stress, deuteranopia, protanopia and tritanopia, with side-by-side
   palette swatches.
@@ -145,3 +146,12 @@ use the contrasting markers and line styles for line/scatter figures.
 
 These presets are design starting points rather than certified accessible
 color schemes. No hue preset guarantees distinguishability for every viewer.
+
+Pie chart defaults
+------------------
+
+The Pie plot option previews **white wedge boundaries**, not dark outlines,
+including in grayscale and the CVD simulations. Exported code calls
+``cc.pie_plot(...)``, which uses print-safe categorical luminances and
+white separating strokes by default. You can override the edge color and
+line thickness using ``wedgeprops`` when required by a journal.
