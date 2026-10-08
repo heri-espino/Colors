@@ -12,6 +12,9 @@ Outputs:
   luminance, with larger points, **white point outlines** and an external
   legend. The manuscript uses the PGF file for exact TeX font matching.
 - dense.pdf: rasterized point cloud with vector labels.
+- palette_grid.pdf / palette_grid.pgf: vector matrix crossing WCAG luminance
+  levels and OKLCH hue choices; illustrates the palette's mathematical rules.
+- palette_grid.png: a browser preview of that vector design.
 - accessibility.pdf / accessibility.pgf: **true-vector** full-page
   two-column by three-row accessibility views, with TeX-native fonts in PGF.
 - groups_accessibility.pdf / groups_accessibility.pgf: **true-vector**
@@ -87,3 +90,27 @@ The simulated grayscale and CVD colors are approximate. Highly translucent
 overlapping points can look different from a pixel-by-pixel simulation;
 the goal is a scalable, editorially readable diagnostic. Heatmaps and more
 complex artist types still use the original raster-preview helper.
+
+## Expanded technical presentation
+
+The LaTeX article now explains:
+
+1. The difference between hue, chroma, OKLab lightness and **sRGB relative
+   luminance**, and the mathematics of the constant adjacent contrast ladder.
+2. Why small categorical palettes receive wider gray-scale separation,
+   how the library handles unavailable sRGB chroma, and the different
+   hue-spacing methods offered by the
+   [Palette Studio](https://heri-espino.github.io/Colors/studio.html).
+3. Why the fixed orange/blue/green trio is a useful colour-vision-friendly
+   starting point but not a certificate of exact WCAG separation.
+4. Alpha compositing and the feasibility limits of preserving apparent color.
+5. Physical TeX font sizes, local font-file lookup without external font
+   downloads, and PGF as the path to the manuscript's actual font glyphs.
+6. Vector PDF versus intentionally rasterized and hybrid PDF exports,
+   explaining why a PDF may still contain pixels and how rasterizing only
+   dense data can reduce file size.
+7. Full-size vector dashboards, audits, limitations, reproducibility,
+   and the canonical [feature inventory](../../FEATURES.md).
+
+The generated PDF is a demonstration document, not a peer-reviewed
+publication or a universal accessibility certification.

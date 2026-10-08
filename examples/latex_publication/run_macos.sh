@@ -97,6 +97,8 @@ cp "$OUT/accessibility.png" "$ROOT/docs/source/_static/publication_accessibility
 cp "$OUT/accessibility.pdf" "$ROOT/docs/source/_static/publication_accessibility.pdf"
 cp "$OUT/groups_accessibility.png" "$ROOT/docs/source/_static/publication_scatter_accessibility.png"
 cp "$OUT/groups_accessibility.pdf" "$ROOT/docs/source/_static/publication_scatter_accessibility.pdf"
+cp "$OUT/palette_grid.pdf" "$ROOT/docs/source/_static/publication_palette_grid.pdf"
+cp "$OUT/palette_grid.png" "$ROOT/docs/source/_static/publication_palette_grid.png"
 
 echo
 echo "COMPLETE"
@@ -110,8 +112,10 @@ fi
 echo "  Web-ready PDF: docs/source/_static/publication_demo.pdf"
 echo "  Web-ready vector PDF: docs/source/_static/publication_accessibility.pdf"
 echo "                         docs/source/_static/publication_scatter_accessibility.pdf"
+echo "                         docs/source/_static/publication_palette_grid.pdf"
 echo "  Web-ready accessibility images: docs/source/_static/publication_accessibility.png"
 echo "                                docs/source/_static/publication_scatter_accessibility.png"
+echo "                                docs/source/_static/publication_palette_grid.png"
 echo "Nothing is committed or pushed unless explicitly requested."
 
 if ((COMMIT)); then
@@ -123,19 +127,25 @@ if ((COMMIT)); then
     docs/source/_static/publication_accessibility.png \
     docs/source/_static/publication_scatter_accessibility.png \
     docs/source/_static/publication_accessibility.pdf \
-    docs/source/_static/publication_scatter_accessibility.pdf
+    docs/source/_static/publication_scatter_accessibility.pdf \
+    docs/source/_static/publication_palette_grid.pdf \
+    docs/source/_static/publication_palette_grid.png
   if ! git diff --cached --quiet -- \
     docs/source/_static/publication_demo.pdf \
     docs/source/_static/publication_accessibility.png \
     docs/source/_static/publication_scatter_accessibility.png \
     docs/source/_static/publication_accessibility.pdf \
-    docs/source/_static/publication_scatter_accessibility.pdf; then
+    docs/source/_static/publication_scatter_accessibility.pdf \
+    docs/source/_static/publication_palette_grid.pdf \
+    docs/source/_static/publication_palette_grid.png; then
     git commit -m "Publish LaTeX font and accessibility demonstration" -- \
       docs/source/_static/publication_demo.pdf \
       docs/source/_static/publication_accessibility.png \
       docs/source/_static/publication_scatter_accessibility.png \
       docs/source/_static/publication_accessibility.pdf \
-      docs/source/_static/publication_scatter_accessibility.pdf
+      docs/source/_static/publication_scatter_accessibility.pdf \
+    docs/source/_static/publication_palette_grid.pdf \
+    docs/source/_static/publication_palette_grid.png
   else
     echo "The published results are unchanged."
   fi

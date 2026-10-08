@@ -1,9 +1,12 @@
 Real LaTeX publication demonstration
 ======================================
 
-This is a reproducible, two-column LaTeX paper for testing publication-ready
-figures on macOS. It uses the manuscript's real column dimensions and its
-Latin Modern font, supplied through MacTeX/TeX Live.
+This is a reproducible, two-column **technical presentation** of the
+library, with mathematical explanations of palette construction,
+hue/luminance control, accessibility, alpha compositing, exact LaTeX
+fonts, physical dimensions and vector/hybrid export. It uses the
+manuscript's measured column dimensions and Latin Modern font from
+MacTeX or TeX Live.
 
 The example source is at
 https://github.com/heri-espino/Colors/tree/main/examples/latex_publication
@@ -11,6 +14,12 @@ https://github.com/heri-espino/Colors/tree/main/examples/latex_publication
 Figures included
 ----------------
 
+- **Palette construction:** a vector ContrastGrid illustrating three
+  relative-luminance levels crossed with four OKLCH hue angles.
+- **Palette Studio:** the manuscript links to the
+  `interactive Studio <https://heri-espino.github.io/Colors/studio.html>`_
+  and describes its equidistant, golden-angle, analogous, single-hue,
+  balanced-family and manual strategies, plus alpha/contrast choices.
 - **PGF vs PDF:** the same line graph appears twice, comparing
   manuscript-owned font glyphs with direct Matplotlib vector export.
   The categorical scatter is also included as PGF for matching fonts.
@@ -63,6 +72,9 @@ Locally generated files are under:
    examples/latex_publication/generated/groups.pdf
    examples/latex_publication/generated/groups.pgf
    examples/latex_publication/generated/dense.pdf
+   examples/latex_publication/generated/palette_grid.pdf
+   examples/latex_publication/generated/palette_grid.pgf
+   examples/latex_publication/generated/palette_grid.png
    examples/latex_publication/generated/accessibility.pdf
    examples/latex_publication/generated/accessibility.pgf
    examples/latex_publication/generated/accessibility.png
@@ -80,15 +92,20 @@ After reviewing the local PDF, run:
 
    ./examples/latex_publication/run_macos.sh --push
 
-The --push flag explicitly commits and pushes the final publication PDF,
-the two vector dashboard PDFs, and the two website PNG thumbnails, not
-the intermediate source PGF files.
+The --push flag explicitly commits and pushes the final article PDF,
+the two vector dashboard PDFs, the palette-grid PDF and the corresponding
+website PNG thumbnails, not the intermediate source PGF files.
 
 .. raw:: html
 
    <p>
      <a href="_static/publication_demo.pdf" target="_blank" rel="noopener">
        Open the generated LaTeX demonstration PDF
+     </a>
+   </p>
+   <p>
+     <a href="_static/publication_palette_grid.pdf" target="_blank" rel="noopener">
+       Download the vector OKLCH hue / WCAG luminance grid (PDF)
      </a>
    </p>
    <p>
@@ -106,6 +123,15 @@ the intermediate source PGF files.
        Open the accessibility comparison image
      </a>
    </p>
+   <figure>
+     <img
+       src="_static/publication_palette_grid.png"
+       alt="Hue-luminance grid with equal-luminance rows and varying hue columns"
+       style="max-width:100%;height:auto"
+       loading="lazy">
+     <figcaption>Three controlled relative luminance rows and four OKLCH
+       hue columns: the rule for selecting colours is visible.</figcaption>
+   </figure>
    <figure>
      <img
        src="_static/publication_accessibility.png"
@@ -161,3 +187,20 @@ are normal weight and match the document body in nominal point size.
 Figure 3 also uses PGF when included in the article, guaranteeing that its
 text is typeset with the same LaTeX font setup as Figure 1.
 The pie-chart example is not part of this publication demo.
+
+Feature catalogue and sources
+-----------------------------
+
+Read the full :doc:`features` inventory for every public Python export and
+for the separate Studio, notebook, build and deployment capabilities.
+The `live Palette Studio <https://heri-espino.github.io/Colors/studio.html>`_
+lets readers create a palette without coding, compare luminance and hue
+arrangements, inspect simulated colour-vision deficiencies and export a
+Python preset.
+
+The technical manuscript explains that the WCAG ratio constrains adjacent
+**opaque** sRGB luminances, whereas the fixed three-colour Okabe--Ito
+demonstration is an accessibility-oriented starting point, not an exact
+WCAG ladder. It also distinguishes independent PDF vector export, native
+document-owned PGF text, and intentional selective rasterization of dense
+data. A PDF may contain both vector and pixel-based material.

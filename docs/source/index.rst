@@ -12,7 +12,7 @@
        <div class="cc-actions">
          <a class="cc-button primary" href="studio.html">Open Palette Studio</a>
          <a class="cc-button" href="gallery.html">See the plot gallery</a>
-         <a class="cc-button" href="notebooks/index.html">Browse 12 notebooks</a>
+         <a class="cc-button" href="notebooks/index.html">Browse 13 notebooks</a>
          <a class="cc-button" href="quickstart.html">Quickstart</a>
        </div>
      </div>
@@ -216,6 +216,14 @@ Explore next
 
       Why the luminance ladder gives a constant adjacent WCAG contrast ratio.
 
+
+   .. grid-item-card:: Full feature inventory
+      :link: features
+      :link-type: doc
+
+      Documented Python API exports, Studio methods, notebook demos,
+      TeX publication tools and workflow scripts.
+
    .. grid-item-card:: LaTeX publication figures
       :link: publication
       :link-type: doc
@@ -247,6 +255,7 @@ Explore next
    accessibility
    publication
    publication_demo
+   features
    customization
    quickstart
    palettes

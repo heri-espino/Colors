@@ -15,6 +15,9 @@ def test_manuscript_has_all_demo_graphics():
     assert r"\includegraphics{generated/lines.pdf}" in tex
     assert r"\includegraphics{generated/dense.pdf}" in tex
     assert r"\input{generated/groups.pgf}" in tex
+    assert r"\input{generated/palette_grid.pgf}" in tex
+    assert "https://heri-espino.github.io/Colors/studio.html" in tex
+    assert "WCAG" in tex and "OKLCH" in tex
     assert r"\input{generated/groups_accessibility.pgf}" in tex
     assert r"\input{generated/accessibility.pgf}" in tex
     assert "pie.pdf" not in tex
@@ -39,6 +42,9 @@ def test_generated_graphics_use_public_apis():
     assert "pie.pdf" not in script
     assert "cc.pie_plot(" not in script
     assert "groups.pgf" in script
+    assert "cc.contrast_grid(" in script
+    assert '"palette_grid.pdf"' in script
+    assert '"palette_grid.pgf"' in script
     assert 'edgecolors="white"' in script
     assert "match_manuscript_axes(ax, layout.fontsize_pt)" in script
     assert "ncols=3" in script and "ncols=2" in script
@@ -60,6 +66,8 @@ def test_builder_only_pushes_after_opt_in():
     assert "publication_scatter_accessibility.png" in sh
     assert "publication_accessibility.pdf" in sh
     assert "publication_scatter_accessibility.pdf" in sh
+    assert "publication_palette_grid.pdf" in sh
+    assert "publication_palette_grid.png" in sh
     assert "if ((COMMIT)); then" in sh
     assert "if ((PUSH)); then git push; fi" in sh
 
@@ -71,6 +79,7 @@ def test_site_navigation_and_ignore_rules():
     assert "_static/publication_demo.pdf" in page
     assert "_static/publication_accessibility.png" in page
     assert "_static/publication_accessibility.pdf" in page
+    assert "_static/publication_palette_grid.pdf" in page
     assert "   publication_demo" in index
     assert "examples/latex_publication/generated/" in ignore
 

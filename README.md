@@ -1,5 +1,11 @@
 # Colors
 
+**Implementation catalogue:** [Complete feature inventory](FEATURES.md)
+([Sphinx reference](docs/source/features.rst)) lists all 63 current public
+exports and the separate browser, notebook, TeX and automation tools.
+A CI test detects when a new public API symbol has not been documented.
+
+
 `contrastcolors` builds scientific plotting palettes whose **adjacent WCAG
 contrast ratios are controlled by construction** while hue can change
 independently. It is designed as a small layer on top of Matplotlib, in the
@@ -63,9 +69,10 @@ A default Jekyll Pages deployment does not build Sphinx.
 
 ## macOS: complete LaTeX publication showcase
 
-There is now a reproducible, two-column scientific manuscript testing
-actual LaTeX fonts, physical sizes, PGF vs vector PDF, grouped scatter,
-hybrid rasterization and a six-way black-and-white / CVD comparison.
+There is a reproducible, two-column technical presentation explaining
+how WCAG luminance and OKLCH hue/chroma are selected, the palette matrix,
+interactive Studio, real LaTeX fonts, physical sizes, vector vs hybrid
+PDF/PGF, alpha compositing and six-way grayscale/CVD dashboards.
 
 Requires MacTeX or compatible TeX Live and Conda or Python 3.10+.
 
@@ -74,11 +81,13 @@ git pull
 ./examples/latex_publication/run_macos.sh --open
 ~~~
 
-The script generates a complete paper PDF and a font/layout audit. The
-finished PDF and accessibility preview are copied to Sphinx static assets.
+The script generates the technical paper, a ContrastGrid palette illustration,
+two true-vector accessibility dashboard PDFs/PGFs and a font/layout audit.
+It copies the final PDF, palette figure, vector dashboard PDFs and website
+PNG previews to Sphinx static assets.
 
 After reviewing the results, the following command explicitly commits
-and pushes just the PDF and the PNG:
+and pushes the published demonstration PDF/PNG assets:
 
 ~~~bash
 ./examples/latex_publication/run_macos.sh --push
@@ -202,7 +211,8 @@ registration in a project module and import it to reuse it.
 
 The Sphinx site now documents the complete library:
 
-- library tour and function/object inventory;
+- [full implementation inventory](FEATURES.md), automatically checked
+  against every public Python export;
 - quickstart and installation;
 - palette and ContrastGrid workflows;
 - alpha compositing and apparent-color compensation;
