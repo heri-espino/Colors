@@ -577,6 +577,12 @@ class PublicationStyle:
         with mpl.rc_context({
             "pgf.texsystem": self.tex_engine,
             "pgf.rcfonts": False,
+            # Explicit bbox_inches=None is treated by Matplotlib as
+            # "use savefig.bbox from rcParams". Heri defaults to "tight",
+            # which silently shrinks the exported physical width.
+            # Override the rcParam itself so the TeX column size is exact.
+            "savefig.bbox": None,
+            "savefig.pad_inches": 0,
         }):
             fig.savefig(target, format="pgf", **options)
         return target
@@ -609,7 +615,12 @@ class PublicationStyle:
                 dpi=dpi,
             )
         else:
-            save_figure(fig, path, **opts)
+            # The general Heri preset deliberately uses tight cropping.
+            # Publication mode must override that *rcParam*, not merely
+            # pass bbox_inches=None, since Matplotlib treats None as a
+            # request to fall back to rcParams["savefig.bbox"].
+            with mpl.rc_context({"savefig.bbox": None, "savefig.pad_inches": 0}):
+                save_figure(fig, path, **opts)
         return path
 
 
