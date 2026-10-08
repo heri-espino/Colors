@@ -206,3 +206,38 @@ def test_latex_proof_checks_real_unscaled_width(monkeypatch, tmp_path):
     monkeypatch.setattr(pub, "_run_tex", right)
     layout = cc.verify_latex_placement(tex, pdf, width="text")
     assert layout.textwidth_pt == 500
+
+
+def test_pdf_and_svg_keep_exact_latex_width_with_heri_tight_default(layout, tmp_path):
+    """Regression: a publication PDF must not inherit savefig.bbox='tight'.
+
+    A tight crop passed the artist audit but shortened the exported PDF
+    from 217.69 TeX pt to 211.67 TeX pt on macOS, breaking LaTeX placement.
+    PDF uses 72 PostScript points/in, whereas TeX measures 72.27 pt/in.
+    """
+    with cc.latex_style(layout, width="column") as publication:
+        assert mpl.rcParams["savefig.bbox"] == "tight"
+        fig, ax = publication.subplots(height_ratio=0.8)
+        ax.plot([0, 1, 2], [1, 3, 2])
+        ax.set(xlabel="Time", ylabel="Response")
+        pdf = publication.savefig(fig, tmp_path / "exact.pdf", audit=False)
+        svg = publication.savefig(fig, tmp_path / "exact.svg", audit=False)
+        import re
+        match = re.search(
+            rb"/MediaBox\s*\[\s*([0-9.]+)\s+([0-9.]+)\s+"
+            rb"([0-9.]+)\s+([0-9.]+)\s*\]",
+            pdf.read_bytes(),
+        )
+        assert match is not None, "PDF did not contain a readable MediaBox"
+        pdf_width = float(match.group(3)) - float(match.group(1))
+        expected_pdf_points = layout.width_inches("column") * 72.0
+        assert pdf_width == pytest.approx(expected_pdf_points, abs=0.03)
+        svg_tag = re.search(r"<svg\b[^>]+>", svg.read_text(encoding="utf-8"))
+        assert svg_tag is not None
+        width_match = re.search(r'\bwidth="([0-9.]+)pt"', svg_tag.group(0))
+        assert width_match is not None
+        assert float(width_match.group(1)) == pytest.approx(
+            expected_pdf_points, abs=0.03
+        )
+        # Export must not switch off the caller's Heri crop preference.
+        assert mpl.rcParams["savefig.bbox"] == "tight"
