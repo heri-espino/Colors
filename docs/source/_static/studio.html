@@ -581,7 +581,7 @@ function hueName(h){
   h=((h%360)+360)%360;
   if(h<15||h>=345)return'red';if(h<45)return'orange';if(h<75)return'yellow';if(h<120)return'lime';if(h<170)return'green';if(h<200)return'teal';if(h<245)return'blue';if(h<280)return'indigo';if(h<325)return'violet';return'magenta';
 }
-function renderSeries(){
+function renderSeries(palette){
   const box=$('seriesList');box.innerHTML='';
   series.forEach((s,i)=>{
     const row=document.createElement('div');row.className='series-row';
@@ -595,7 +595,7 @@ function renderSeries(){
     const changeHue=v=>{s.hue=clamp(Number(v)||0,0,359);$('hueStrategy').value='custom';range.value=s.hue;num.value=Math.round(s.hue);renderAll()};
     range.addEventListener('input',()=>changeHue(range.value));num.addEventListener('change',()=>changeHue(num.value));
     const pick=document.createElement('input');pick.type='color';pick.className='series-color-picker';
-    pick.value=validConfig()?hex(colors()[i].rgb):hueColor(s.hue);
+    pick.value=palette?hex(palette[i].rgb):hueColor(s.hue);
     pick.title='Select the hue for series '+(i+1)+' (luminance and chroma stay controlled)';
     pick.setAttribute('aria-label','Color hue for series '+(i+1));
     pick.addEventListener('change',()=>{
@@ -968,7 +968,8 @@ function updateSeriesSwatches(){
 }
 function renderAll(){
   ensureSeries();
-  renderSeries();
+  const previewPalette=validConfig()?colors():null;
+  renderSeries(previewPalette);
   if(renderPalette())updateSeriesSwatches();
   renderStrategy();renderChart();renderReport();renderAlpha();renderCode();
   renderVisionComparison();
@@ -976,7 +977,7 @@ function renderAll(){
 
 $('applyStrategy').addEventListener('click',applyHueStrategy);
 $('hueStrategy').addEventListener('change',applyHueStrategy);
-$('contrastPreset').addEventListener('change',applyHueStrategy);
+$('contrastPreset').addEventListener('change',()=>{applyContrastPreset();renderAll()});
 $('baseHue').addEventListener('input',()=>{$('baseHueLabel').textContent=$('baseHue').value+'°';});
 $('baseHue').addEventListener('change',()=>{$('baseHueColor').value=hueColor(Number($('baseHue').value));applyHueStrategy()});
 $('baseHueColor').addEventListener('change',()=>{
