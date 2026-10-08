@@ -94,3 +94,28 @@ def test_print_safe_handles_different_counts_and_invalid_inputs():
         cc.print_safe_luminances(0)
     with pytest.raises(ValueError):
         cc.print_safe_luminances(3, lightest=.1, darkest=.2)
+
+
+def test_pie_plot_has_white_wedge_edges_and_clear_grayscale_groups():
+    import matplotlib.pyplot as plt
+    from contrastcolors.color_spaces import relative_luminance
+
+    fig, ax = plt.subplots()
+    wedges, labels = cc.pie_plot([20, 35, 45], labels=["A", "B", "C"], ax=ax)
+    assert len(wedges) == len(labels) == 3
+    assert all(np.allclose(w.get_edgecolor()[:3], (1, 1, 1)) for w in wedges)
+    ys = [relative_luminance(w.get_facecolor()[:3]) for w in wedges]
+    assert ys[0] > ys[1] > ys[2]
+    plt.close(fig)
+
+
+def test_pie_plot_edge_overrides_and_values():
+    import pytest
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots()
+    wedges, _ = cc.pie_plot([1, 2], ax=ax, wedgeprops={"linewidth": 3})
+    assert all(w.get_linewidth() == 3 for w in wedges)
+    with pytest.raises(ValueError):
+        cc.pie_plot([-1, 2], ax=ax)
+    plt.close(fig)

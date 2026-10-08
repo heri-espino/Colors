@@ -135,6 +135,15 @@ Color utilities
 
 .. autofunction:: contrastcolors.delta_e_ok
 
+Categorical pie charts
+----------------------
+
+.. autofunction:: contrastcolors.pie_plot
+
+Pie wedges use white separators by default (with a user-overridable
+edgecolor/linewidth), plus the same adaptive color and luminance policy
+as other categorical plots.
+
 Adaptive print-safe colors
 --------------------------
 

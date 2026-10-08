@@ -39,6 +39,7 @@ from .publication import (
     fit_figure_to_latex,
     verify_latex_placement,
 )
+from .charts import pie_plot
 from .contrast import print_safe_luminances
 from .style import (
     HERI_CMAP,
@@ -106,6 +107,7 @@ __all__ = [
     "available_styles",
     "panel_label",
     "plot_scheme",
+    "pie_plot",
     "print_safe_luminances",
     "scatter_scheme",
     "DEFAULT_ACCESSIBILITY_MODES",
