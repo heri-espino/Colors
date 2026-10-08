@@ -119,6 +119,7 @@ input[type=color]{height:37px;width:43px;min-width:43px;border:1px solid var(--l
 @media(max-width:670px){.strategy-controls,.vision-comparison{grid-template-columns:1fr}.line-picker .line-menu{right:auto;left:0}.series-row{align-items:start}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
+.hue-wrap{grid-template-columns:minmax(70px,1fr) 57px 43px}.series-color-picker{width:43px}
 </style>
 </head>
 <body>
@@ -179,10 +180,10 @@ input[type=color]{height:37px;width:43px;min-width:43px;border:1px solid var(--l
       <input id="nColors" type="number" min="2" max="10" step="1" value="5">
     </label>
     <label>Adjacent WCAG CR
-      <input id="ratio" type="number" min="1" max="3" step="0.05" value="1.40">
+      <input id="ratio" type="number" min="1" max="3" step="0.05" value="1.22">
     </label>
     <label>Start luminance Y0
-      <input id="startY" type="number" min="0" max="1" step="0.01" value="0.88">
+      <input id="startY" type="number" min="0" max="1" step="0.01" value="0.82">
     </label>
     <label>Requested OKLCH chroma
       <input id="chroma" type="number" min="0" max="0.35" step="0.01" value="0.13">
@@ -335,8 +336,8 @@ input[type=color]{height:37px;width:43px;min-width:43px;border:1px solid var(--l
 'use strict';
 const $=id=>document.getElementById(id);
 const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
-const hueDefaults=[55,20,145,210,290,330,95,250,175,5];
-const markerDefaults=['o','s','^','D','X','v','P','*','+','x'];
+const hueDefaults=[25,97,169,241,313,61,133,205,277,349];
+const markerDefaults=['o','s','^','D','X','P','v','<','>','*'];
 const lineDefaults=['-','--',':','-.','long','dashdot2'];
 const lineDefs={
   '-':{label:'solid',dash:'',py:"'-'"},
@@ -349,6 +350,118 @@ const lineDefs={
 let series=[];
 let previewMode='color';
 let plotType='lines';
+
+
+const wrapHue=h=>((h%360)+360)%360;
+const hueDefinitions={
+  equidistant:'Equal angle steps around the OKLCH hue circle. Useful for categorical starting palettes, but equal angles do not imply equal perceptual separation.',
+  golden:'A golden-angle hue sequence (~137.5°) that spreads successive series around the hue circle as more groups are added.',
+  qualitative:'A hand-selected sequence of separated hue families. These hues are re-rendered using your chosen luminance ladder.',
+  analogous:'A limited cluster of neighboring hues. Prefer for related categories, not many unrelated groups.',
+  monochrome:'One hue with differing luminances. Works for ordered data but is not a good categorical default.',
+  custom:'Individual hues are edited independently, with no automatic equal-spacing rule.'
+};
+const qualitativeHues=[25,150,265,90,325,210,55,185,300,120];
+const cvdMatrices={
+  protanopia:[[.152286,1.052583,-.204868],[.114503,.786281,.099216],[-.003882,-.048116,1.051998]],
+  deuteranopia:[[.367322,.860646,-.227968],[.280085,.672501,.047413],[-.011820,.042940,.968881]],
+  tritanopia:[[1.255528,-.076749,-.178779],[-.078411,.930809,.147602],[.004733,.691367,.303900]]
+};
+function toCvdRgb(rgb,mode){
+  const matrix=cvdMatrices[mode];
+  if(!matrix)return rgb.slice();
+  const linear=rgb.map(srgbToLinear);
+  return matrix.map(row=>clamp(linearToSrgb(
+    row[0]*linear[0]+row[1]*linear[1]+row[2]*linear[2]
+  ),0,1));
+}
+function hueFromHex(chosen){
+  const lab=oklab(parseHex(chosen));
+  if(Math.hypot(lab[1],lab[2])<.008)return null;
+  return Math.round(wrapHue(Math.atan2(lab[2],lab[1])*180/Math.PI))%360;
+}
+function hueColor(h){
+  return hex(colorForY(.43,wrapHue(h),.16).rgb);
+}
+function methodHues(n,strategy,base){
+  if(strategy==='equidistant')return Array.from({length:n},(_,i)=>Math.round(wrapHue(base+360*i/n)));
+  if(strategy==='golden')return Array.from({length:n},(_,i)=>Math.round(wrapHue(base+137.507764*i)));
+  if(strategy==='qualitative')return Array.from({length:n},(_,i)=>Math.round(wrapHue(qualitativeHues[i]+base-25)));
+  if(strategy==='analogous')return Array.from({length:n},(_,i)=>Math.round(wrapHue(base+(i-(n-1)/2)*Math.min(24,100/(n-1)))));
+  if(strategy==='monochrome')return Array.from({length:n},()=>Math.round(wrapHue(base)));
+  return series.map(item=>Math.round(item.hue));
+}
+function applyContrastPreset(){
+  const preset=$('contrastPreset').value;
+  if(preset==='manual')return;
+  const n=clamp(Number($('nColors').value)||5,2,10);
+  const start=clamp(Number($('startY').value)||.82,0,1);
+  const maxRatio=Math.pow((start+.05)/.05,1/(n-1));
+  const proposed={balanced:1.22,strong:1.30,subtle:1.12}[preset]||1.22;
+  $('ratio').value=Math.min(proposed,Math.max(1,maxRatio-.006)).toFixed(3);
+}
+function applyHueStrategy(){
+  const method=$('hueStrategy').value,n=clamp(Number($('nColors').value)||5,2,10);
+  if(method!=='custom'){
+    const angles=methodHues(n,method,Number($('baseHue').value));
+    series=angles.map((hue,i)=>({
+      hue,marker:markerDefaults[i%markerDefaults.length],
+      line:lineDefaults[i%lineDefaults.length]
+    }));
+  }
+  applyContrastPreset();
+  renderAll();
+}
+function renderStrategy(){
+  const m=$('hueStrategy').value;
+  $('baseHueLabel').textContent=Math.round(Number($('baseHue').value))+'°';
+  $('strategyNote').textContent=hueDefinitions[m]+
+    ' Always check grayscale and colour-vision previews, especially with more than five series.';
+  const spectrum=[];
+  for(let h=0;h<=360;h+=10)spectrum.push(hueColor(h));
+  $('hueWheel').style.background='linear-gradient(90deg,'+spectrum.map((c,i)=>c+' '+i*100/(spectrum.length-1)+'%').join(',')+')';
+  $('hueWheel').innerHTML='';
+  series.forEach((item,i)=>{
+    const el=document.createElement('div');
+    el.className='hue-tick';
+    el.style.left=wrapHue(item.hue)/360*100+'%';
+    el.style.background=hueColor(item.hue);
+    el.title='Series '+(i+1)+': '+Math.round(item.hue)+'°';
+    $('hueWheel').appendChild(el);
+  });
+}
+function linePreview(key,color='#375a88',width=75){
+  const dash=lineDefs[key].dash;
+  return '<svg width="'+width+'" height="22" viewBox="0 0 '+width+' 22" aria-hidden="true">'+
+    '<path d="M 4 11 H '+(width-4)+'" fill="none" stroke="'+color+'" stroke-width="3" stroke-linecap="round"'+
+    (dash?' stroke-dasharray="'+dash+'"':'')+'/></svg>';
+}
+function renderEncodingAtlas(){
+  $('lineAtlas').innerHTML=Object.keys(lineDefs).map(k=>'<div class="style-sample">'+
+    linePreview(k)+'<span>'+lineDefs[k].label+'</span></div>').join('');
+  $('markerAtlas').innerHTML=markerDefaults.map(marker=>'<div class="style-sample">'+
+    '<svg viewBox="0 0 77 24" role="img" aria-label="Marker '+marker+'">'+
+    markerSvg(marker,38,12,'#375a88')+'</svg><span>Marker '+marker+'</span></div>').join('');
+}
+function renderVisionComparison(){
+  const out=$('visionComparison');out.innerHTML='';
+  if(!validConfig())return;
+  const cs=colors();
+  for(const [mode,label] of [['color','Original'],['gray','Grayscale'],['print','Print stress'],
+                             ['deuteranopia','Deuteranopia'],['protanopia','Protanopia'],['tritanopia','Tritanopia']]){
+    const tile=document.createElement('div');tile.className='vision-tile';
+    const title=document.createElement('strong');title.textContent=label;tile.appendChild(title);
+    const bar=document.createElement('div');bar.className='vision-swatches';
+    cs.forEach(c=>{
+      const el=document.createElement('div');
+      const rgb=mode==='gray'?grayscaleRgb(c.Y):
+        mode==='print'?grayscaleRgb(stressY(c.Y)):
+        mode==='color'?c.rgb:toCvdRgb(c.rgb,mode);
+      el.style.background=hex(rgb);el.dataset.hex=hex(rgb);bar.appendChild(el);
+    });
+    tile.appendChild(bar);out.appendChild(tile);
+  }
+}
 
 function srgbToLinear(x){return x<=0.04045?x/12.92:Math.pow((x+0.055)/1.055,2.4)}
 function linearToSrgb(x){return x<=0.0031308?12.92*x:1.055*Math.pow(Math.max(x,0),1/2.4)-0.055}
@@ -460,7 +573,7 @@ function renderMatrix(cs){
       const c=colorForY(y,s.hue,C),b=document.createElement('button');b.type='button';b.className='matrix-cell'+(Math.abs(s.hue-series[i].hue)<1e-9?' active':'');
       b.style.background=hex(c.rgb);b.style.color=textColor(c.rgb);b.textContent=hex(c.rgb);
       b.title='Assign hue '+Math.round(s.hue)+'° to series '+(i+1);
-      b.addEventListener('click',()=>{series[i].hue=s.hue;renderAll()});m.appendChild(b);
+      b.addEventListener('click',()=>{series[i].hue=s.hue;$('hueStrategy').value='custom';renderAll()});m.appendChild(b);
     });
   });
 }
@@ -479,17 +592,36 @@ function renderSeries(){
     const hueWrap=document.createElement('div');hueWrap.className='hue-wrap wide';
     const range=document.createElement('input');range.type='range';range.min='0';range.max='359';range.step='1';range.value=s.hue;
     const num=document.createElement('input');num.type='number';num.min='0';num.max='359';num.step='1';num.value=Math.round(s.hue);
-    const changeHue=v=>{s.hue=clamp(Number(v)||0,0,359);range.value=s.hue;num.value=Math.round(s.hue);renderAll()};
+    const changeHue=v=>{s.hue=clamp(Number(v)||0,0,359);$('hueStrategy').value='custom';range.value=s.hue;num.value=Math.round(s.hue);renderAll()};
     range.addEventListener('input',()=>changeHue(range.value));num.addEventListener('change',()=>changeHue(num.value));
-    hueWrap.append(range,num);row.appendChild(hueWrap);
+    const pick=document.createElement('input');pick.type='color';pick.className='series-color-picker';
+    pick.value=validConfig()?hex(colors()[i].rgb):hueColor(s.hue);
+    pick.title='Select the hue for series '+(i+1)+' (luminance and chroma stay controlled)';
+    pick.setAttribute('aria-label','Color hue for series '+(i+1));
+    pick.addEventListener('change',()=>{
+      const hue=hueFromHex(pick.value);
+      if(hue!==null){s.hue=hue;$('hueStrategy').value='custom';renderAll()}
+    });
+    hueWrap.append(range,num,pick);row.appendChild(hueWrap);
 
     const marker=document.createElement('select');marker.className='wide';
     markerDefaults.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;s.marker===v&&(o.selected=true);marker.appendChild(o)});
     marker.addEventListener('change',()=>{s.marker=marker.value;renderAll()});row.appendChild(marker);
 
-    const line=document.createElement('select');line.className='wide';
-    Object.keys(lineDefs).forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=lineDefs[v].label;s.line===v&&(o.selected=true);line.appendChild(o)});
-    line.addEventListener('change',()=>{s.line=line.value;renderAll()});row.appendChild(line);
+    const line=document.createElement('details');line.className='line-picker wide';
+    const summary=document.createElement('summary');
+    summary.setAttribute('aria-label','Choose line style for series '+(i+1));
+    summary.innerHTML=linePreview(s.line)+lineDefs[s.line].label;
+    line.appendChild(summary);
+    const list=document.createElement('div');list.className='line-menu';
+    Object.keys(lineDefs).forEach(v=>{
+      const button=document.createElement('button');button.type='button';
+      button.setAttribute('aria-label',lineDefs[v].label);
+      button.innerHTML=linePreview(v)+lineDefs[v].label;
+      button.addEventListener('click',()=>{s.line=v;renderAll()});
+      list.appendChild(button);
+    });
+    line.appendChild(list);row.appendChild(line);
 
     const move=document.createElement('div');move.className='move wide';
     const up=document.createElement('button');up.type='button';up.textContent='↑';up.disabled=i===0;up.title='Move series up';
@@ -514,6 +646,10 @@ function markerSvg(marker,x,y,color){
   return'<path d="M '+(x-5)+' '+(y-5)+' L '+(x+5)+' '+(y+5)+' M '+(x+5)+' '+(y-5)+' L '+(x-5)+' '+(y+5)+'" stroke="'+color+'" stroke-width="2"/>';
 }
 function displayRgb(c){
+  if(cvdMatrices[previewMode])return toCvdRgb(
+    $('preserve').checked?compensate(c.rgb,parseHex($('background').value),Number($('alpha').value)).displayed:
+    composite(c.rgb,parseHex($('background').value),Number($('alpha').value)),
+    previewMode);
   if(previewMode==='gray')return grayscaleRgb(c.Y);
   if(previewMode==='print')return grayscaleRgb(stressY(c.Y));
   const bg=parseHex($('background').value),a=Number($('alpha').value);
@@ -834,9 +970,24 @@ function renderAll(){
   ensureSeries();
   renderSeries();
   if(renderPalette())updateSeriesSwatches();
-  renderChart();renderReport();renderAlpha();renderCode();
+  renderStrategy();renderChart();renderReport();renderAlpha();renderCode();
+  renderVisionComparison();
 }
-['nColors','ratio','startY','chroma'].forEach(id=>$(id).addEventListener('input',renderAll));
+
+$('applyStrategy').addEventListener('click',applyHueStrategy);
+$('hueStrategy').addEventListener('change',applyHueStrategy);
+$('contrastPreset').addEventListener('change',applyHueStrategy);
+$('baseHue').addEventListener('input',()=>{$('baseHueLabel').textContent=$('baseHue').value+'°';});
+$('baseHue').addEventListener('change',()=>{$('baseHueColor').value=hueColor(Number($('baseHue').value));applyHueStrategy()});
+$('baseHueColor').addEventListener('change',()=>{
+  const hue=hueFromHex($('baseHueColor').value);
+  if(hue!==null){$('baseHue').value=hue;applyHueStrategy();}
+});
+$('nColors').addEventListener('change',()=>{$('hueStrategy').value==='custom'?renderAll():applyHueStrategy()});
+$('ratio').addEventListener('input',()=>{$('contrastPreset').value='manual';renderAll()});
+['startY','chroma'].forEach(id=>$(id).addEventListener('input',renderAll));
+renderEncodingAtlas();
+
 ['alpha','background','preserve','font','rasterize','dpi','styleName','presetName'].forEach(id=>$(id).addEventListener('input',()=>{renderChart();renderReport();renderAlpha();renderCode()}));
 document.querySelectorAll('[data-mode]').forEach(btn=>btn.addEventListener('click',()=>{
   previewMode=btn.dataset.mode;
@@ -861,6 +1012,9 @@ function designSnapshot(){
     name:getPresetName()||'paper_palette',
     plotType:plotType,
     previewMode:previewMode,
+    hueStrategy:$('hueStrategy').value,
+    baseHue:Number($('baseHue').value),
+    contrastPreset:$('contrastPreset').value,
     palette:{
       hues:series.map(item=>Number(item.hue)),
       ratio:Number($('ratio').value),
@@ -925,7 +1079,10 @@ function normalizeDesign(raw){
     rasterize:style.rasterize!==false,dpi:Number.isFinite(dpi)?clamp(Math.round(dpi),72,2400):600,
     style:['heri','default'].includes(style.name)?style.name:'heri',
     plot:Object.keys({lines:1,time:1,histogram:1,box:1,violin:1,ridge:1,scatter:1,heatmap:1,bar:1}).includes(raw.plotType)?raw.plotType:'lines',
-    mode:['color','gray','print'].includes(raw.previewMode)?raw.previewMode:'color'
+    mode:['color','gray','print','deuteranopia','protanopia','tritanopia'].includes(raw.previewMode)?raw.previewMode:'color',
+    hueStrategy:['equidistant','golden','qualitative','analogous','monochrome','custom'].includes(raw.hueStrategy)?raw.hueStrategy:'custom',
+    baseHue:Number.isFinite(Number(raw.baseHue))?clamp(Number(raw.baseHue),0,359):25,
+    contrastPreset:['balanced','strong','subtle','manual'].includes(raw.contrastPreset)?raw.contrastPreset:'manual'
   };
 }
 function applyDesign(raw){
@@ -942,6 +1099,10 @@ function applyDesign(raw){
   $('dpi').value=d.dpi;
   $('styleName').value=d.style;
   $('presetName').value=d.name;
+  $('hueStrategy').value=d.hueStrategy;
+  $('baseHue').value=d.baseHue;
+  $('baseHueColor').value=hueColor(d.baseHue);
+  $('contrastPreset').value=d.contrastPreset;
   series=d.hues.map((hue,i)=>({hue:hue,marker:d.markers[i],line:d.lines[i]}));
   plotType=d.plot;
   previewMode=d.mode;
@@ -1032,7 +1193,8 @@ $('downloadPy').addEventListener('click',()=>{
   $('presetStatus').textContent='Downloaded '+name+'.py. Import this file in your Python project to register the palette.';
 });
 savedOptions();
-renderAll();
+$('baseHueColor').value=hueColor(Number($('baseHue').value));
+applyHueStrategy();
 if(typeof ResizeObserver!=='undefined'){
   const notifyHeight=()=>{
     if(window.parent!==window){
