@@ -8,3 +8,12 @@ dist/
 *.egg-info/
 .venv/
 docs/_build/
+
+# Jupyter and local caches
+.ipynb_checkpoints/
+.jupyter_cache/
+.mypy_cache/
+.ruff_cache/
+.conda/
+.DS_Store
+*.log

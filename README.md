@@ -17,6 +17,50 @@ Y_k=rac{Y_0+0.05}{r^k}-0.05.
 The library then solves for an sRGB-representable OKLCH color at each requested
 luminance and hue.
 
+## Windows: run the entire project with Conda
+
+Install [Miniforge](https://github.com/conda-forge/miniforge) or Miniconda,
+clone the repository, and open an initialized Conda PowerShell:
+
+~~~powershell
+git clone https://github.com/heri-espino/Colors.git
+cd Colors
+Set-ExecutionPolicy -Scope Process Bypass
+.\tools\setup_and_run.ps1
+~~~
+
+The script creates or updates a Python 3.12 Conda environment, installs all
+dependencies and the editable package, checks dependencies, runs pytest,
+executes **every demo notebook**, saves generated plots inside the .ipynb
+files, verifies the outputs, and builds the Sphinx website (strict warnings).
+
+Optional flags:
+
+~~~powershell
+# Run tests and rebuild Sphinx without re-executing notebooks
+.\tools\setup_and_run.ps1 -SkipNotebooks
+
+# Run tests and serve the documentation at http://localhost:8765/
+.\tools\setup_and_run.ps1 -SkipNotebooks -Serve
+
+# Explicitly commit saved notebook results
+.\tools\setup_and_run.ps1 -CommitOutputs
+
+# Explicitly commit and push results to GitHub
+.\tools\setup_and_run.ps1 -CommitOutputs -Push
+~~~
+
+Without those flags, **no changes are pushed or committed automatically**.
+The generated documentation is in
+`docs/_build/html/index.html`, and the notebook outputs are saved in
+`docs/source/notebooks/*.ipynb`.
+
+Launch JupyterLab with `conda run -n contrastcolors jupyter lab`.
+
+To publish the Sphinx site, go to GitHub **Settings > Pages**, select
+**GitHub Actions** as the source, and run the manual `pages` workflow.
+A default Jekyll Pages deployment does not build Sphinx.
+
 ## Install locally
 
 ```bash

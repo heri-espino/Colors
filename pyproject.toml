@@ -1,11 +1,12 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=77.0.3", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "contrastcolors"
 version = "0.1.0"
 description = "Contrast-controlled color palettes for Matplotlib."
+license = "MIT"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
@@ -31,6 +32,7 @@ docs = [
   "nbclient>=0.10",
   "ipykernel>=6",
 ]
+notebooks = ["jupyterlab>=4"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

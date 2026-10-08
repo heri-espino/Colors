@@ -1,0 +1,2 @@
+# Editable full local environment; versions maintained in pyproject.toml.
+-e .[dev,docs,notebooks]
