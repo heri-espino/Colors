@@ -89,32 +89,120 @@ axes, labels and ticks as vectors.
   \label{fig:dense}
 \end{figure}
 
-\section{Accessibility}
-A color-vision simulation is a diagnostic approximation, not a clinical
-prediction or universal certification. Figure~\ref{fig:access} compares
-the same line plot in six views: original color, luminance-preserving
-grayscale, print stress, deuteranopia, protanopia, and tritanopia.
-Each view has a separate header and is displayed in a two-column grid
-to preserve legibility at the final printed size.
+\section{Presentation at the final reading size}
+Good rendering is not only a question of pixel density. A diagnostic image
+can contain the right information and still be unreadable when reduced from
+a large preview window to the width of a printed journal column.
+Here we deliberately compare two common publication requirements: a
+full-page diagnostic dashboard for a main or supplementary result, and a
+compact landscape dashboard spanning both columns of the manuscript.
 
-\begin{figure*}[tp]
+These two uses call for different aspect ratios. Enlarging a figure in a
+browser is not equivalent to designing it for physical print dimensions.
+The example therefore controls both the size of the \emph{source} plot and
+the final figure environment in LaTeX.
+
+\subsection{Full-page dashboard: three time series}
+For the three-series plot we reserve a dedicated page. Two dashboard
+columns and three rows provide enough width for tick labels, a legend,
+and six accessibility views without forcing the reader to zoom into a
+single column. The same underlying trajectories are shown in all six
+conditions; only the simulated viewing conditions change.
+
+A separate heading sits immediately above each displayed image.
+Its horizontal center is aligned to the image rather than to a larger
+container, and it uses regular-weight type so it does not compete with
+the axis labels. Color, line pattern, and marker shape encode each series
+redundantly. Their luminance levels are spread across the available range
+because the plot has only three categories.
+
+% Start a fresh full page for this explanatory dashboard.
+\clearpage
+\begin{figure*}[p]
   \centering
-  \includegraphics[width=\textwidth]{generated/accessibility.png}
-  \caption{\textbf{Six-way comparison.} Original, black-and-white,
-  degraded print, and three Machado-model color-vision-deficiency previews.
-  Headers are outside the image areas. The panel is rasterized; the
-  source PDF and PGF above retain appropriate vector content.}
+  \begin{minipage}{\textwidth}
+    \small
+    \textbf{Reading a six-view diagnostic.}
+    Top to bottom, the same time series are inspected in their original
+    colors, grayscale, degraded print, and three approximate color-vision
+    conditions. The purpose is not to certify accessibility, but to reveal
+    whether line styles, point markers and luminance remain useful when hue
+    differences disappear.
+  \end{minipage}\par\medskip
+  \includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{generated/accessibility.png}
+  \caption{\textbf{Full-page portrait dashboard (two dashboard columns,
+  three rows).} The figure occupies its own float page in a two-column
+  article. Each title is centered over its rendered image with minimal
+  vertical separation. This layout prioritizes readability of axes,
+  legends and symbols at the final printed size.}
   \label{fig:access}
 \end{figure*}
+\clearpage
 
-\begin{figure*}[tp]
+\subsection{Landscape dashboard across the two text columns}
+The grouped scatter illustrates the opposite constraint. Many articles
+have room for a full-width figure near the top of a page but not for a
+dedicated page of supplemental diagnostics. We therefore arrange the six
+views horizontally in three columns and two rows, reducing the height
+of the complete dashboard while keeping it wider than an individual
+text column.
+
+Unlike the time-series example, these data are categorical point clouds.
+The useful question is whether group membership is recognizable after
+color transformation. We use fewer observations, larger symbols, and
+nonidentical markers, all on a light background. A short legend is placed
+outside the plotting region so that a data point cannot be obscured by
+text. The grayscale views supply a practical check of luminance separation
+as an additional cue.
+
+\begin{figure*}[t]
   \centering
   \includegraphics[width=\textwidth]{generated/groups_accessibility.png}
-  \caption{\textbf{Scatter accessibility panel.} The same categorical
-  groups remain identified by their symbols in black and white and in
-  simulated color-vision-deficiency conditions.}
+  \caption{\textbf{Horizontal two-column-wide scatter dashboard (three
+  dashboard columns, two rows).} The six views occupy the full manuscript
+  text width, while the article retains its two-column text layout.
+  Distinct markers and luminances keep categories recognizable even where
+  color differences become less useful. This landscape arrangement
+  leaves substantially more space on the page for surrounding discussion.}
   \label{fig:scatter-access}
 \end{figure*}
+
+To demonstrate how this layout behaves in a realistic manuscript,
+the following paragraphs intentionally provide enough ordinary body text
+to flow beside and below a wide top-of-page float. A reader sees not only
+the plot itself but its actual spatial relationship with the paper's
+columns, headings, captions and surrounding arguments.
+
+A compact horizontal diagnostic is particularly appropriate when it
+supports a result explained in the main text. The original figure may
+already show group separation clearly; the dashboard is then a short
+robustness check rather than the principal quantitative result. The
+location of captions and the final scale of markers should always be
+checked after compilation, because a figure that looks spacious in a
+large editing window can be difficult to interpret once printed.
+
+The three simulated color-vision deficiencies follow the Machado model.
+They are useful stress tests, but viewers differ and the simulation is
+not a substitute for user testing. Likewise, the degraded grayscale
+panel represents intentionally reduced tonal resolution rather than
+a calibrated office printer.
+
+\section{Categorical pie-chart boundaries}
+The new pie-chart helper uses white boundaries between wedges rather than
+dark outlines. This gives the chart a lighter appearance and retains
+explicit segment separation, including in the grayscale preview.
+For categorical comparisons requiring precise quantitative judgments,
+a bar chart is typically easier to read; the pie chart is included
+here as an example of a consistent visual default.
+
+\begin{figure}[tb]
+  \centering
+  \includegraphics{generated/pie.pdf}
+  \caption{\textbf{Default pie style.} Clean white boundaries separate
+  sectors; the wedge luminances follow the same paper-aware palette policy
+  used for the line and scatter examples.}
+  \label{fig:pie}
+\end{figure}
 
 \section{Reproducibility}
 The accompanying script uses a fixed random seed, saves a JSON report
