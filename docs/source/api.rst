@@ -138,6 +138,11 @@ Color utilities
 LaTeX layout and publication fitting
 ------------------------------------
 
+.. autoclass:: contrastcolors.LatexFontInfo
+   :members:
+
+.. autofunction:: contrastcolors.find_latex_font
+
 .. autoclass:: contrastcolors.LatexLayout
    :members:
 

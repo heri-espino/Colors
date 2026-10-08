@@ -20,6 +20,8 @@ def main() -> int:
     parser.add_argument("--tex", type=Path, help="Trusted LaTeX paper to measure")
     parser.add_argument("--engine", default="pdflatex", choices=("pdflatex", "xelatex", "lualatex"))
     parser.add_argument("--output", type=Path, default=Path("docs/_build/publication_demo"))
+    parser.add_argument("--pgf", action="store_true",
+                        help="Export TeX-native PGF for manuscript-owned fonts")
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
 
@@ -33,7 +35,7 @@ def main() -> int:
         )
         print("Using illustrative dimensions. Pass --tex to inspect a real manuscript.")
 
-    with cc.latex_style(layout, width="column") as pub:
+    with cc.latex_style(layout, width="column", engine=args.engine) as pub:
         fig, ax = pub.subplots(height_ratio=0.67)
         x = np.linspace(0, 10, 240)
         for i in range(3):
@@ -44,6 +46,10 @@ def main() -> int:
         report = pub.audit(fig)
         pdf = pub.savefig(fig, args.output / "publication_figure.pdf")
         print(f"Saved PDF: {pdf}")
+        if args.pgf:
+            pgf = pub.savefig(fig, args.output / "publication_figure.pgf")
+            print(f"Saved TeX-native PGF: {pgf}")
+            print("Include PGF using LaTeX input in the original manuscript.")
         print("Audit:", "PASS" if report.passed else "WARN")
         for warning in report.warnings:
             print(" -", warning)

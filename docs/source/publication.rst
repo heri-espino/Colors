@@ -74,6 +74,61 @@ For a figure across both columns use width="text" instead.
 different effective font size. The output uses bbox_inches=None; automatically
 tight-cropping a PDF would change its physical insertion dimensions.
 
+
+Find or reuse the actual LaTeX font
+-----------------------------------
+
+A font used by LaTeX may be installed in TeX Live or MiKTeX without appearing
+in the Windows font manager. You do not need to download it again.
+
+.. code-block:: python
+
+   import contrastcolors as cc
+
+   font = cc.find_latex_font("paper/main.tex", engine="pdflatex")
+   print(font.family_code, font.tex_font_name)
+   print(font.outline_path, font.metrics_path)
+   print(font.source)
+
+This uses the TeX installation's own file search (kpsewhich). Some TeX font
+names resolve only to a TFM file: **TFM contains metrics, not the glyph
+outlines**. In particular, a Type 1 font may use separate PFB outlines,
+virtual fonts and encodings. The diagnostic neither copies nor downloads fonts.
+
+**To guarantee the same typesetting as your paper, use native PGF:**
+
+.. code-block:: python
+
+   with cc.latex_style("paper/main.tex", engine="pdflatex") as pub:
+       fig, ax = pub.subplots()
+       ax.plot([0, 1, 2], [1, 3, 2])
+       ax.set_xlabel("Time")
+       pub.savefig(fig, "paper/figures/curve.pgf")
+
+And include it in the original LaTeX manuscript:
+
+.. code-block:: latex
+
+   \begin{figure}
+     \centering
+     \input{figures/curve.pgf}
+     \caption{The manuscript typesets the figure text.}
+   \end{figure}
+
+Make sure the pgf package is loaded in LaTeX. PGF drawing commands take
+their typographic fonts from the document itself, even when those fonts
+are not registered in Windows. The backend is set to use the selected
+document engine with pgf.rcfonts=False.
+
+If Matplotlib exports auxiliary PNG files for rasterized plot elements,
+keep those alongside the PGF and resolve their paths with the LaTeX import
+package if needed.
+
+**Limits:** only the PGF as typeset inside the original manuscript is
+guaranteed to use that manuscript's font setup. The Matplotlib preview
+and a separately created PDF may still use a substitute. TeX font metrics
+and style-specific text positions may require checking the finished PDF.
+
 Adjust an existing Matplotlib figure
 ------------------------------------
 

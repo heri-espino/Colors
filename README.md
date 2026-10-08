@@ -109,6 +109,22 @@ cannot automatically resolve every legend or annotation overlap. The TeX
 probe uses a temporary document and does not modify your paper's source,
 but it still executes trusted LaTeX preamble macros with shell escape disabled.
 
+To reuse the exact TeX fonts without downloading them again, inspect the
+available font information and export a PGF for the manuscript itself to typeset:
+
+~~~python
+font = cc.find_latex_font("paper/main.tex")
+print(font.tex_font_name, font.metrics_path, font.outline_path)
+with cc.latex_style("paper/main.tex") as pub:
+    fig, ax = pub.subplots()
+    ax.plot([0, 1], [1, 2])
+    pub.savefig(fig, "paper/figures/figure.pgf")
+~~~
+
+Include the PGF in the document with LaTeX input{figures/figure.pgf}
+(using the normal LaTeX backslash). A TFM is font metrics, not an outline
+font: no need to manually install it into Matplotlib.
+
 See [publication guide](docs/source/publication.rst).
 
 ## Figure accessibility
