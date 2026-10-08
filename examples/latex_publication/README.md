@@ -43,8 +43,9 @@ Requires MacTeX or compatible TeX Live (pdflatex, pgf, lmodern,
 microtype, graphicx, kpsewhich), and Conda or Python 3.10+.
 If TeX has its fonts, no separate macOS font installation is required.
 
-Intermediate outputs are ignored by Git. The final PDF and accessibility
-PNG are also copied to docs/source/_static so Sphinx can display them.
+Intermediate outputs are ignored by Git. The final manuscript PDF, two
+vector dashboard PDFs, the vector palette-grid PDF, and their three PNG
+website previews are copied to docs/source/_static so Sphinx can display them.
 
 After reviewing the PDF:
 
@@ -52,8 +53,11 @@ After reviewing the PDF:
 ./examples/latex_publication/run_macos.sh --push
 ~~~
 
-This explicitly commits and pushes only those two published assets.
-The default build does not push or commit anything.
+This explicitly commits and pushes only the seven published assets:
+`publication_demo.pdf`, both vector dashboard PDFs, the palette-grid PDF,
+and three PNG website previews. It never commits the PGF intermediates,
+LaTeX auxiliary files, or report.json. The default build does not commit
+or push anything.
 
 **Important:** the CVD images are approximate simulations; they do not
 certify universal accessibility. PGF obtains the document's font glyphs
