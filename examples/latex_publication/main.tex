@@ -1,0 +1,116 @@
+\documentclass[10pt,twocolumn,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{pgf}
+\usepackage{xcolor}
+\usepackage{microtype}
+
+\setlength{\columnsep}{0.23in}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.34em}
+\setcounter{topnumber}{4}
+\setcounter{totalnumber}{6}
+\renewcommand{\topfraction}{0.92}
+\renewcommand{\textfraction}{0.06}
+\renewcommand{\floatpagefraction}{0.72}
+
+\title{\textbf{Publication-ready figures}\\
+\large LaTeX fonts, physical size, and accessibility}
+\author{A reproducible \texttt{contrastcolors} demonstration}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This two-column article demonstrates a document-aware Matplotlib workflow.
+Figures are generated from dimensions and font sizes measured from this
+LaTeX document. One graph is included using PGF, so its text is typeset
+with the same LaTeX font configuration as the surrounding paragraphs.
+The remaining examples illustrate a vector PDF, rasterized scatter artists,
+and six simulated accessibility conditions.
+\end{abstract}
+
+\section{What does font matching mean?}
+Scientific plots should be designed at their \emph{final physical width}.
+The preamble probe measures \verb|\columnwidth|, \verb|\textwidth| and
+normal body font size. In these plots, axis labels use the body point size;
+tick and legend labels follow a consistent hierarchy.
+
+A PDF produced independently by Matplotlib can have the correct
+font \emph{size} without matching its glyphs.
+PGF instead instructs LaTeX to typeset text when the figure is included.
+
+\begin{figure}[tb]
+  \centering
+  \input{generated/lines.pgf}
+  \caption{\textbf{Native PGF.} Text and math labels use the font
+  configuration of this document. Markers and line patterns identify the
+  plotted series in addition to their colors.}
+  \label{fig:pgf}
+\end{figure}
+
+\begin{figure}[tb]
+  \centering
+  \includegraphics{generated/lines.pdf}
+  \caption{\textbf{Direct PDF export.} The same plot at the same
+  physical column width. The nominal font size is correct, though the
+  glyph outlines can differ from Figure~\ref{fig:pgf}.}
+  \label{fig:pdf}
+\end{figure}
+
+\section{Grouped scatter}
+A categorical plot should not rely on hue alone.
+Figure~\ref{fig:groups} assigns each category a distinct color and marker.
+All observations in one category keep the same marker.
+
+\begin{figure}[tb]
+  \centering
+  \includegraphics{generated/groups.pdf}
+  \caption{Categorical scatter with redundant color and marker encoding,
+  exported at the manuscript's actual column width.}
+  \label{fig:groups}
+\end{figure}
+
+\section{Hybrid vector and raster export}
+Large scatter clouds can make vector PDFs unnecessarily heavy.
+Figure~\ref{fig:dense} rasterizes dense points but retains the surrounding
+axes, labels and ticks as vectors.
+
+\begin{figure}[tb]
+  \centering
+  \includegraphics{generated/dense.pdf}
+  \caption{\textbf{Hybrid rendering.} Dense data points are rasterized,
+  while simple graphic elements and typography remain vectorial.}
+  \label{fig:dense}
+\end{figure}
+
+\section{Accessibility}
+A color-vision simulation is a diagnostic approximation, not a clinical
+prediction or universal certification. Figure~\ref{fig:access} compares
+the same line plot in six views: original color, luminance-preserving
+grayscale, print stress, deuteranopia, protanopia, and tritanopia.
+
+\begin{figure*}[tp]
+  \centering
+  \includegraphics[width=\textwidth]{generated/accessibility.png}
+  \caption{\textbf{Six-way comparison.} Original, black-and-white,
+  degraded print, and three Machado-model color-vision-deficiency previews.
+  The panel is rasterized; the source PDF and PGF above retain appropriate
+  vector content.}
+  \label{fig:access}
+\end{figure*}
+
+\section{Reproducibility}
+The accompanying script uses a fixed random seed, saves a JSON report
+with font lookup, physical widths, and audit results, and compiles a
+standalone proof confirming that the PDF figure's unscaled width
+matches the measured LaTeX column.
+
+Matching nominal point size, using PGF, and inspecting grayscale do not
+eliminate a final visual review of dense legends, labels and scientific
+clarity.
+
+\end{document}
