@@ -101,7 +101,13 @@ def _replot_scatter(source, destination, mode: str, severity: float):
         if not original.get_visible():
             continue
         faces = _color_array(original.get_facecolors(), mode, severity)
-        edges = _color_array(original.get_edgecolors(), mode, severity)
+        original_edges = original.get_edgecolors()
+        edges = _color_array(original_edges, mode, severity)
+        # Preserve deliberate white separators even in the harsh "print"
+        # diagnostic. They are a geometric accessibility cue, not a hue.
+        if len(edges):
+            whites = np.all(np.isclose(original_edges[:, :3], 1.0), axis=1)
+            edges[whites, :3] = 1.0
         clone = PathCollection(
             original.get_paths(),
             sizes=original.get_sizes(),
