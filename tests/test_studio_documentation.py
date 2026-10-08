@@ -68,3 +68,12 @@ def test_palette_studio_has_visual_hue_methods_and_cvd_modes():
         assert logic in html
     assert "prefers-reduced-motion:reduce" in html
     assert "frame.style.height" in STUDIO_PAGE.read_text(encoding="utf-8")
+
+
+
+def test_print_safe_studio_defaults_adapt_to_color_count():
+    html = STUDIO.read_text(encoding="utf-8")
+    assert 'value="print-safe" selected' in html
+    assert "contrastcolors.print_safe_luminances" in html
+    assert "Math.pow((light+.05)/(dark+.05),1/(n-1))" in html
+    assert "ratio<1||ratio>8" in html

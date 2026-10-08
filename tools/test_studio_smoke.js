@@ -39,8 +39,8 @@ class FakeElement {
   }
 }
 const initial = {
-  nColors: 5, ratio: 1.22, startY: 0.82, chroma: 0.13,
-  hueStrategy: "equidistant", contrastPreset: "balanced",
+  nColors: 5, ratio: 1.596, startY: 0.50, chroma: 0.13,
+  hueStrategy: "equidistant", contrastPreset: "print-safe",
   baseHue: 25, baseHueColor: "#f16847",
   alpha: 0.8, background: "#ffffff", preserve: true,
   font: "Arial", rasterize: "true", dpi: 600,
@@ -77,6 +77,9 @@ assert.notEqual(code, scripts[0][1], "Could not expose Studio smoke hooks");
 vm.runInNewContext(code, context, { timeout: 120000 });
 assert.ok(context.smoke, "Studio script did not finish loading");
 assert.deepEqual(Array.from(context.smoke.series(), s=>s.hue), [25,97,169,241,313]);
+const initialCR = Number(element("ratio").value);
+assert.ok(initialCR > 1.5 && initialCR < 1.7, "Five-color print-safe ratio missing");
+assert.equal(Number(element("startY").value), 0.5);
 assert.ok(element("chart").innerHTML.includes("<path"), "Plot SVG is empty");
 assert.equal(element("visionComparison").children.length, 6, "Expected six viewing modes");
 assert.ok(element("lineAtlas").innerHTML.includes("stroke-dasharray"), "Line previews missing");
@@ -84,6 +87,9 @@ assert.ok(element("lineAtlas").innerHTML.includes("stroke-dasharray"), "Line pre
 element("hueStrategy").value = "golden";
 element("hueStrategy").trigger("change");
 assert.notEqual(context.smoke.series()[1].hue, 97, "Golden-angle selection did not change hue");
+element("nColors").value = "3";
+element("nColors").trigger("change");
+assert.ok(Number(element("ratio").value) > 2.4, "Three colors need wider grayscale separation");
 element("nColors").value = "10";
 element("nColors").trigger("change");
 assert.equal(context.smoke.series().length, 10);

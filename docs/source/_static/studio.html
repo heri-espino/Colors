@@ -163,7 +163,8 @@ input[type=color]{height:37px;width:43px;min-width:43px;border:1px solid var(--l
     </label>
     <label>Contrast preset
       <select id="contrastPreset">
-        <option value="balanced" selected>Balanced · CR 1.22</option>
+        <option value="print-safe" selected>Print-safe · adaptive grayscale separation</option>
+        <option value="balanced">Balanced · CR 1.22</option>
         <option value="strong">Strong · CR 1.30 (when feasible)</option>
         <option value="subtle">Subtle · CR 1.12</option>
         <option value="manual">Custom contrast values</option>
@@ -180,10 +181,10 @@ input[type=color]{height:37px;width:43px;min-width:43px;border:1px solid var(--l
       <input id="nColors" type="number" min="2" max="10" step="1" value="5">
     </label>
     <label>Adjacent WCAG CR
-      <input id="ratio" type="number" min="1" max="3" step="0.05" value="1.22">
+      <input id="ratio" type="number" min="1" max="8" step="0.001" value="1.596">
     </label>
     <label>Start luminance Y0
-      <input id="startY" type="number" min="0" max="1" step="0.01" value="0.82">
+      <input id="startY" type="number" min="0" max="1" step="0.01" value="0.50">
     </label>
     <label>Requested OKLCH chroma
       <input id="chroma" type="number" min="0" max="0.35" step="0.01" value="0.13">
@@ -395,7 +396,15 @@ function applyContrastPreset(){
   const preset=$('contrastPreset').value;
   if(preset==='manual')return;
   const n=clamp(Number($('nColors').value)||5,2,10);
-  const start=clamp(Number($('startY').value)||.82,0,1);
+  if(preset==='print-safe'){
+    // Same WCAG luminance endpoints as contrastcolors.print_safe_luminances:
+    // fewer categories get a larger ratio, not nearly identical grays.
+    const light=.50,dark=.035;
+    $('startY').value=light.toFixed(2);
+    $('ratio').value=Math.pow((light+.05)/(dark+.05),1/(n-1)).toFixed(6);
+    return;
+  }
+  const start=clamp(Number($('startY').value)||.50,0,1);
   const maxRatio=Math.pow((start+.05)/.05,1/(n-1));
   const proposed={balanced:1.22,strong:1.30,subtle:1.12}[preset]||1.22;
   $('ratio').value=Math.min(proposed,Math.max(1,maxRatio-.006)).toFixed(3);
@@ -986,7 +995,8 @@ $('baseHueColor').addEventListener('change',()=>{
 });
 $('nColors').addEventListener('change',()=>{$('hueStrategy').value==='custom'?renderAll():applyHueStrategy()});
 $('ratio').addEventListener('input',()=>{$('contrastPreset').value='manual';renderAll()});
-['startY','chroma'].forEach(id=>$(id).addEventListener('input',renderAll));
+$('startY').addEventListener('input',()=>{$('contrastPreset').value='manual';renderAll()});
+$('chroma').addEventListener('input',renderAll);
 renderEncodingAtlas();
 
 ['alpha','background','preserve','font','rasterize','dpi','styleName','presetName'].forEach(id=>$(id).addEventListener('input',()=>{renderChart();renderReport();renderAlpha();renderCode()}));
@@ -1049,7 +1059,7 @@ function normalizeDesign(raw){
     throw Error('Hues must contain 2–10 angles in [0,359].');
   }
   const ratio=Number(p.ratio),start=Number(p.start_luminance),chroma=Number(p.chroma);
-  if(!Number.isFinite(ratio)||ratio<1||ratio>3||!Number.isFinite(start)||start<0||start>1||
+  if(!Number.isFinite(ratio)||ratio<1||ratio>8||!Number.isFinite(start)||start<0||start>1||
      !Number.isFinite(chroma)||chroma<0||chroma>.35||
      (start+.05)/Math.pow(ratio,p.hues.length-1)-.05 < -1e-10){
     throw Error('The supplied contrast/luminance/chroma configuration is not valid.');
