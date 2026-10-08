@@ -30,6 +30,40 @@ python -m pip install -e ".[dev,docs]"
 pytest
 ```
 
+## Interactive Palette & Plot Studio
+
+The browser-based Studio works without a backend and offers live previews for
+line plots, time series, histograms, box/violin/ridge plots, scatter,
+categorical heatmaps and grouped bars.
+
+It includes grayscale/print-stress views, hue order and identifier editing,
+browser-local save/load, portable JSON import/export, and downloadable named
+Python palette presets.
+
+Open the Studio in the Sphinx site or directly at
+[docs/source/_static/studio.html](docs/source/_static/studio.html).
+
+**Named palette example:**
+
+~~~python
+import contrastcolors as cc
+
+cc.register_palette(
+    "paper_palette",
+    hues=[55, 20, 145, 210, 290],
+    ratio=1.22,
+    start_luminance=0.72,
+    markers=["o", "s", "^", "D", "X"],
+    linestyles=["-", "--", ":", "-.", (0, (5, 2))],
+)
+
+colors = cc.color_palette("paper_palette")
+scheme = cc.plot_scheme("paper_palette")
+~~~
+
+A Python preset registration lasts for the current process. Keep the
+registration in a project module and import it to reuse it.
+
 ## Documentation
 
 The Sphinx site now documents the complete library:
