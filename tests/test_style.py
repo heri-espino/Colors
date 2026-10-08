@@ -99,3 +99,22 @@ def test_style_context_restores_previous_rcparams():
 def test_unknown_style_fails():
     with pytest.raises(ValueError):
         cc.set_style("not-a-style")
+
+
+def test_default_heri_palette_prioritizes_grayscale_separation():
+    from contrastcolors.color_spaces import relative_luminance
+
+    cc.set_style("heri", font="DejaVu Sans", use_tex=False)
+    rendered = mpl.rcParams["axes.prop_cycle"].by_key()["color"]
+    first_three = [relative_luminance(color) for color in rendered[:3]]
+    assert first_three[0] > first_three[1] > first_three[2]
+    assert first_three[0] - first_three[1] > 0.20
+    assert first_three[1] - first_three[2] > 0.10
+    assert len(set(rendered)) == 5
+
+
+def test_legacy_style_palette_is_still_selectable():
+    cc.set_style("heri", font="DejaVu Sans", use_tex=False, palette="legacy")
+    assert mpl.rcParams["axes.prop_cycle"].by_key()["color"] == list(cc.HERI_PALETTE)
+    with pytest.raises(ValueError):
+        cc.set_style("heri", palette="unknown")

@@ -19,6 +19,9 @@ import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.colors import LinearSegmentedColormap
 
+from .palette import color_for_luminance
+from .color_spaces import to_hex
+
 
 StyleName = Literal["heri", "default", "matplotlib"]
 
@@ -36,6 +39,17 @@ HERI_PALETTE = (
     "#00b49c",
     "#ffc600",
     "#f198ff",
+)
+
+# Paper defaults: maximize luminance separation for the first three
+# categorical series, before adding intermediate gray levels for series 4-5.
+# The original WTI palette remains available with palette="legacy".
+_HERI_PRINT_PALETTE = tuple(
+    to_hex(color_for_luminance(y, hue, chroma=0.13).rgb)
+    for y, hue in zip(
+        (0.50, 0.17, 0.035, 0.29, 0.085),
+        (25, 150, 275, 210, 340),
+    )
 )
 
 HERI_NEUTRAL = {
@@ -246,7 +260,7 @@ def _font_rcparams(font: str, *, use_tex: bool) -> dict:
     }
 
 
-def _heri_rcparams(*, font: str, use_tex: bool) -> dict:
+def _heri_rcparams(*, font: str, use_tex: bool, palette: str) -> dict:
     """Return the WTI publication rcParams with a user-selectable font."""
     params = {
         "font.size": 8.5,
@@ -289,7 +303,7 @@ def _heri_rcparams(*, font: str, use_tex: bool) -> dict:
         "legend.borderaxespad": 0.25,
         "legend.handlelength": 1.8,
         "axes.prop_cycle": (
-            mpl.cycler(color=HERI_PALETTE)
+            mpl.cycler(color=_HERI_PRINT_PALETTE if palette == "print-safe" else HERI_PALETTE)
             + mpl.cycler(marker=("o", "s", "^", "D", "X"))
             + mpl.cycler(linestyle=("-", "--", ":", "-.", (0, (5, 2))))
         ),
@@ -304,12 +318,14 @@ def set_style(
     font: str = "utopia",
     use_tex: bool | Literal["auto"] = "auto",
     rasterize: bool = True,
+    palette: Literal["print-safe", "legacy"] = "print-safe",
 ) -> None:
     """Apply a named global Matplotlib style.
 
-    The Heri style matches the WTI APO publication figures. The font is an
-    independent choice, for example font="arial", font="stix", or
-    font="utopia".
+    By default, the Heri style uses a print-safe categorical cycle with
+    separated luminances and redundant marker/linestyle encoding.
+    Set palette="legacy" to recover the original WTI APO color cycle.
+    The font is an independent choice (Arial, STIX, Utopia, etc.).
 
     With use_tex="auto", external LaTeX is attempted only for the Utopia font.
     Custom fonts are rendered directly by Matplotlib so their family choice is
@@ -333,6 +349,8 @@ def set_style(
 
     if not isinstance(font, str) or not font.strip():
         raise ValueError("font must be a non-empty Matplotlib font-family name.")
+    if palette not in ("print-safe", "legacy"):
+        raise ValueError("palette must be 'print-safe' or 'legacy'.")
 
     try:
         plt.style.use("seaborn-v0_8-whitegrid")
@@ -360,7 +378,7 @@ def set_style(
             "Use use_tex=False (or use_tex='auto') for fonts such as Arial."
         )
 
-    mpl.rcParams.update(_heri_rcparams(font=font, use_tex=resolved_use_tex))
+    mpl.rcParams.update(_heri_rcparams(font=font, use_tex=resolved_use_tex, palette=palette))
 
 
 @contextmanager
@@ -370,6 +388,7 @@ def style_context(
     font: str = "utopia",
     use_tex: bool | Literal["auto"] = "auto",
     rasterize: bool = True,
+    palette: Literal["print-safe", "legacy"] = "print-safe",
 ) -> Iterator[None]:
     """Temporarily apply a style and restore previous Matplotlib state."""
     global _RASTERIZE_DENSE, _ACCESSIBLE_SCATTER
@@ -383,6 +402,7 @@ def style_context(
             font=font,
             use_tex=use_tex,
             rasterize=rasterize,
+            palette=palette,
         )
         yield
     finally:

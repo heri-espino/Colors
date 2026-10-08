@@ -8,7 +8,11 @@ Styles
 Heri
 ----
 
-``heri`` follows the visual system used in the WTI APO publication figures.
+The default ``heri`` style uses print-aware categorical colors: the
+first few plotted series are assigned widely separated luminances, as
+well as different markers and dash patterns. Earlier publication figures
+can be reproduced using ``palette="legacy"``, which retains the original
+WTI categorical colors.
 
 .. raw:: html
 
@@ -31,11 +35,10 @@ Heri
    x = np.linspace(0, 9, 260)
    fig, ax = plt.subplots(figsize=(8.0, 4.1))
 
-   for i, color in enumerate(cc.HERI_PALETTE[:4]):
+   for i in range(4):
        ax.plot(
            x,
            np.sin(x * 0.72 + i * 0.55) + i * 0.34,
-           color=color,
            label=f"Series {i + 1}",
        )
 
@@ -62,8 +65,14 @@ Choose another font without changing the rest of the style:
    cc.set_style("heri", font="DejaVu Sans")
    cc.set_style("heri", font="utopia")
 
-The categorical cycle is ``cc.HERI_PALETTE`` and the continuous heatmap
-colormap is ``cc.HERI_CMAP``.
+The default categorical cycle is the print-safe variant. The original
+colors remain in ``cc.HERI_PALETTE`` and can be activated with:
+
+.. code-block:: python
+
+   cc.set_style("heri", palette="legacy")
+
+The continuous heatmap colormap is ``cc.HERI_CMAP``.
 
 Default
 -------
