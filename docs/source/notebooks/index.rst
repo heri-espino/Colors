@@ -49,5 +49,11 @@ publication workflow in one run:
 5. builds Sphinx from the stored outputs; and
 6. deploys the refreshed GitHub Pages site.
 
-Ordinary Sphinx builds use the stored outputs and do not execute all notebooks
-again. This keeps routine documentation CI lightweight.
+Ordinary Sphinx builds reuse outputs already stored in notebooks. If a notebook
+is missing its outputs, MyST-NB executes it automatically so that its figures
+are visible on the documentation site. The manual refresh workflow remains the
+way to commit all outputs permanently to the repository.
+
+To publish the Sphinx site itself, configure GitHub Pages in Settings > Pages
+with Source set to GitHub Actions, then run the refresh workflow. GitHub's
+default Jekyll Pages workflow does not build these Sphinx pages.

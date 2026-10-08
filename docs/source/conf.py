@@ -59,6 +59,6 @@ plot_formats = [("png", 180)]
 plot_apply_rcparams = True
 
 
-nb_execution_mode = os.environ.get("CONTRASTCOLORS_NB_EXECUTION", "off")
+nb_execution_mode = os.environ.get("CONTRASTCOLORS_NB_EXECUTION", "auto")
 nb_execution_timeout = 90
 nb_execution_raise_on_error = True
