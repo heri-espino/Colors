@@ -83,6 +83,42 @@ textarea{width:100%;min-height:260px;border:1px solid #cfd5dc;border-radius:8px;
 #savedPresetList{min-width:140px}
 #chart{min-height:300px}
 @media(max-width:850px){.plot-switcher{grid-template-columns:repeat(2,1fr)}.preset-controls{grid-template-columns:1fr 1fr}.preset-controls button{grid-column:auto}}
+
+/* Palette methods and interactive hue selection */
+.strategy-controls{display:grid;grid-template-columns:minmax(170px,1.5fr) minmax(210px,1.5fr) minmax(170px,1.1fr) auto;align-items:end;gap:12px;margin:8px 0 16px}
+.strategy-action button{padding:9px 12px;border:1px solid var(--accent);background:var(--accent);color:white;border-radius:8px;white-space:nowrap;min-height:36px}
+.hue-inputs{display:flex;align-items:center;gap:9px;min-height:36px}
+.hue-inputs output{white-space:nowrap;min-width:33px}
+input[type=color]{height:37px;width:43px;min-width:43px;border:1px solid var(--line);border-radius:8px;cursor:pointer;background:white;padding:3px}
+.hue-wheel{height:25px;border-radius:999px;background:linear-gradient(90deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00);position:relative;margin:0 4px 11px;border:1px solid #d3d9e0}
+.hue-wheel .hue-tick{position:absolute;top:-5px;width:10px;height:34px;border:2px solid white;border-radius:5px;box-shadow:0 0 0 1px #2d3640;transform:translateX(-50%);pointer-events:none}
+.style-atlas{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:8px;margin-top:10px}
+.style-sample{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:8px;background:white;min-height:45px;padding:6px 8px;font-size:12px}
+.style-sample svg{flex:0 0 77px;width:77px;height:24px}
+.line-picker{position:relative;min-width:108px}
+.line-picker>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:6px;padding:5px 8px;border:1px solid #cfd5dc;border-radius:7px;min-height:37px;white-space:nowrap;background:white;font-size:11px}
+.line-picker>summary::-webkit-details-marker{display:none}
+.line-picker>summary::after{content:'⌄';margin-left:auto;color:#718096}
+.line-picker>summary svg{width:48px;min-width:48px;height:18px}
+.line-picker .line-menu{position:absolute;right:0;top:40px;background:white;border:1px solid #cbd3dc;border-radius:9px;box-shadow:0 10px 28px rgba(20,30,50,.15);padding:6px;min-width:230px;z-index:20;max-height:320px;overflow-y:auto}
+.line-picker .line-menu button{display:flex;gap:8px;align-items:center;width:100%;padding:7px;border:0;border-radius:5px;text-align:left;background:white;color:#212e3c}
+.line-picker .line-menu button:hover,.line-picker .line-menu button:focus-visible{background:var(--accent-soft)}
+.line-picker .line-menu svg{height:20px;width:75px;flex-shrink:0}
+.vision-comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+.vision-tile{border:1px solid var(--line);border-radius:9px;padding:10px}
+.vision-tile strong{font-size:12px;display:block;margin-bottom:8px}
+.vision-swatches{display:flex;min-height:46px;border-radius:5px;overflow:hidden}
+.vision-swatches div{flex:1;position:relative}
+.vision-swatches div:hover::after{content:attr(data-hex);position:absolute;top:7px;left:3px;font:10px monospace;background:#fff;color:#111;padding:2px;border-radius:3px}
+.mode-buttons button{transition:background .18s,border-color .18s,transform .18s}
+.mode-buttons button:hover{transform:translateY(-1px)}
+#chart path,#chart rect,#chart polygon,#chart circle{animation:plotAppear .38s ease-out both}
+.palette-color{transition:background-color .25s ease,color .25s ease}
+@keyframes plotAppear{from{opacity:.15}to{opacity:1}}
+@media(max-width:1050px){.strategy-controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:670px){.strategy-controls,.vision-comparison{grid-template-columns:1fr}.line-picker .line-menu{right:auto;left:0}.series-row{align-items:start}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
 </style>
 </head>
 <body>
@@ -105,6 +141,39 @@ textarea{width:100%;min-height:260px;border:1px solid #cfd5dc;border-radius:8px;
 
 <section class="panel soft" id="palette">
   <h2>1. Palette</h2>
+  <p class="muted" style="margin-bottom:12px">Start with systematic hue spacing; fine-tune each hue below. OKLCH hue angles are evenly spaced, not guaranteed perceptually distinct. The luminance ladder supplies additional contrast.</p>
+  <div class="strategy-controls">
+    <label>Hue distribution
+      <select id="hueStrategy">
+        <option value="equidistant" selected>Equidistant around hue circle</option>
+        <option value="golden">Golden-angle sequence</option>
+        <option value="qualitative">Balanced hue families</option>
+        <option value="analogous">Analogous (related hues)</option>
+        <option value="monochrome">Single hue (sequential only)</option>
+        <option value="custom">Custom hue selection</option>
+      </select>
+    </label>
+    <label>Starting hue (OKLCH degrees)
+      <div class="hue-inputs">
+        <input id="baseHue" type="range" min="0" max="359" step="1" value="25" aria-label="Starting hue angle">
+        <output id="baseHueLabel" for="baseHue">25°</output>
+        <input id="baseHueColor" type="color" value="#f16847" title="Choose starting hue from a color">
+      </div>
+    </label>
+    <label>Contrast preset
+      <select id="contrastPreset">
+        <option value="balanced" selected>Balanced · CR 1.22</option>
+        <option value="strong">Strong · CR 1.30 (when feasible)</option>
+        <option value="subtle">Subtle · CR 1.12</option>
+        <option value="manual">Custom contrast values</option>
+      </select>
+    </label>
+    <div class="strategy-action">
+      <button id="applyStrategy" type="button">Regenerate hues</button>
+    </div>
+  </div>
+  <div id="hueWheel" class="hue-wheel" role="img" aria-label="Circular hue spectrum with current series hue positions"></div>
+  <p class="muted" id="strategyNote" aria-live="polite"></p>
   <div class="controls">
     <label>Number of colors
       <input id="nColors" type="number" min="2" max="10" step="1" value="5">
@@ -132,6 +201,10 @@ textarea{width:100%;min-height:260px;border:1px solid #cfd5dc;border-radius:8px;
   <h2>2. Hue order and plot identifiers</h2>
   <p class="muted" style="margin-bottom:10px">Move rows to change which hue receives each luminance level. Marker and linestyle are redundant identifiers for grayscale/monochrome output.</p>
   <div id="seriesList" class="series-list"></div>
+  <h3 style="margin-top:18px">Line-style and marker atlas</h3>
+  <p class="muted">Every style is drawn as it appears on the plot. Use the per-series picker above to assign any dash pattern.</p>
+  <div id="lineAtlas" class="style-atlas" aria-label="Line-style examples"></div>
+  <div id="markerAtlas" class="style-atlas" aria-label="Marker examples"></div>
 </section>
 
 <section class="panel" id="preview">
@@ -144,6 +217,9 @@ textarea{width:100%;min-height:260px;border:1px solid #cfd5dc;border-radius:8px;
       <button type="button" data-mode="color" class="active">Color</button>
       <button type="button" data-mode="gray">Grayscale</button>
       <button type="button" data-mode="print">Print stress</button>
+      <button type="button" data-mode="deuteranopia">Deuteranopia</button>
+      <button type="button" data-mode="protanopia">Protanopia</button>
+      <button type="button" data-mode="tritanopia">Tritanopia</button>
     </div>
   </div>
   <div id="plotSwitcher" class="plot-switcher" aria-label="Plot type">
@@ -157,6 +233,7 @@ textarea{width:100%;min-height:260px;border:1px solid #cfd5dc;border-radius:8px;
     <button type="button" data-plot="heatmap">Heatmap</button>
     <button type="button" data-plot="bar">Grouped bars</button>
   </div>
+  <p class="muted cvd-explainer">Colour-vision previews transform the plotted palette using approximate Machado-style linear-RGB matrices. Individual vision varies; print stress is not a calibrated printer simulation.</p>
   <div class="preview-grid">
     <div class="chart-box">
       <h3 id="currentPlotTitle">Line plot</h3>
@@ -169,6 +246,8 @@ textarea{width:100%;min-height:260px;border:1px solid #cfd5dc;border-radius:8px;
       <div class="note">Print stress compresses the luminance range to mimic a degraded reproduction. It is a robustness test, not an ICC/printer simulation.</div>
     </div>
   </div>
+  <h3 style="margin-top:18px">Compare the palette across viewing conditions</h3>
+  <div id="visionComparison" class="vision-comparison"></div>
 </section>
 
 <section class="panel" id="alpha-lab">
