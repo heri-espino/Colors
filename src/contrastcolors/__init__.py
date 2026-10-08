@@ -11,6 +11,7 @@ from .accessibility import (
     to_grayscale_image,
     to_print_stress_image,
 )
+from .vector_accessibility import show_vector_accessibility_panel
 from .alpha import AlphaCompensation, compensate_alpha, composite, minimum_alpha
 from .api import (
     DEFAULT_LINESTYLES,
@@ -116,6 +117,7 @@ __all__ = [
     "simulate_cvd_image",
     "simulate_figure",
     "show_accessibility_panel",
+    "show_vector_accessibility_panel",
     "save_accessibility_panel",
     "to_grayscale_image",
     "to_print_stress_image",

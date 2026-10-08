@@ -114,3 +114,68 @@ def test_panel_rejects_unusable_title_spacing(small_fig):
         cc.show_accessibility_panel(small_fig, title_fontsize=0)
     with pytest.raises(ValueError):
         cc.show_accessibility_panel(small_fig, title_pad=-1)
+
+
+@pytest.mark.parametrize("ncols", [2, 3])
+def test_vector_dashboard_has_no_raster_images_and_correct_fonts(ncols, tmp_path):
+    import matplotlib.collections as collections
+    import matplotlib as mpl
+    with cc.style_context("heri", font="DejaVu Sans", rasterize=False):
+        source, ax = plt.subplots()
+        x = np.arange(5)
+        for i, color in enumerate(("#E69F00", "#0072B2", "#009E73")):
+            ax.plot(x, x + i, label=f"Series {i+1}", marker="o",
+                    color=color, linestyle=("-", "--", ":")[i])
+        ax.set(xlabel="Time", ylabel="Response")
+        panel, views = cc.show_vector_accessibility_panel(
+            source, ncols=ncols, figsize=(7, 8 if ncols == 2 else 4.5),
+            axis_label_fontsize=10, title_fontsize=10,
+        )
+        assert len(views) == 6
+        for panel_ax in views:
+            assert not panel_ax.images
+            assert len(panel_ax.lines) == 3
+            assert panel_ax.xaxis.label.get_fontsize() == 10
+            assert panel_ax.yaxis.label.get_fontweight() == "normal"
+            assert panel_ax.title.get_fontsize() == 10
+        out = tmp_path / "vectors.pdf"
+        with mpl.rc_context({"savefig.bbox": None}):
+            panel.savefig(out, bbox_inches=None)
+        content = out.read_bytes()
+        assert b"/Subtype /Image" not in content
+        assert out.stat().st_size > 500
+        plt.close(panel)
+        plt.close(source)
+
+
+def test_vector_scatter_keeps_marker_geometry_alpha_and_white_edges():
+    fig, ax = plt.subplots()
+    for i, (color, marker) in enumerate(zip(
+        ("#E69F00", "#0072B2", "#009E73"), ("o", "s", "^")
+    )):
+        ax.scatter([0, 1], [i, i + 1], marker=marker, c=color, s=45,
+                   alpha=.62, edgecolors="white", linewidths=.22,
+                   label=f"Group {i+1}")
+    dest, axs = cc.show_vector_accessibility_panel(
+        fig, figsize=(7, 8), ncols=2,
+    )
+    for a in axs:
+        assert not a.images
+        assert len(a.collections) == 3
+        for original, copied in zip(ax.collections, a.collections):
+            assert copied.get_rasterized() is False
+            np.testing.assert_allclose(original.get_offsets(), copied.get_offsets())
+            np.testing.assert_allclose(original.get_sizes(), copied.get_sizes())
+            np.testing.assert_allclose(copied.get_linewidths(), [.22])
+            np.testing.assert_allclose(copied.get_edgecolors()[:, :3], [[1, 1, 1]])
+            assert np.max(copied.get_facecolors()[:, 3]) == pytest.approx(.62)
+    plt.close(dest)
+    plt.close(fig)
+
+
+def test_vector_dashboard_rejects_unsupported_heatmaps():
+    fig, ax = plt.subplots()
+    ax.imshow(np.ones((2, 3)))
+    with pytest.raises(ValueError, match="no line or scatter"):
+        cc.show_vector_accessibility_panel(fig)
+    plt.close(fig)

@@ -41,6 +41,13 @@ DEFAULT_ACCESSIBILITY_MODES
 
 .. autofunction:: contrastcolors.figure_variants
 
+.. autofunction:: contrastcolors.show_vector_accessibility_panel
+
+For standard line and scatter plots, this function redraws vector artists
+per viewing mode instead of rasterizing the original graphic. Export its
+Matplotlib figure as PDF or PGF; PGF can be included in the manuscript for
+the exact document font. Unsupported artist types raise explicitly.
+
 .. autofunction:: contrastcolors.show_accessibility_panel
 
 .. autofunction:: contrastcolors.save_accessibility_panel
