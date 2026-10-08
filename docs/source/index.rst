@@ -230,6 +230,7 @@ Explore next
    gallery
    notebooks/index
    studio
+   accessibility
    customization
    quickstart
    palettes

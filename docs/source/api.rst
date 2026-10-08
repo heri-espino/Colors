@@ -15,11 +15,35 @@ High-level palette API
 
 .. autofunction:: contrastcolors.plot_scheme
 
+.. autofunction:: contrastcolors.scatter_scheme
+
 DEFAULT_MARKERS
     Default marker sequence used by plot_scheme.
 
 DEFAULT_LINESTYLES
     Default line-style sequence used by plot_scheme.
+
+Accessibility and print previews
+--------------------------------
+
+DEFAULT_ACCESSIBILITY_MODES
+    Original, grayscale, print-stress, deuteranopia, protanopia, tritanopia.
+
+.. autofunction:: contrastcolors.figure_to_rgba
+
+.. autofunction:: contrastcolors.to_grayscale_image
+
+.. autofunction:: contrastcolors.to_print_stress_image
+
+.. autofunction:: contrastcolors.simulate_cvd_image
+
+.. autofunction:: contrastcolors.simulate_figure
+
+.. autofunction:: contrastcolors.figure_variants
+
+.. autofunction:: contrastcolors.show_accessibility_panel
+
+.. autofunction:: contrastcolors.save_accessibility_panel
 
 Named palette presets
 ---------------------

@@ -74,6 +74,18 @@ python -m pip install -e ".[dev,docs]"
 pytest
 ```
 
+## Figure accessibility
+
+The Heri Matplotlib style now defaults to different line markers and
+linestyles, and repeated scatter groups get distinct markers. Use the
+six-view panel to inspect an entire figure in grayscale, print stress,
+deuteranopia, protanopia and tritanopia, alongside the original:
+
+    cc.show_accessibility_panel(fig)
+    cc.save_accessibility_panel(fig, "accessible.png")
+
+See the accessibility documentation. Simulations are approximations.
+
 ## Interactive Palette & Plot Studio
 
 The browser-based Studio works without a backend and offers live previews for

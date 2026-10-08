@@ -20,6 +20,7 @@ embeds the real Matplotlib outputs.
    09_publication_multipanel
    10_alpha_background
    11_palettes_colormaps
+   12_accessibility
 
 Refresh every notebook at once
 ------------------------------
