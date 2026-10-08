@@ -135,6 +135,16 @@ Color utilities
 
 .. autofunction:: contrastcolors.delta_e_ok
 
+Adaptive print-safe colors
+--------------------------
+
+.. autofunction:: contrastcolors.print_safe_luminances
+
+The default contrastcolors.plot_scheme() and scatter_scheme() distribute
+luminances across a broad grayscale range when the number of series is
+small (and both the contrast ratio and starting luminance are omitted).
+Named presets and explicit contrast ratios are kept unchanged.
+
 LaTeX layout and publication fitting
 ------------------------------------
 

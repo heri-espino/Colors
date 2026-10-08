@@ -41,8 +41,8 @@ What you can customize
 - **Palette**: 2 to 10 hues with equidistant, golden-angle,
   balanced-family, analogous, single-hue or manual hue methods; hue
   sliders and color pickers; OKLCH chroma and a WCAG luminance ladder.
-- **Contrast presets**: balanced, strong, subtle and manual adjacent
-  contrast ratios. Strong ratios are automatically capped if all
+- **Contrast presets**: automatic print-safe gray separation (default),
+  balanced, strong, subtle and manual adjacent contrast ratios. Strong ratios are automatically capped if all
   selected luminance levels cannot fit within the available range.
 - **Starting hue**: circular spectrum with markers, a hue slider, and a
   native color picker (which extracts the hue only; the exact picked
@@ -133,8 +133,10 @@ workflow does not build the Sphinx documentation.
 Palette selection guidance
 --------------------------
 
-For **unrelated categories**, start with equidistant hue angles, then check
-actual contrast and grayscale distinguishability. Equal angles in OKLCH are
+For **unrelated categories**, start with equidistant hue angles and the
+print-safe luminance setting: two or three series receive greater grayscale
+separation than a five- or ten-series plot. Then check actual contrast and
+grayscale distinguishability. Equal angles in OKLCH are
 not equally distant perceptually or under color-vision deficiencies. A
 **golden-angle** scheme can be useful when the number of categories changes.
 Use **analogous** or **single-hue** methods for related or ordered data,

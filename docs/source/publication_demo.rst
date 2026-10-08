@@ -13,7 +13,8 @@ Figures included
 
 - **PGF vs PDF:** the same line graph appears twice, comparing
   manuscript-owned font glyphs with direct Matplotlib vector export.
-- **Grouped scatter:** distinct markers and colors for each category.
+- **Grouped scatter:** larger markers, distinct colors and luminances for
+  each category, with the legend above the data region.
 - **Dense scatter:** rasterized points with vector axes and labels.
 - **Six views:** original, grayscale, print-stress, deuteranopia,
   protanopia and tritanopia. Panel headings are outside each preview,
@@ -112,3 +113,14 @@ PGF typesets text using the actual manuscript font after it is included
 in LaTeX. A direct PDF can have equal nominal font size without identical
 glyphs. The six-view panel provides diagnostic simulations rather than
 universal accessibility certification.
+
+The publication example uses the adaptive ``print_safe_luminances`` defaults
+for three series. Relative luminances are more widely spaced than for a
+five- or ten-series palette. The original plot places its legend above the
+data axes, and each accessibility panel has a separate title strip to prevent
+titles colliding with axis labels. Panels are arranged in **two columns by
+three rows**, so the final ``figure*`` can be read at journal scale.
+
+The preview includes grayscale rendering to check whether luminance alone
+is sufficient; marker shapes and dashed line patterns remain necessary,
+especially where color pairs converge under simulated CVD.
