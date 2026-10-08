@@ -14,12 +14,16 @@ Figures included
 - **PGF vs PDF:** the same line graph appears twice, comparing
   manuscript-owned font glyphs with direct Matplotlib vector export.
   The categorical scatter is also included as PGF for matching fonts.
-- **Grouped scatter:** larger markers with **white boundaries**, distinct
+- **Grouped scatter:** translucent markers with very thin **white boundaries**,
+  three Okabe–Ito colorblind-friendly hues (orange/blue/bluish green), and
+  the same nominal LaTeX axis font size. The categories retain different
+  shapes even when their colors become similar.
+- The colors remain distinct by hue, and distinct
   colors and luminances, an external legend, and TeX-native PGF text.
 - **Dense scatter:** rasterized points with vector axes and labels.
-- **Full-page series dashboard:** six views in a portrait 2 × 3 grid,
+- **Full-page vector series dashboard:** six views in a portrait 2 × 3 grid,
   displayed on a dedicated LaTeX float page with an explanatory paragraph.
-- **Horizontal scatter dashboard:** six views in a landscape 3 × 2 grid,
+- **Horizontal vector scatter dashboard:** six views in a landscape 3 × 2 grid,
   spanning both text columns with surrounding article prose.
 - **Compact labels:** regular-weight titles are visually centered over the
   actual rendered image and placed close to it without covering plot text.
@@ -59,7 +63,11 @@ Locally generated files are under:
    examples/latex_publication/generated/groups.pdf
    examples/latex_publication/generated/groups.pgf
    examples/latex_publication/generated/dense.pdf
+   examples/latex_publication/generated/accessibility.pdf
+   examples/latex_publication/generated/accessibility.pgf
    examples/latex_publication/generated/accessibility.png
+   examples/latex_publication/generated/groups_accessibility.pdf
+   examples/latex_publication/generated/groups_accessibility.pgf
    examples/latex_publication/generated/lines_proof.pdf
    examples/latex_publication/generated/report.json
 
@@ -72,14 +80,25 @@ After reviewing the local PDF, run:
 
    ./examples/latex_publication/run_macos.sh --push
 
-The --push flag explicitly commits and pushes only the final publication
-PDF and accessibility PNG, not all intermediate figures.
+The --push flag explicitly commits and pushes the final publication PDF,
+the two vector dashboard PDFs, and the two website PNG thumbnails, not
+the intermediate source PGF files.
 
 .. raw:: html
 
    <p>
      <a href="_static/publication_demo.pdf" target="_blank" rel="noopener">
        Open the generated LaTeX demonstration PDF
+     </a>
+   </p>
+   <p>
+     <a href="_static/publication_accessibility.pdf" target="_blank" rel="noopener">
+       Download full-size vector series dashboard (PDF)
+     </a>
+   </p>
+   <p>
+     <a href="_static/publication_scatter_accessibility.pdf" target="_blank" rel="noopener">
+       Download full-size vector scatter dashboard (PDF)
      </a>
    </p>
    <p>
@@ -117,7 +136,10 @@ Limitations
 PGF typesets text using the actual manuscript font after it is included
 in LaTeX. A direct PDF can have equal nominal font size without identical
 glyphs. The six-view panel provides diagnostic simulations rather than
-universal accessibility certification.
+universal accessibility certification. For the supported standard line and
+scatter artists the published dashboards are true vector drawings, and
+the compiled manuscript inserts their PGF sources for document-owned text
+typesetting. The PNG files here are only web previews.
 
 The publication example uses the adaptive ``print_safe_luminances``
 defaults for three series. Relative luminances are more widely spaced than

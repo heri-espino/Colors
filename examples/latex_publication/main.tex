@@ -29,8 +29,8 @@ This two-column article demonstrates a document-aware Matplotlib workflow.
 Figures are generated from dimensions and font sizes measured from this
 LaTeX document. One graph is included using PGF, so its text is typeset
 with the same LaTeX font configuration as the surrounding paragraphs.
-The remaining examples illustrate a vector PDF, rasterized scatter artists,
-and six simulated accessibility conditions.
+The remaining examples illustrate a vector PDF, a deliberately rasterized
+dense scatter, and six accessibility views redrawn as vector graphics.
 \end{abstract}
 
 \section{What does font matching mean?}
@@ -95,7 +95,7 @@ weight and physical point size as the line and grouped-scatter plots.
 \end{figure}
 
 \section{Presentation at the final reading size}
-Good rendering is not only a question of pixel density. A diagnostic image
+Good rendering is not only a question of pixel density. A diagnostic figure
 can contain the right information and still be unreadable when reduced from
 a large preview window to the width of a printed journal column.
 Here we deliberately compare two common publication requirements: a
@@ -112,12 +112,14 @@ For the three-series plot we reserve a dedicated page. Two dashboard
 columns and three rows provide enough width for tick labels, a legend,
 and six accessibility views without forcing the reader to zoom into a
 single column. The same underlying trajectories are shown in all six
-conditions; only the simulated viewing conditions change.
+conditions; only the simulated viewing conditions change. The paper uses
+a color-vision-friendly orange, blue and bluish-green starting palette
+with different line and marker shapes; no three colors can guarantee
+accessibility for every viewer.
 
-A separate heading sits immediately above each displayed image.
-Its horizontal center is aligned to the image rather than to a larger
-container, and it uses regular-weight type so it does not compete with
-the axis labels. Color, line pattern, and marker shape encode each series
+A separate heading sits immediately above each plotted view.
+Its center is aligned to the axes and it uses regular-weight type,
+so it does not compete with 10 pt axis labels. Color, line pattern, and marker shape encode each series
 redundantly. Their luminance levels are spread across the available range
 because the plot has only three categories.
 
@@ -134,12 +136,12 @@ because the plot has only three categories.
     whether line styles, point markers and luminance remain useful when hue
     differences disappear.
   \end{minipage}\par\medskip
-  \includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{generated/accessibility.png}
-  \caption{\textbf{Full-page portrait dashboard (two dashboard columns,
-  three rows).} The figure occupies its own float page in a two-column
-  article. Each title is centered over its rendered image with minimal
-  vertical separation. This layout prioritizes readability of axes,
-  legends and symbols at the final printed size.}
+  \input{generated/accessibility.pgf}
+  \caption{\textbf{Full-page vector dashboard (two dashboard columns,
+  three rows).} The plot is rebuilt from vector lines and markers.
+  Every title and axis label is drawn at the document's actual physical
+  point size; the PGF text is typeset by LaTeX itself. The source data
+  remain editable paths rather than an enlarged bitmap.}
   \label{fig:access}
 \end{figure*}
 \clearpage
@@ -154,21 +156,20 @@ text column.
 
 Unlike the time-series example, these data are categorical point clouds.
 The useful question is whether group membership is recognizable after
-color transformation. We use fewer observations, larger symbols, and
-nonidentical markers, all on a light background. A short legend is placed
+color transformation. We use fewer observations, translucent points, 0.22 pt white
+outlines and nonidentical markers, all on a light background. A short legend is placed
 outside the plotting region so that a data point cannot be obscured by
 text. The grayscale views supply a practical check of luminance separation
 as an additional cue.
 
 \begin{figure*}[t]
   \centering
-  \includegraphics[width=\textwidth]{generated/groups_accessibility.png}
-  \caption{\textbf{Horizontal two-column-wide scatter dashboard (three
-  dashboard columns, two rows).} The six views occupy the full manuscript
-  text width, while the article retains its two-column text layout.
-  Distinct markers and luminances keep categories recognizable even where
-  color differences become less useful. This landscape arrangement
-  leaves substantially more space on the page for surrounding discussion.}
+  \input{generated/groups_accessibility.pgf}
+  \caption{\textbf{Horizontal vector scatter dashboard (three columns,
+  two rows).} Each marker is a vector path, with translucent fills and
+  a thin white outline. Labels use the same actual font size as the
+  original PGF figures. The six panels occupy the full manuscript
+  text width without rescaling, leaving room for surrounding text.}
   \label{fig:scatter-access}
 \end{figure*}
 
@@ -186,7 +187,10 @@ location of captions and the final scale of markers should always be
 checked after compilation, because a figure that looks spacious in a
 large editing window can be difficult to interpret once printed.
 
-The three simulated color-vision deficiencies follow the Machado model.
+The three approximate color-vision deficiencies follow the Machado model.
+The lines and scatter artists, their titles and their axis labels remain
+vectorial in these dashboards; colored values are transformed before
+redrawing rather than converting each complete figure into pixels.
 They are useful stress tests, but viewers differ and the simulation is
 not a substitute for user testing. Likewise, the degraded grayscale
 panel represents intentionally reduced tonal resolution rather than

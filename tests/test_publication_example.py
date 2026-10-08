@@ -15,8 +15,8 @@ def test_manuscript_has_all_demo_graphics():
     assert r"\includegraphics{generated/lines.pdf}" in tex
     assert r"\includegraphics{generated/dense.pdf}" in tex
     assert r"\input{generated/groups.pgf}" in tex
-    assert r"\includegraphics[width=\textwidth]{generated/groups_accessibility.png}" in tex
-    assert r"\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{generated/accessibility.png}" in tex
+    assert r"\input{generated/groups_accessibility.pgf}" in tex
+    assert r"\input{generated/accessibility.pgf}" in tex
     assert "pie.pdf" not in tex
     assert r"\section{Categorical pie-chart boundaries}" not in tex
     assert r"\begin{figure*}[p]" in tex
@@ -29,7 +29,7 @@ def test_generated_graphics_use_public_apis():
     script = (DEMO / "generate.py").read_text(encoding="utf-8")
     for part in (
         "cc.inspect_latex(", "cc.find_latex_font(", "cc.latex_style(",
-        "cc.save_accessibility_panel(", "cc.scatter_scheme(",
+        "cc.show_vector_accessibility_panel(",
         "cc.verify_latex_placement(",
     ):
         assert part in script
@@ -42,6 +42,13 @@ def test_generated_graphics_use_public_apis():
     assert 'edgecolors="white"' in script
     assert "match_manuscript_axes(ax, layout.fontsize_pt)" in script
     assert "ncols=3" in script and "ncols=2" in script
+    assert "accessibility.pdf" in script
+    assert "accessibility.pgf" in script
+    assert "groups_accessibility.pdf" in script
+    assert "groups_accessibility.pgf" in script
+    assert 'linewidths=0.22' in script
+    assert 'alpha=0.68' in script
+    assert '#E69F00' in script and '#0072B2' in script and '#009E73' in script
 
 
 def test_builder_only_pushes_after_opt_in():
@@ -50,6 +57,8 @@ def test_builder_only_pushes_after_opt_in():
     assert "publication_demo.pdf" in sh
     assert "publication_accessibility.png" in sh
     assert "publication_scatter_accessibility.png" in sh
+    assert "publication_accessibility.pdf" in sh
+    assert "publication_scatter_accessibility.pdf" in sh
     assert "if ((COMMIT)); then" in sh
     assert "if ((PUSH)); then git push; fi" in sh
 
@@ -60,6 +69,7 @@ def test_site_navigation_and_ignore_rules():
     ignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
     assert "_static/publication_demo.pdf" in page
     assert "_static/publication_accessibility.png" in page
+    assert "_static/publication_accessibility.pdf" in page
     assert "   publication_demo" in index
     assert "examples/latex_publication/generated/" in ignore
 

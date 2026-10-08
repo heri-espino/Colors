@@ -93,7 +93,9 @@ PDF="$OUT/main.pdf"
 # Only published deliverables are copied into the Sphinx static directory.
 cp "$OUT/main.pdf" "$ROOT/docs/source/_static/publication_demo.pdf"
 cp "$OUT/accessibility.png" "$ROOT/docs/source/_static/publication_accessibility.png"
+cp "$OUT/accessibility.pdf" "$ROOT/docs/source/_static/publication_accessibility.pdf"
 cp "$OUT/groups_accessibility.png" "$ROOT/docs/source/_static/publication_scatter_accessibility.png"
+cp "$OUT/groups_accessibility.pdf" "$ROOT/docs/source/_static/publication_scatter_accessibility.pdf"
 
 echo
 echo "COMPLETE"
@@ -105,6 +107,8 @@ if command -v pdffonts >/dev/null 2>&1; then
   cat "$OUT/embedded_fonts.txt"
 fi
 echo "  Web-ready PDF: docs/source/_static/publication_demo.pdf"
+echo "  Web-ready vector PDF: docs/source/_static/publication_accessibility.pdf"
+echo "                         docs/source/_static/publication_scatter_accessibility.pdf"
 echo "  Web-ready accessibility images: docs/source/_static/publication_accessibility.png"
 echo "                                docs/source/_static/publication_scatter_accessibility.png"
 echo "Nothing is committed or pushed unless explicitly requested."
@@ -116,15 +120,21 @@ if ((COMMIT)); then
   fi
   git add -- docs/source/_static/publication_demo.pdf \
     docs/source/_static/publication_accessibility.png \
-    docs/source/_static/publication_scatter_accessibility.png
+    docs/source/_static/publication_scatter_accessibility.png \
+    docs/source/_static/publication_accessibility.pdf \
+    docs/source/_static/publication_scatter_accessibility.pdf
   if ! git diff --cached --quiet -- \
     docs/source/_static/publication_demo.pdf \
     docs/source/_static/publication_accessibility.png \
-    docs/source/_static/publication_scatter_accessibility.png; then
+    docs/source/_static/publication_scatter_accessibility.png \
+    docs/source/_static/publication_accessibility.pdf \
+    docs/source/_static/publication_scatter_accessibility.pdf; then
     git commit -m "Publish LaTeX font and accessibility demonstration" -- \
       docs/source/_static/publication_demo.pdf \
       docs/source/_static/publication_accessibility.png \
-      docs/source/_static/publication_scatter_accessibility.png
+      docs/source/_static/publication_scatter_accessibility.png \
+    docs/source/_static/publication_accessibility.pdf \
+    docs/source/_static/publication_scatter_accessibility.pdf
   else
     echo "The published results are unchanged."
   fi
