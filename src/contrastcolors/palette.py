@@ -216,7 +216,12 @@ class ContrastGrid:
                 ax.add_patch(Rectangle((j, rows - 1 - i), 1, 1, facecolor=cell.rgb, edgecolor="white"))
                 if annotate:
                     y = cell.actual_luminance
-                    text_color = "black" if y > 0.35 else "white"
+                    # Choose by the actual WCAG contrast with this cell.
+                    # A fixed Y threshold of 0.35 could pick white against
+                    # midtone backgrounds and fail small-label readability.
+                    black_contrast = contrast_ratio(cell.rgb, "black")
+                    white_contrast = contrast_ratio(cell.rgb, "white")
+                    text_color = "black" if black_contrast >= white_contrast else "white"
                     ax.text(j + 0.5, rows - 0.5 - i, cell.hex, ha="center", va="center", color=text_color, fontsize=8)
 
         ax.set_xlim(0, cols)

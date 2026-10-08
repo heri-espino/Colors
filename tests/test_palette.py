@@ -29,3 +29,21 @@ def test_any_one_per_row_keeps_constant_contrast():
 def test_diagonal_palette_has_expected_size():
     grid = contrast_grid(levels=4, hues=[20, 120, 240], ratio=1.3)
     assert len(grid.diagonal()) == 4
+
+
+def test_contrast_grid_hex_text_uses_higher_contrast_foreground():
+    import matplotlib.pyplot as plt
+    import contrastcolors as cc
+
+    grid = cc.contrast_grid(
+        levels=3, hues=[25, 115, 205, 295],
+        ratio=1.55, start_luminance=.65, chroma=.12,
+    )
+    fig, ax = plt.subplots()
+    grid.plot(ax=ax, annotate=True)
+    assert len(ax.texts) == len(ax.patches) == 12
+    for patch, label in zip(ax.patches, ax.texts):
+        background = patch.get_facecolor()[:3]
+        ratio = cc.contrast_ratio(background, label.get_color())
+        assert ratio >= 4.5, f"Hex label contrast too weak: {ratio}"
+    plt.close(fig)

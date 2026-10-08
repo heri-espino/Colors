@@ -119,3 +119,22 @@ def test_pie_plot_edge_overrides_and_values():
     with pytest.raises(ValueError):
         cc.pie_plot([-1, 2], ax=ax)
     plt.close(fig)
+
+
+def test_palette_preview_hex_text_uses_higher_contrast_foreground():
+    import matplotlib.pyplot as plt
+
+    ax = cc.show_palette(
+        [25, 115, 205, 295],
+        ratio=1.55, start_luminance=0.65,
+        alpha=0.7, background="white",
+    )
+    assert len(ax.texts) == len(ax.patches) == 4
+    from contrastcolors.color_spaces import contrast_ratio
+    for patch, label in zip(ax.patches, ax.texts):
+        r, g, b, a = patch.get_facecolor()
+        background = [(a * ch + (1 - a)) for ch in (r, g, b)]
+        # Text contrast was chosen using the actual compensated displayed
+        # color, not the nominal uncomposited source color.
+        assert contrast_ratio(background, label.get_color()) >= 4.5
+    plt.close(ax.figure)

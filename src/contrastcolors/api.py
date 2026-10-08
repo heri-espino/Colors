@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from .palette import Palette, color_for_luminance
-from .color_spaces import relative_luminance
+from .color_spaces import contrast_ratio
 from .contrast import luminance_ladder, print_safe_luminances
 from .presets import get_palette
 
@@ -129,8 +129,11 @@ def show_palette(
     for i, item in enumerate(rendered):
         r, g, b, a = item.rgba
         ax.add_patch(Rectangle((i, 0), 1, 1, facecolor=(r, g, b, a), edgecolor="none"))
-        displayed_y = relative_luminance(item.compensation.displayed_rgb)
-        text_color = "black" if displayed_y > 0.55 else "white"
+        displayed_rgb = item.compensation.displayed_rgb
+        text_color = (
+            "black" if contrast_ratio(displayed_rgb, "black")
+            >= contrast_ratio(displayed_rgb, "white") else "white"
+        )
         ax.text(
             i + 0.5,
             0.5,
