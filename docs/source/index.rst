@@ -216,6 +216,13 @@ Explore next
 
       Why the luminance ladder gives a constant adjacent WCAG contrast ratio.
 
+   .. grid-item-card:: LaTeX publication figures
+      :link: publication
+      :link-type: doc
+
+      Match the document's real column width and body font, audit labels,
+      and compile a proof.
+
    .. grid-item-card:: Alpha
       :link: alpha
       :link-type: doc
@@ -231,6 +238,7 @@ Explore next
    notebooks/index
    studio
    accessibility
+   publication
    customization
    quickstart
    palettes

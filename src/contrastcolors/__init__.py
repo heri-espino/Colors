@@ -24,6 +24,19 @@ from .api import (
 from .color_spaces import contrast_ratio, delta_e_ok, relative_luminance, srgb_to_oklab, to_hex, to_rgb
 from .contrast import luminance_contrast, luminance_ladder
 from .presets import PalettePreset, register_palette, get_palette, available_palettes
+from .publication import (
+    TEX_PT_PER_INCH,
+    LatexLayout,
+    LatexProbeError,
+    FigureAudit,
+    FitResult,
+    PublicationStyle,
+    inspect_latex,
+    latex_style,
+    audit_figure,
+    fit_figure_to_latex,
+    verify_latex_placement,
+)
 from .style import (
     HERI_CMAP,
     HERI_IRIDESCENT_HEX,
@@ -45,6 +58,17 @@ from .palette import (
 )
 
 __all__ = [
+    "TEX_PT_PER_INCH",
+    "LatexLayout",
+    "LatexProbeError",
+    "FigureAudit",
+    "FitResult",
+    "PublicationStyle",
+    "inspect_latex",
+    "latex_style",
+    "audit_figure",
+    "fit_figure_to_latex",
+    "verify_latex_placement",
     "AlphaCompensation",
     "HERI_CMAP",
     "HERI_IRIDESCENT_HEX",

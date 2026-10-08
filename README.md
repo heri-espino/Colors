@@ -74,6 +74,43 @@ python -m pip install -e ".[dev,docs]"
 pytest
 ```
 
+## LaTeX publication figures: automatic document size
+
+Match the real physical widths and nominal body font size of a trusted
+LaTeX document. No PNG screenshots or pixel-based trial and error are needed.
+
+~~~python
+import contrastcolors as cc
+
+with cc.latex_style("paper/main.tex", width="column") as pub:
+    fig, ax = pub.subplots(height_ratio=0.65)
+    ax.plot([0, 1, 2], [1, 3, 2])
+    ax.set(xlabel="Time", ylabel="Response")
+    print(pub.audit(fig).warnings)
+    pub.savefig(fig, "paper/figures/result.pdf")
+
+cc.verify_latex_placement(
+    "paper/main.tex", "paper/figures/result.pdf",
+    proof_pdf="paper/figures/result_proof.pdf",
+)
+~~~
+
+Include the saved PDF **without resizing** in LaTeX (plain includegraphics).
+Set width="text" to span both columns. To resize an existing figure, call
+cc.fit_figure_to_latex(fig, cc.inspect_latex("paper/main.tex")).
+
+A suitable TeX engine must be on PATH for inspection or proof compilation.
+If unavailable, pass LatexLayout.from_dimensions(columnwidth_pt=...,
+textwidth_pt=..., fontsize_pt=...) instead.
+
+Font sizes and widths are matched in physical units; identical font *glyphs*
+require a configured TeX font or PGF export. The bounded fit and audit
+cannot automatically resolve every legend or annotation overlap. The TeX
+probe uses a temporary document and does not modify your paper's source,
+but it still executes trusted LaTeX preamble macros with shell escape disabled.
+
+See [publication guide](docs/source/publication.rst).
+
 ## Figure accessibility
 
 The Heri Matplotlib style now defaults to different line markers and

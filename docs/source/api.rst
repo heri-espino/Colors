@@ -135,6 +135,36 @@ Color utilities
 
 .. autofunction:: contrastcolors.delta_e_ok
 
+LaTeX layout and publication fitting
+------------------------------------
+
+.. autoclass:: contrastcolors.LatexLayout
+   :members:
+
+.. autoexception:: contrastcolors.LatexProbeError
+
+.. autoclass:: contrastcolors.PublicationStyle
+   :members:
+
+.. autoclass:: contrastcolors.FigureAudit
+   :members:
+
+.. autoclass:: contrastcolors.FitResult
+   :members:
+
+.. autofunction:: contrastcolors.inspect_latex
+
+.. autofunction:: contrastcolors.latex_style
+
+.. autofunction:: contrastcolors.audit_figure
+
+.. autofunction:: contrastcolors.fit_figure_to_latex
+
+.. autofunction:: contrastcolors.verify_latex_placement
+
+TEX_PT_PER_INCH
+    Conversion constant: 72.27 TeX points per inch.
+
 Publication style
 -----------------
 
