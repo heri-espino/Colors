@@ -220,7 +220,10 @@ def show_vector_accessibility_panel(
     # Make room for one shared legend and all original-size labels.
     panel.subplots_adjust(
         left=.105 if cols == 2 else .09, right=.977,
-        top=.91, bottom=.072 if rows == 2 else .06,
+        # A 3 x 2 dashboard at true manuscript text width is compact:
+        # a 7.2% bottom margin clips its 10 pt x-axis labels in PGF/PDF.
+        # Preserve the physical text size; allocate adequate space instead.
+        top=.91, bottom=.12 if rows == 2 else .06,
         wspace=.40 if cols == 3 else .34,
         hspace=.54 if rows == 2 else .57,
     )
