@@ -1,18 +1,27 @@
 Real LaTeX publication demonstration
 ======================================
 
-This is a reproducible, two-column **technical presentation** of the
-library, with mathematical explanations of palette construction,
-hue/luminance control, accessibility, alpha compositing, exact LaTeX
-fonts, physical dimensions and vector/hybrid export. It uses the
-manuscript's measured column dimensions and Latin Modern font from
-MacTeX or TeX Live.
+This is a reproducible **visual field guide** with a full-colour vector
+cover followed by a two-column technical presentation of the library.
+The first page showcases **30 actual ContrastGrid swatches** (five
+luminance levels crossed with six hue choices), drawn by native TikZ
+rather than a pixel-based cover illustration. Subsequent pages explain
+palette construction, hue/luminance control, accessibility, alpha
+compositing, exact LaTeX fonts, physical dimensions and vector/hybrid
+export. Section typography and restrained orange/teal accents make the
+guide more readable without compromising manuscript-matched figures.
+The figures use measured dimensions and the Latin Modern font available
+from MacTeX or TeX Live.
 
 The example source is at
 https://github.com/heri-espino/Colors/tree/main/examples/latex_publication
 
 Figures included
 ----------------
+
+- **Colour-first cover:** editorial navy background, prominent title and
+  six-by-five grid computed from the palette algorithm. Its vector
+  swatch source is in ``generated/cover_palette.tex``.
 
 - **Palette construction:** a vector ContrastGrid illustrating three
   relative-luminance levels crossed with four OKLCH hue angles.
