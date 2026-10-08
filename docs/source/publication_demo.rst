@@ -16,7 +16,11 @@ Figures included
 - **Grouped scatter:** distinct markers and colors for each category.
 - **Dense scatter:** rasterized points with vector axes and labels.
 - **Six views:** original, grayscale, print-stress, deuteranopia,
-  protanopia and tritanopia.
+  protanopia and tritanopia. Panel headings are outside each preview,
+  and the images use a two-column layout for legibility in the paper.
+- **Grayscale contrast:** when three categorical series are plotted,
+  the default scheme spreads their relative luminances more strongly;
+  points use bigger, outlined markers and legends stay outside data.
 - **LaTeX width proof:** compares an unscaled PDF width with the true column.
 - **JSON audit:** measures fonts, physical dimensions and output sizes.
 

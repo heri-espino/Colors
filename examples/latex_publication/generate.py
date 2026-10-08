@@ -62,15 +62,27 @@ def main() -> int:
 
     with cc.latex_style(tex, width="column", engine=args.engine, rasterize=False) as pub:
         fig, ax = pub.subplots(height_ratio=0.80)
-        for i in range(3):
+        # Default plot_scheme uses an adaptive, broadly separated gray
+        # scale for three groups, with different markers and dash patterns.
+        line_styles = cc.plot_scheme([25, 150, 275])
+        for i, style in enumerate(line_styles):
             signal = 0.72 * np.sin(0.56 * t + 0.65 * i) + 0.22 * i + 0.04 * t
-            ax.plot(t, signal, markevery=20, label=f"Series {i + 1}")
+            ax.plot(
+                t, signal, markevery=22, linewidth=1.9,
+                markersize=6.0, label=f"Series {i + 1}", **style
+            )
         ax.set(xlabel=r"Time ($t$)", ylabel=r"Response ($y$)")
-        ax.legend(loc="upper right")
+        # Never cover a curve with a legend; constrain layout allocates
+        # room for this legend outside the axes.
+        ax.legend(
+            loc="lower center", bbox_to_anchor=(0.5, 1.015),
+            ncol=3, frameon=False, fontsize=8,
+            handlelength=2.0, columnspacing=0.85,
+        )
         audit(pub, fig, "lines", diagnostics)
         cc.save_accessibility_panel(
             fig, out / "accessibility.png",
-            dpi=165, max_width=700, figsize=(11.2, 6.4),
+            dpi=185, max_width=850, ncols=2, figsize=(9.0, 11.4),
         )
         pub.savefig(fig, out / "lines.pdf", audit=False)
         pub.savefig(fig, out / "lines.pgf", audit=False)
@@ -78,15 +90,21 @@ def main() -> int:
 
     with cc.latex_style(tex, width="column", engine=args.engine, rasterize=False) as pub:
         fig, ax = pub.subplots(height_ratio=0.78)
-        markers = cc.scatter_scheme(
-            [25, 155, 265], ratio=1.20, start_luminance=0.75, chroma=0.13
-        )
+        markers = cc.scatter_scheme([25, 155, 265])
         for i, style in enumerate(markers):
-            x = data.normal(i * 0.65, 0.45, size=45)
-            y = 0.50 * x + data.normal(i * 0.45, 0.32, size=45)
-            ax.scatter(x, y, s=26, alpha=0.85, label=f"Group {i + 1}", **style)
+            x = data.normal(i * 0.65, 0.45, size=34)
+            y = 0.50 * x + data.normal(i * 0.45, 0.32, size=34)
+            ax.scatter(
+                x, y, s=52, alpha=0.96,
+                edgecolors="#292929", linewidths=0.55,
+                label=f"Group {i + 1}", **style
+            )
         ax.set(xlabel="Measurement A", ylabel="Measurement B")
-        ax.legend(loc="upper left")
+        ax.legend(
+            loc="lower center", bbox_to_anchor=(0.5, 1.015),
+            ncol=3, frameon=False, fontsize=8,
+            markerscale=0.95, columnspacing=0.75,
+        )
         audit(pub, fig, "groups", diagnostics)
         cc.save_accessibility_panel(
             fig, out / "groups_accessibility.png",
@@ -137,6 +155,7 @@ def main() -> int:
             "metrics": str(font.metrics_path) if font.metrics_path else None,
             "status": font.source,
         },
+        "adaptive_print_luminances_for_3_series": cc.print_safe_luminances(3).tolist(),
         "audits": diagnostics,
         "file_sizes_bytes": {n: (out / n).stat().st_size for n in names},
     }

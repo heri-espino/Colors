@@ -64,7 +64,9 @@ PGF instead instructs LaTeX to typeset text when the figure is included.
 \section{Grouped scatter}
 A categorical plot should not rely on hue alone.
 Figure~\ref{fig:groups} assigns each category a distinct color and marker.
-All observations in one category keep the same marker.
+All observations in one category keep the same marker. Three groups
+use broadly spaced relative luminances so their grayscale variants remain
+visibly separated. Legends sit above the data rather than covering points.
 
 \begin{figure}[tb]
   \centering
@@ -92,14 +94,16 @@ A color-vision simulation is a diagnostic approximation, not a clinical
 prediction or universal certification. Figure~\ref{fig:access} compares
 the same line plot in six views: original color, luminance-preserving
 grayscale, print stress, deuteranopia, protanopia, and tritanopia.
+Each view has a separate header and is displayed in a two-column grid
+to preserve legibility at the final printed size.
 
 \begin{figure*}[tp]
   \centering
   \includegraphics[width=\textwidth]{generated/accessibility.png}
   \caption{\textbf{Six-way comparison.} Original, black-and-white,
   degraded print, and three Machado-model color-vision-deficiency previews.
-  The panel is rasterized; the source PDF and PGF above retain appropriate
-  vector content.}
+  Headers are outside the image areas. The panel is rasterized; the
+  source PDF and PGF above retain appropriate vector content.}
   \label{fig:access}
 \end{figure*}
 

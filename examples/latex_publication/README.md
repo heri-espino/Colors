@@ -6,10 +6,13 @@ plots use measured physical widths from main.tex.
 Outputs:
 
 - lines.pgf: manuscript-owned LaTeX font glyphs in the final PDF.
-- lines.pdf: direct PDF at exactly the same physical size.
-- groups.pdf: scatter groups separated by marker and color.
+- lines.pdf: direct PDF at exactly the same physical size, with an external legend
+  and print-safe luminance spacing for the three lines.
+- groups.pdf: scatter groups separated by marker, color and luminance,
+  with larger points and a legend above the axes.
 - dense.pdf: rasterized point cloud with vector labels.
-- accessibility.png: original line plot, B/W, print stress, and three CVD modes.
+- accessibility.png: two-column six-view comparison of the line plot,
+  with panel headings separated from each image.
 - groups_accessibility.png: the scatter plot under the same six conditions.
 - lines_proof.pdf: independent TeX verification of the PDF's real width.
 - report.json: TeX font, exact dimensions and per-figure warnings.
