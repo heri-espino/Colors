@@ -102,16 +102,16 @@ def write_cover_palette(filename: Path) -> cc.ContrastGrid:
             )
     lines.extend([
         r"\begin{tikzpicture}[x=1cm,y=1cm]",
-        r"  \path[use as bounding box] (0,0) rectangle (15.14,5.17);",
+        r"  \path[use as bounding box] (0,0) rectangle (15.14,6.92);",
     ])
     for row_index, row in enumerate(grid):
         for col_index, _cell in enumerate(row):
             left = col_index * 2.54
-            bottom = (4 - row_index) * 1.05
+            bottom = (4 - row_index) * 1.40
             lines.append(
                 rf"  \fill[CoverCell{row_index}{col_index},"
                 rf"rounded corners=1.6pt] ({left:.3f},{bottom:.3f}) "
-                rf"rectangle ({left + 2.44:.3f},{bottom + .97:.3f});"
+                rf"rectangle ({left + 2.44:.3f},{bottom + 1.32:.3f});"
             )
     lines.append(r"\end{tikzpicture}")
     filename.write_text("\n".join(lines) + "\n", encoding="utf-8")
