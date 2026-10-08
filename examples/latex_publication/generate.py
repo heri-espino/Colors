@@ -82,7 +82,8 @@ def main() -> int:
         audit(pub, fig, "lines", diagnostics)
         cc.save_accessibility_panel(
             fig, out / "accessibility.png",
-            dpi=185, max_width=850, ncols=2, figsize=(9.0, 11.4),
+            dpi=200, max_width=1000, ncols=2,
+            figsize=(8.5, 10.9), title_fontsize=10.5, title_pad=0.010,
         )
         pub.savefig(fig, out / "lines.pdf", audit=False)
         pub.savefig(fig, out / "lines.pgf", audit=False)
@@ -108,7 +109,8 @@ def main() -> int:
         audit(pub, fig, "groups", diagnostics)
         cc.save_accessibility_panel(
             fig, out / "groups_accessibility.png",
-            dpi=165, max_width=700, figsize=(11.2, 6.4),
+            dpi=200, max_width=950, ncols=3,
+            figsize=(12.6, 6.6), title_fontsize=10.5, title_pad=0.010,
         )
         pub.savefig(fig, out / "groups.pdf", audit=False)
         plt.close(fig)
@@ -127,6 +129,25 @@ def main() -> int:
         pub.savefig(fig, out / "dense.pdf", audit=False, dpi=300)
         plt.close(fig)
 
+    with cc.latex_style(tex, width="column", engine=args.engine, rasterize=False) as pub:
+        fig, ax = pub.subplots(height_ratio=0.90)
+        pieces = [35, 30, 20, 15]
+        wedges, _ = cc.pie_plot(
+            pieces, ax=ax,
+            labels=None,
+            autopct=None,
+        )
+        ax.legend(
+            wedges,
+            [f"Category {i + 1}: {v}%" for i, v in enumerate(pieces)],
+            loc="lower center", bbox_to_anchor=(0.5, -0.20),
+            ncol=2, frameon=False, fontsize=7.5,
+        )
+        ax.set(aspect="equal")
+        audit(pub, fig, "pie", diagnostics)
+        pub.savefig(fig, out / "pie.pdf", audit=False)
+        plt.close(fig)
+
     cc.verify_latex_placement(
         tex, out / "lines.pdf", width="column", engine=args.engine,
         proof_pdf=out / "lines_proof.pdf",
@@ -134,7 +155,7 @@ def main() -> int:
     names = (
         "lines.pdf", "lines.pgf", "lines_proof.pdf",
         "groups.pdf", "dense.pdf", "accessibility.png",
-        "groups_accessibility.png",
+        "groups_accessibility.png", "pie.pdf",
     )
     for name in names:
         file = out / name
@@ -156,6 +177,20 @@ def main() -> int:
             "status": font.source,
         },
         "adaptive_print_luminances_for_3_series": cc.print_safe_luminances(3).tolist(),
+        "panel_layouts": {
+            "lines": {
+                "file": "accessibility.png",
+                "grid_columns": 2,
+                "grid_rows": 3,
+                "intended_placement": "full-page two-column float",
+            },
+            "scatter": {
+                "file": "groups_accessibility.png",
+                "grid_columns": 3,
+                "grid_rows": 2,
+                "intended_placement": "horizontal two-column-wide float",
+            },
+        },
         "audits": diagnostics,
         "file_sizes_bytes": {n: (out / n).stat().st_size for n in names},
     }
