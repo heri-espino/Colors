@@ -234,6 +234,7 @@ input[type=color]{height:37px;width:43px;min-width:43px;border:1px solid var(--l
     <button type="button" data-plot="scatter">Scatter</button>
     <button type="button" data-plot="heatmap">Heatmap</button>
     <button type="button" data-plot="bar">Grouped bars</button>
+    <button type="button" data-plot="pie">Pie chart</button>
   </div>
   <p class="muted cvd-explainer">Colour-vision previews transform the plotted palette using approximate Machado-style linear-RGB matrices. Individual vision varies; print stress is not a calibrated printer simulation.</p>
   <div class="preview-grid">
@@ -680,10 +681,36 @@ function renderChart(){
   const label = {
     lines:'Line plot',time:'Time series',histogram:'Overlaid histograms',
     box:'Box plots',violin:'Violin plots',ridge:'Ridge plots',
-    scatter:'Scatter',heatmap:'Categorical heatmap',bar:'Grouped bars'
+    scatter:'Scatter',heatmap:'Categorical heatmap',bar:'Grouped bars',pie:'Pie chart'
   }[plotType]||'Line plot';
   $('currentPlotTitle').textContent=label;
   let out='<rect width="720" height="340" fill="white"/>';
+  if(plotType==='pie'){
+    const palette=cs.map(c=>hex(displayRgb(c)));
+    const weights=palette.map((_,i)=>1.4+0.65*Math.sin(1.1*i+.7));
+    const total=weights.reduce((a,b)=>a+b,0);
+    let angle=-Math.PI/2;
+    const cx=345,cy=152,radius=111;
+    for(let i=0;i<n;i++){
+      const sweep=weights[i]/total*2*Math.PI;
+      const start=angle,end=angle+sweep;
+      const x1=cx+radius*Math.cos(start),y1=cy+radius*Math.sin(start);
+      const x2=cx+radius*Math.cos(end),y2=cy+radius*Math.sin(end);
+      const large=sweep>Math.PI?1:0;
+      out+='<path d="M '+cx+' '+cy+' L '+x1.toFixed(3)+' '+y1.toFixed(3)+
+        ' A '+radius+' '+radius+' 0 '+large+' 1 '+x2.toFixed(3)+' '+y2.toFixed(3)+
+        ' Z" fill="'+palette[i]+'" stroke="#ffffff" stroke-width="4"/>';
+      angle=end;
+    }
+    const step=600/n;
+    palette.forEach((c,i)=>{
+      const x=60+step*(i+.5);
+      out+='<rect x="'+(x-16)+'" y="299" width="12" height="12" rx="2" fill="'+c+'" stroke="#ffffff" stroke-width="1.5"/>';
+      out+='<text x="'+(x-1)+'" y="310" font-size="11" text-anchor="start" fill="#444">S'+(i+1)+'</text>';
+    });
+    svg.innerHTML=out;
+    return;
+  }
   for(let k=0;k<=5;k++){
     const y=area.top+area.ph*k/5;
     out+='<line x1="'+area.left+'" y1="'+y+'" x2="707" y2="'+y+'" stroke="#e6e8ec" stroke-width="1"/>';
@@ -920,6 +947,12 @@ function plotPython(type){
       'fig.colorbar(image, ax=ax, ticks=np.arange(len(scheme)))',
       'ax.set(xlabel="Column", ylabel="Row", title="Categorical heatmap")',
     ],
+    pie:[
+      'values = np.arange(1, len(scheme) + 1, dtype=float)',
+      'cc.pie_plot(values, ax=ax,',
+      '            colors=[style["color"] for style in scheme])',
+      'ax.set(title="Pie chart with white wedge separators")',
+    ],
     bar:[
       'rng = np.random.default_rng(17)',
       'labels = np.arange(5)',
@@ -1089,7 +1122,7 @@ function normalizeDesign(raw){
     font:typeof style.font==='string'?style.font.slice(0,100):'Arial',
     rasterize:style.rasterize!==false,dpi:Number.isFinite(dpi)?clamp(Math.round(dpi),72,2400):600,
     style:['heri','default'].includes(style.name)?style.name:'heri',
-    plot:Object.keys({lines:1,time:1,histogram:1,box:1,violin:1,ridge:1,scatter:1,heatmap:1,bar:1}).includes(raw.plotType)?raw.plotType:'lines',
+    plot:Object.keys({lines:1,time:1,histogram:1,box:1,violin:1,ridge:1,scatter:1,heatmap:1,bar:1,pie:1}).includes(raw.plotType)?raw.plotType:'lines',
     mode:['color','gray','print','deuteranopia','protanopia','tritanopia'].includes(raw.previewMode)?raw.previewMode:'color',
     hueStrategy:['equidistant','golden','qualitative','analogous','monochrome','custom'].includes(raw.hueStrategy)?raw.hueStrategy:'custom',
     baseHue:Number.isFinite(Number(raw.baseHue))?clamp(Number(raw.baseHue),0,359):25,
