@@ -8,7 +8,41 @@
 \usepackage{microtype}
 \usepackage{booktabs}
 \usepackage{tabularx}
-\usepackage[hidelinks]{hyperref}
+\usepackage{tikz}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+
+% Editorial cover and section accents. Swatches in the cover are generated
+% from the actual contrastcolors ContrastGrid, not authored as fake results.
+\definecolor{CoverInk}{HTML}{172137}
+\definecolor{CoverOrange}{HTML}{E69F00}
+\definecolor{CoverTeal}{HTML}{009E73}
+\definecolor{CoverBlue}{HTML}{0072B2}
+\definecolor{CoverMuted}{HTML}{A7B5C7}
+\definecolor{CoverSoft}{HTML}{E9EEF4}
+\hypersetup{
+  colorlinks=true, linkcolor=CoverBlue, urlcolor=CoverBlue,
+  pdftitle={contrastcolors | Color, measured},
+  pdfauthor={contrastcolors reproducible publication showcase},
+  pdfsubject={Scientific color palettes, accessibility and LaTeX figures}
+}
+\titleformat{\section}
+  {\sffamily\large\bfseries\color{CoverInk}}
+  {\textcolor{CoverOrange}{\thesection}}{.55em}{}
+\titleformat{\subsection}
+  {\sffamily\normalsize\bfseries\color{CoverInk}}
+  {\textcolor{CoverTeal}{\thesubsection}}{.55em}{}
+\titlespacing*{\section}{0pt}{1.25em}{.55em}
+\titlespacing*{\subsection}{0pt}{.95em}{.30em}
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE,RO]{\sffamily\footnotesize\color{CoverInk}\textbf{contrastcolors}}
+\fancyhead[LO,RE]{\sffamily\footnotesize\color{CoverTeal}FIELD GUIDE}
+\fancyfoot[C]{\sffamily\footnotesize\color{CoverMuted}\thepage}
+\renewcommand{\headrulewidth}{.35pt}
+\renewcommand{\abstractname}{Overview}
 
 \setlength{\columnsep}{0.23in}
 \setlength{\parindent}{0pt}
@@ -19,13 +53,75 @@
 \renewcommand{\textfraction}{0.06}
 \renewcommand{\floatpagefraction}{0.72}
 
-\title{\textbf{Publication-ready figures}\\
-\large A guide to palettes, typography, accessibility, and scientific export}
-\author{A reproducible \texttt{contrastcolors} demonstration}
-\date{}
-
+% The opening is intentionally a full-colour editorial cover. It is rendered
+% with native TikZ paths, not a rasterized front-page screenshot.
 \begin{document}
-\maketitle
+\onecolumn
+\begin{titlepage}
+\pagecolor{CoverInk}
+\color{white}
+\thispagestyle{empty}
+\vspace*{-.65cm}
+\noindent
+{\sffamily\bfseries\large\textcolor{CoverOrange}{contrastcolors}}
+\hfill{\sffamily\footnotesize\textcolor{CoverMuted}{THE SCIENTIFIC COLOUR FIELD GUIDE}}
+
+\vspace{1.65cm}
+\noindent
+{\sffamily\bfseries\fontsize{45}{49}\selectfont
+ Color,\\measured.\par}
+\vspace{.45cm}
+\noindent
+{\sffamily\fontsize{15}{20}\selectfont\textcolor{CoverSoft}{
+ Palettes built with mathematics. Figures built for publication.}\par}
+\vspace{.30cm}
+\noindent
+{\sffamily\small\textcolor{CoverMuted}{
+ Hue \quad / \quad Luminance \quad / \quad Accessibility \quad / \quad LaTeX}\par}
+
+\vspace{1.15cm}
+\noindent\input{generated/cover_palette.tex}
+
+\vspace{.43cm}
+\noindent
+{\sffamily\small\textcolor{CoverSoft}{
+ \textbf{30 calculated swatches.} Five controlled luminance levels
+ crossed with six hue directions.}\par}
+\vspace{.12cm}
+\noindent
+{\sffamily\footnotesize\textcolor{CoverMuted}{
+ Each cell is a reproducible sRGB colour produced by ContrastGrid,
+ including gamut-aware chroma adjustment.}\par}
+
+\vfill
+\noindent\textcolor{CoverMuted}{\rule{\linewidth}{.35pt}}\par
+\vspace{.34cm}
+\noindent
+\begin{minipage}[t]{.30\linewidth}
+ {\sffamily\bfseries\textcolor{CoverOrange}{01 \quad DESIGN}}\par
+ {\sffamily\footnotesize\textcolor{CoverSoft}{Control hue, lightness and contrast.}}
+\end{minipage}\hfill
+\begin{minipage}[t]{.30\linewidth}
+ {\sffamily\bfseries\textcolor{CoverOrange}{02 \quad TEST}}\par
+ {\sffamily\footnotesize\textcolor{CoverSoft}{Check greyscale, print and vision.}}
+\end{minipage}\hfill
+\begin{minipage}[t]{.30\linewidth}
+ {\sffamily\bfseries\textcolor{CoverOrange}{03 \quad PUBLISH}}\par
+ {\sffamily\footnotesize\textcolor{CoverSoft}{Export TeX-native vector graphics.}}
+\end{minipage}
+\vspace{.42cm}
+
+\noindent
+{\sffamily\footnotesize\textcolor{CoverMuted}{
+ An open-source Python toolkit \quad
+ \href{https://heri-espino.github.io/Colors/studio.html}
+ {\textcolor{white}{Explore Palette \& Plot Studio\ \(\rightarrow\)}}}
+}
+\end{titlepage}
+\nopagecolor
+\color{black}
+\twocolumn
+\setcounter{page}{1}
 
 \begin{abstract}
 This two-column article is a reproducible technical presentation of
