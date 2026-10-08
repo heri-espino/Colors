@@ -200,6 +200,20 @@ def main() -> int:
         file = out / name
         if not file.is_file() or file.stat().st_size < 100:
             raise RuntimeError(f"Missing or empty generated file: {file}")
+    # Prevent a regression to PDF wrappers around the old raster snapshots.
+    # The dense.pdf exception is intentional: only its dense collection is
+    # rasterized. The two CVD dashboards must remain vector drawings.
+    for name in ("accessibility", "groups_accessibility"):
+        pdf_bytes = (out / f"{name}.pdf").read_bytes()
+        pgf_text = (out / f"{name}.pgf").read_text(
+            encoding="utf-8", errors="replace"
+        )
+        if b"/Subtype /Image" in pdf_bytes or "\\pgfimage" in pgf_text:
+            raise RuntimeError(
+                f"{name}: accessibility dashboard contains a raster image; "
+                "expected vector paths and text."
+            )
+        print(f"  {name}: vector PDF/PGF verified (no bitmap image objects)")
     report = {
         "tex_file": str(tex),
         "engine": args.engine,

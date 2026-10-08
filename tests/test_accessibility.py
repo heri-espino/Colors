@@ -179,3 +179,32 @@ def test_vector_dashboard_rejects_unsupported_heatmaps():
     with pytest.raises(ValueError, match="no line or scatter"):
         cc.show_vector_accessibility_panel(fig)
     plt.close(fig)
+
+
+
+def test_vector_pdf_scatter_contains_no_bitmap_objects(tmp_path):
+    fig, ax = plt.subplots()
+    for i, (marker, color) in enumerate(
+        zip(("o", "s", "^"), ("#E69F00", "#0072B2", "#009E73"))
+    ):
+        ax.scatter(np.arange(12), np.arange(12) + i, marker=marker,
+                   color=color, s=48, alpha=.68,
+                   edgecolors="white", linewidths=.22,
+                   label=f"G{i}")
+    with cc.latex_style(
+        cc.LatexLayout.from_dimensions(
+            columnwidth_pt=220, textwidth_pt=452, fontsize_pt=10
+        ), width="text", rasterize=False,
+    ) as pub:
+        panel, _ = cc.show_vector_accessibility_panel(
+            fig, ncols=3,
+            figsize=(pub.layout.width_inches("text"), 4.05),
+            axis_label_fontsize=10,
+        )
+        path = pub.savefig(panel, tmp_path / "vector_panel.pdf", audit=False)
+        assert b"/Subtype /Image" not in path.read_bytes()
+        assert panel.get_size_inches()[0] == pytest.approx(
+            pub.layout.width_inches("text")
+        )
+        plt.close(panel)
+    plt.close(fig)

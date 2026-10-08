@@ -67,7 +67,8 @@ echo "Testing the publication API..."
 "${PY[@]}" -m pytest \
   tests/test_publication.py \
   tests/test_publication_fonts.py \
-  tests/test_publication_example.py
+  tests/test_publication_example.py \
+  tests/test_accessibility.py
 
 echo "Generating TeX-native PGF, vector PDF, hybrid scatter and accessibility panel..."
 "${PY[@]}" "$HERE/generate.py" --tex "$HERE/main.tex" --output "$OUT"
@@ -133,8 +134,8 @@ if ((COMMIT)); then
       docs/source/_static/publication_demo.pdf \
       docs/source/_static/publication_accessibility.png \
       docs/source/_static/publication_scatter_accessibility.png \
-    docs/source/_static/publication_accessibility.pdf \
-    docs/source/_static/publication_scatter_accessibility.pdf
+      docs/source/_static/publication_accessibility.pdf \
+      docs/source/_static/publication_scatter_accessibility.pdf
   else
     echo "The published results are unchanged."
   fi

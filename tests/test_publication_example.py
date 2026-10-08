@@ -46,6 +46,7 @@ def test_generated_graphics_use_public_apis():
     assert "accessibility.pgf" in script
     assert "groups_accessibility.pdf" in script
     assert "groups_accessibility.pgf" in script
+    assert 'b"/Subtype /Image"' in script
     assert 'linewidths=0.22' in script
     assert 'alpha=0.68' in script
     assert '#E69F00' in script and '#0072B2' in script and '#009E73' in script
