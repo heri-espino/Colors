@@ -10,6 +10,13 @@ def test_manuscript_has_all_demo_graphics():
         "main.tex", "generate.py", "run_macos.sh", "README.md"))
     tex = (DEMO / "main.tex").read_text(encoding="utf-8")
     assert r"\documentclass[10pt,twocolumn,a4paper]{article}" in tex
+    assert r"\begin{titlepage}" in tex
+    assert r"\input{generated/cover_palette.tex}" in tex
+    assert r"\onecolumn" in tex and r"\twocolumn" in tex
+    assert r"\pagecolor{CoverInk}" in tex
+    assert r"\usepackage{tikz}" in tex
+    assert r"\usepackage{titlesec}" in tex
+    assert r"\usepackage{fancyhdr}" in tex
     assert r"\usepackage{lmodern}" in tex
     assert r"\input{generated/lines.pgf}" in tex
     assert r"\includegraphics{generated/lines.pdf}" in tex
@@ -56,6 +63,25 @@ def test_generated_graphics_use_public_apis():
     assert 'linewidths=0.22' in script
     assert 'alpha=0.68' in script
     assert '#E69F00' in script and '#0072B2' in script and '#009E73' in script
+
+
+def test_cover_palette_is_generated_from_real_contrast_grid(tmp_path):
+    import runpy
+    # Import the generator without triggering full TeX compilation.
+    namespace = runpy.run_path(str(DEMO / "generate.py"))
+    grid = namespace["write_cover_palette"](tmp_path / "cover_palette.tex")
+    content = (tmp_path / "cover_palette.tex").read_text(encoding="utf-8")
+    assert grid.shape == (5, 6)
+    assert content.count(r"\definecolor{CoverCell") == 30
+    assert content.count(r"\fill[CoverCell") == 30
+    assert r"\begin{tikzpicture}" in content
+    assert r"\end{tikzpicture}" in content
+    for i, row in enumerate(grid):
+        for j, cell in enumerate(row):
+            assert (
+                rf"\definecolor{{CoverCell{i}{j}}}"
+                rf"{{HTML}}{{{cell.hex.lstrip('#')}}}"
+            ) in content
 
 
 def test_builder_only_pushes_after_opt_in():
