@@ -46,7 +46,7 @@ def test_contrast_grid_hex_text_uses_higher_contrast_foreground():
         background = patch.get_facecolor()[:3]
         ratio = cc.contrast_ratio(background, label.get_color())
         assert ratio >= 4.5, f"Hex label contrast too weak: {ratio}"
-    assert all(label.get_text().startswith(r"$\\#$") for label in ax.texts)
+    assert all(label.get_text().startswith(r"$\#$") for label in ax.texts)
     plt.close(fig)
 
 
@@ -62,7 +62,7 @@ def test_contrast_grid_hex_labels_compile_in_native_pgf(tmp_path):
                          ratio=1.55, start_luminance=.65, chroma=.12)
     fig, ax = plt.subplots(figsize=(6, 2.6))
     grid.plot(ax=ax, annotate=True)
-    assert all(label.get_text().startswith(r"$\\#$") for label in ax.texts)
+    assert all(label.get_text().startswith(r"$\#$") for label in ax.texts)
     if shutil.which("pdflatex") is None:
         plt.close(fig)
         pytest.skip("pdflatex is not installed")
@@ -72,11 +72,11 @@ def test_contrast_grid_hex_labels_compile_in_native_pgf(tmp_path):
     plt.close(fig)
     tex = tmp_path / "proof.tex"
     tex.write_text(
-        r"\\documentclass{article}" + "\\n"
-        r"\\usepackage{pgf}" + "\\n"
-        r"\\begin{document}" + "\\n"
-        r"\\input{palette_grid.pgf}" + "\\n"
-        r"\\end{document}" + "\\n",
+        r"\documentclass{article}" + "\n"
+        r"\usepackage{pgf}" + "\n"
+        r"\begin{document}" + "\n"
+        r"\input{palette_grid.pgf}" + "\n"
+        r"\end{document}" + "\n",
         encoding="utf-8",
     )
     subprocess.run(
