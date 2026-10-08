@@ -14,6 +14,36 @@ import contrastcolors as cc
 
 HERE = Path(__file__).resolve().parent
 
+# Okabe-Ito colors: orange / blue / bluish green. These are a useful
+# color-vision-friendly starting point, not a universal accessibility proof.
+# Markers and line patterns provide redundant categorical identification.
+COLORBLIND3 = (
+    {"color": "#E69F00", "marker": "o", "linestyle": "-"},
+    {"color": "#0072B2", "marker": "s", "linestyle": "--"},
+    {"color": "#009E73", "marker": "^", "linestyle": ":"},
+)
+
+
+def save_vector_dashboard(pub, source, out, name, *, ncols, height, layout, diagnostics):
+    """Export true vector PDF + TeX-font PGF and an optional PNG web preview."""
+    panel, views = cc.show_vector_accessibility_panel(
+        source,
+        ncols=ncols,
+        figsize=(layout.width_inches("text"), height),
+        axis_label_fontsize=layout.fontsize_pt,
+        tick_fontsize=.8 * layout.fontsize_pt,
+        title_fontsize=layout.fontsize_pt,
+        legend_fontsize=.8 * layout.fontsize_pt,
+    )
+    if any(ax.images for ax in views):
+        raise RuntimeError("Vector dashboard unexpectedly contains bitmap images.")
+    audit(pub, panel, name, diagnostics)
+    for extension in (".pdf", ".pgf"):
+        pub.savefig(panel, out / (name + extension), audit=False)
+    pub.savefig(panel, out / (name + ".png"), audit=False, dpi=200)
+    plt.close(panel)
+
+
 
 def audit(publication, figure, label: str, records: dict) -> None:
     result = publication.audit(figure)
@@ -77,7 +107,7 @@ def main() -> int:
         fig, ax = pub.subplots(height_ratio=0.80)
         # Default plot_scheme uses an adaptive, broadly separated gray
         # scale for three groups, with different markers and dash patterns.
-        line_styles = cc.plot_scheme([25, 150, 275])
+        line_styles = COLORBLIND3
         for i, style in enumerate(line_styles):
             signal = 0.72 * np.sin(0.56 * t + 0.65 * i) + 0.22 * i + 0.04 * t
             ax.plot(
@@ -94,24 +124,30 @@ def main() -> int:
             handlelength=2.0, columnspacing=0.85,
         )
         audit(pub, fig, "lines", diagnostics)
-        cc.save_accessibility_panel(
-            fig, out / "accessibility.png",
-            dpi=200, max_width=1000, ncols=2,
-            figsize=(8.5, 10.9), title_fontsize=10.5, title_pad=0.010,
-        )
         pub.savefig(fig, out / "lines.pdf", audit=False)
         pub.savefig(fig, out / "lines.pgf", audit=False)
+        with cc.latex_style(
+            tex, width="text", engine=args.engine, rasterize=False
+        ) as dashboard_pub:
+            save_vector_dashboard(
+                dashboard_pub, fig, out, "accessibility",
+                ncols=2, height=6.55,
+                layout=layout, diagnostics=diagnostics,
+            )
         plt.close(fig)
 
     with cc.latex_style(tex, width="column", engine=args.engine, rasterize=False) as pub:
         fig, ax = pub.subplots(height_ratio=0.78)
-        markers = cc.scatter_scheme([25, 155, 265])
+        markers = [
+            {"color": item["color"], "marker": item["marker"]}
+            for item in COLORBLIND3
+        ]
         for i, style in enumerate(markers):
             x = data.normal(i * 0.65, 0.45, size=34)
             y = 0.50 * x + data.normal(i * 0.45, 0.32, size=34)
             ax.scatter(
-                x, y, s=52, alpha=0.96,
-                edgecolors="white", linewidths=1.0,
+                x, y, s=48, alpha=0.68,
+                edgecolors="white", linewidths=0.22,
                 label=f"Group {i + 1}", **style
             )
         ax.set(xlabel="Measurement A", ylabel="Measurement B")
@@ -122,13 +158,16 @@ def main() -> int:
             markerscale=0.95, columnspacing=0.75,
         )
         audit(pub, fig, "groups", diagnostics)
-        cc.save_accessibility_panel(
-            fig, out / "groups_accessibility.png",
-            dpi=200, max_width=950, ncols=3,
-            figsize=(12.6, 6.6), title_fontsize=10.5, title_pad=0.010,
-        )
         pub.savefig(fig, out / "groups.pdf", audit=False)
         pub.savefig(fig, out / "groups.pgf", audit=False)
+        with cc.latex_style(
+            tex, width="text", engine=args.engine, rasterize=False
+        ) as dashboard_pub:
+            save_vector_dashboard(
+                dashboard_pub, fig, out, "groups_accessibility",
+                ncols=3, height=4.05,
+                layout=layout, diagnostics=diagnostics,
+            )
         plt.close(fig)
 
     with cc.latex_style(tex, width="column", engine=args.engine, rasterize=True) as pub:
@@ -136,7 +175,7 @@ def main() -> int:
         x = data.standard_normal(18000)
         y = 0.68 * x + 0.42 * data.standard_normal(len(x))
         points = ax.scatter(
-            x, y, s=1.8, alpha=0.28, color=cc.HERI_PALETTE[1]
+            x, y, s=1.8, alpha=0.20, color=COLORBLIND3[1]["color"]
         )
         if not points.get_rasterized():
             raise RuntimeError("Dense scatter was not rasterized.")
@@ -152,7 +191,9 @@ def main() -> int:
     )
     names = (
         "lines.pdf", "lines.pgf", "lines_proof.pdf",
-        "groups.pdf", "groups.pgf", "dense.pdf", "accessibility.png",
+        "groups.pdf", "groups.pgf", "dense.pdf",
+        "accessibility.pdf", "accessibility.pgf", "accessibility.png",
+        "groups_accessibility.pdf", "groups_accessibility.pgf",
         "groups_accessibility.png",
     )
     for name in names:
@@ -174,16 +215,25 @@ def main() -> int:
             "metrics": str(font.metrics_path) if font.metrics_path else None,
             "status": font.source,
         },
-        "adaptive_print_luminances_for_3_series": cc.print_safe_luminances(3).tolist(),
+        "categorical_palette": [item["color"] for item in COLORBLIND3],
+        "categorical_markers": [item["marker"] for item in COLORBLIND3],
+        "group_scatter_alpha": 0.68,
+        "group_scatter_white_edge_linewidth_pt": 0.22,
         "panel_layouts": {
             "lines": {
-                "file": "accessibility.png",
+                "file": "accessibility.pgf",
+                "vector_pdf": "accessibility.pdf",
+                "browser_preview": "accessibility.png",
+                "axis_label_fontsize_pt": layout.fontsize_pt,
                 "grid_columns": 2,
                 "grid_rows": 3,
                 "intended_placement": "full-page two-column float",
             },
             "scatter": {
-                "file": "groups_accessibility.png",
+                "file": "groups_accessibility.pgf",
+                "vector_pdf": "groups_accessibility.pdf",
+                "browser_preview": "groups_accessibility.png",
+                "axis_label_fontsize_pt": layout.fontsize_pt,
                 "grid_columns": 3,
                 "grid_rows": 2,
                 "intended_placement": "horizontal two-column-wide float",
