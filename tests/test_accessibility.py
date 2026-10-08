@@ -81,3 +81,23 @@ def test_scheme_and_automatic_identifiers():
         assert len(set(x.get_linestyle() for x in ax.lines)) == 3
         assert len(set(len(c.get_paths()[0].vertices) for c in ax.collections)) >= 2
         plt.close(fig)
+
+
+
+def test_panel_titles_live_in_separate_non_overlapping_headers(small_fig):
+    panel, image_axes = cc.show_accessibility_panel(
+        small_fig, max_width=220, ncols=2, figsize=(8.8, 10)
+    )
+    panel.canvas.draw()
+    headers = [
+        ax for ax in panel.axes
+        if ax not in tuple(image_axes)
+    ]
+    assert len(image_axes) == 6
+    assert len(headers) == 6
+    for header, image in zip(headers, image_axes):
+        # Header is physically above its image and cannot cover a legend.
+        hb, ib = header.get_position(), image.get_position()
+        assert hb.y0 >= ib.y1 - 1e-8
+        assert len(header.texts) == 1
+    plt.close(panel)

@@ -166,26 +166,46 @@ def show_accessibility_panel(
 ) -> tuple[plt.Figure, np.ndarray]:
     """Make a panel with original, grayscale, print and three CVD views.
 
-    Returns a new figure and a flat array of axes. The source figure remains
-    intact. In a notebook, the panel is displayed at the end of the cell.
+    Titles are placed in a dedicated row above each image, rather than as
+    ordinary Matplotlib subplot titles over a rasterized plot. The original
+    figure remains intact. Returns only the image axes in a flat array.
     """
     if not modes or ncols < 1:
         raise ValueError("Supply modes and ncols >= 1")
     views = figure_variants(fig, modes, severity=severity, max_width=max_width)
     cols = min(ncols, len(modes))
     rows = ceil(len(modes) / cols)
-    panel, axes = plt.subplots(rows, cols, figsize=figsize or
-                               (4 * cols, 3 * rows), squeeze=False)
-    flattened = axes.ravel()
-    for ax, mode in zip(flattened, modes):
-        ax.imshow(views[mode], interpolation="antialiased")
+    # A separate header axis for every preview prevents title overlap with
+    # source figures' legends, axis labels, annotations, and adjacent rows.
+    panel = plt.figure(figsize=figsize or (4.3 * cols, 3.55 * rows))
+    grid = panel.add_gridspec(
+        rows * 2, cols,
+        height_ratios=[0.12, 1.0] * rows,
+        left=0.018, right=0.982, bottom=0.025, top=0.982,
+        hspace=0.09, wspace=0.055,
+    )
+    image_axes = []
+    for index, mode in enumerate(modes):
+        row, col = divmod(index, cols)
+        header = panel.add_subplot(grid[2 * row, col])
+        header.axis("off")
         if titles:
-            ax.set_title({"print": "Print stress"}.get(mode, mode.capitalize()))
+            label = {
+                "print": "Print stress",
+                "grayscale": "Grayscale",
+            }.get(mode, mode.capitalize())
+            header.text(
+                0.5, 0.5, label, ha="center", va="center",
+                fontsize=12.0, fontweight="semibold",
+                transform=header.transAxes,
+            )
+        ax = panel.add_subplot(grid[2 * row + 1, col])
+        ax.imshow(views[mode], interpolation="antialiased")
         ax.set_axis_off()
-    for ax in flattened[len(modes):]:
-        ax.set_axis_off()
-    panel.tight_layout()
-    return panel, flattened
+        image_axes.append(ax)
+    # No tight_layout(): it can draw labels from one image into the header
+    # of another, particularly when the original plot has a top legend.
+    return panel, np.asarray(image_axes, dtype=object)
 
 
 def save_accessibility_panel(fig: plt.Figure, filename: str | Path, *,
