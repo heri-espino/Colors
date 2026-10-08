@@ -14,6 +14,7 @@ def test_manuscript_has_all_demo_graphics():
     assert r"\input{generated/lines.pgf}" in tex
     assert r"\includegraphics{generated/lines.pdf}" in tex
     assert r"\includegraphics{generated/dense.pdf}" in tex
+    assert r"\includegraphics[width=\textwidth]{generated/groups_accessibility.png}" in tex
     assert r"\includegraphics[width=\textwidth]{generated/accessibility.png}" in tex
     assert r"\end{document}" in tex
 
@@ -36,6 +37,7 @@ def test_builder_only_pushes_after_opt_in():
     assert "set -Eeuo pipefail" in sh
     assert "publication_demo.pdf" in sh
     assert "publication_accessibility.png" in sh
+    assert "publication_scatter_accessibility.png" in sh
     assert "if ((COMMIT)); then" in sh
     assert "if ((PUSH)); then git push; fi" in sh
 

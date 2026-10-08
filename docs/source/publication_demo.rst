@@ -87,6 +87,16 @@ PDF and accessibility PNG, not all intermediate figures.
      <figcaption>The comparison is generated from the same original line plot
        as the manuscript's PDF and PGF figure.</figcaption>
    </figure>
+   <figure>
+     <img
+       src="_static/publication_scatter_accessibility.png"
+       alt="Six simulations of the same grouped scatter plot showing different
+       category markers in grayscale and color-vision deficiencies"
+       style="max-width:100%;height:auto"
+       loading="lazy">
+     <figcaption>The categorical scatter comparison preserves
+       group-identifying markers independently of color.</figcaption>
+   </figure>
 
 These links become live after the Mac script has generated and committed
 its outputs. The source and instructions are already in the repository.

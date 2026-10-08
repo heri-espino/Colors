@@ -88,6 +88,10 @@ def main() -> int:
         ax.set(xlabel="Measurement A", ylabel="Measurement B")
         ax.legend(loc="upper left")
         audit(pub, fig, "groups", diagnostics)
+        cc.save_accessibility_panel(
+            fig, out / "groups_accessibility.png",
+            dpi=165, max_width=700, figsize=(11.2, 6.4),
+        )
         pub.savefig(fig, out / "groups.pdf", audit=False)
         plt.close(fig)
 
@@ -112,6 +116,7 @@ def main() -> int:
     names = (
         "lines.pdf", "lines.pgf", "lines_proof.pdf",
         "groups.pdf", "dense.pdf", "accessibility.png",
+        "groups_accessibility.png",
     )
     for name in names:
         file = out / name

@@ -9,7 +9,8 @@ Outputs:
 - lines.pdf: direct PDF at exactly the same physical size.
 - groups.pdf: scatter groups separated by marker and color.
 - dense.pdf: rasterized point cloud with vector labels.
-- accessibility.png: original, B/W, print stress, and three CVD modes.
+- accessibility.png: original line plot, B/W, print stress, and three CVD modes.
+- groups_accessibility.png: the scatter plot under the same six conditions.
 - lines_proof.pdf: independent TeX verification of the PDF's real width.
 - report.json: TeX font, exact dimensions and per-figure warnings.
 - main.pdf: final article containing all comparisons.
