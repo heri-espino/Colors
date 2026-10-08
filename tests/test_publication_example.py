@@ -48,3 +48,14 @@ def test_site_navigation_and_ignore_rules():
     assert "_static/publication_accessibility.png" in page
     assert "   publication_demo" in index
     assert "examples/latex_publication/generated/" in ignore
+
+
+def test_demo_python_and_bash_have_valid_syntax():
+    import shutil
+    import subprocess
+
+    generator = DEMO / "generate.py"
+    compile(generator.read_text(encoding="utf-8"), str(generator), "exec")
+    bash = shutil.which("bash")
+    if bash:
+        subprocess.run([bash, "-n", str(DEMO / "run_macos.sh")], check=True)

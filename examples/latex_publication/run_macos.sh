@@ -37,6 +37,13 @@ for program in pdflatex kpsewhich; do
   fi
 done
 
+for package in lmodern.sty pgf.sty microtype.sty graphicx.sty; do
+  if ! kpsewhich "$package" >/dev/null 2>&1; then
+    echo "Your TeX installation lacks $package. Install that TeX package first." >&2
+    exit 1
+  fi
+done
+
 if command -v conda >/dev/null 2>&1; then
   if ! conda run -n contrastcolors python -c "import sys" >/dev/null 2>&1; then
     echo "Creating the contrastcolors Conda environment..."
@@ -90,6 +97,11 @@ echo
 echo "COMPLETE"
 echo "  Manuscript: $OUT/main.pdf"
 echo "  Font and physical-size report: $OUT/report.json"
+if command -v pdffonts >/dev/null 2>&1; then
+  pdffonts "$PDF" > "$OUT/embedded_fonts.txt"
+  echo "  Embedded PDF font report: $OUT/embedded_fonts.txt"
+  cat "$OUT/embedded_fonts.txt"
+fi
 echo "  Web-ready PDF: docs/source/_static/publication_demo.pdf"
 echo "  Web-ready accessibility image: docs/source/_static/publication_accessibility.png"
 echo "Nothing is committed or pushed unless explicitly requested."
