@@ -256,6 +256,135 @@ weight and physical point size as the line and grouped-scatter plots.
   \label{fig:dense}
 \end{figure}
 
+\section{Transparency and compositing}
+An RGBA foreground does not look the same on every
+background. For a foreground $C_{\mathrm{src}}$,
+a background $C_{\mathrm{bg}}$ and opacity $\alpha$,
+the displayed channel values in ordinary alpha
+compositing are
+\begin{equation}
+ C_{\mathrm{shown}}=\alpha C_{\mathrm{src}}+
+ (1-\alpha)C_{\mathrm{bg}} .
+\end{equation}
+The library provides \texttt{composite()},
+\texttt{minimum\_alpha()} and
+\texttt{compensate\_alpha()} to help prepare
+transparent colours for an intended background.
+Sometimes the required foreground would lie outside
+valid sRGB values; exact recovery is then
+impossible, and the package reports feasibility
+rather than claiming transparency is neutral.
+
+The grouped scatter here uses opacity $\alpha=0.68$
+and a fine $0.22$\,pt white marker outline.
+Other values are customizable: transparency can
+reduce overplotting, but too much opacity reduction
+makes small symbols disappear when printed. Colour,
+marker shape and border width therefore need to be
+assessed together on the final page.
+
+\section{The same source font as the LaTeX document}
+\texttt{inspect\_latex()} compiles a temporary,
+trusted LaTeX preamble and measures
+\verb|\columnwidth|, \verb|\textwidth|,
+normal text size and the active font identifier.
+This example uses a two-column document with a
+nominal body size of 10\,pt. Individual plot axis
+labels and both dashboards use that size and normal
+font weight. Legend and tick labels use a smaller
+8\,pt hierarchy. These are intentional defaults
+and can be changed, for example through
+\texttt{latex\_style(axis\_label\_scale=...)}.
+
+The \emph{nominal point size} is not the same as the
+\emph{font's exact glyph outlines}. A PDF written
+independently by Matplotlib can be 10\,pt yet not
+use the manuscript's exact font. A PGF picture
+is instead read into the manuscript with
+\verb|\input|, and LaTeX typesets the text using
+the document's existing font declarations.
+This is the difference demonstrated by the first
+two figures and the reason our vector dashboards
+are also inserted from PGF.
+
+A font can be present in MacTeX, TeX Live or MiKTeX
+without being registered as an ordinary operating
+system font. The \texttt{find\_latex\_font()} helper
+asks the installed TeX tools which font identifier
+is active and where its files can be found. In
+particular, \texttt{kpsewhich} can locate metric
+files (\texttt{.tfm}), although such a file
+contains \emph{metrics}, not a font's outlines.
+When the document uses PGF, you generally do not
+need to download or separately install another copy
+of its font for Matplotlib. A missing TeX package,
+however, must still be installed in the TeX
+distribution for the document to compile.
+
+\section{PDF vectors, raster data and hybrids}
+PDF is a container, not a guarantee that every
+visible element is a vector. It can hold scalable
+lines and text, embedded pixel images, or both.
+A PNG does contain pixels; a PNG placed into a
+PDF is still a bitmap. A vector object scales
+without becoming blocky, although its strokes and
+labels can still become too small for the reader.
+
+The six-view dashboards in this article are
+redrawn from supported Matplotlib line and scatter
+artists. Their PDF output contains vector paths
+and text; the source PGF lets LaTeX use native
+glyphs. The six transformed views are not
+pictures of other figures. The generator checks
+these outputs for embedded bitmap objects before
+continuing with the compilation.
+
+By contrast, Figure~\ref{fig:dense} is deliberately
+\emph{hybrid}. Its dense scatter cloud is
+rasterized at a chosen DPI, while the axes,
+labels and simple drawing elements remain
+vectorial. For thousands of observations,
+selective rasterization can substantially reduce
+file size without rasterizing typography. The
+actual size and quality still depend on the
+resolution, number of points and compression:
+a PDF does not automatically weigh less merely
+because it was exported as a PDF.
+
+The optional publication style controls
+rasterization of dense Matplotlib artists,
+including scatter, hexbin, pcolormesh and
+contour surfaces. For sparse groups like
+Figure~\ref{fig:groups}, vector markers are
+more appropriate. For large clouds such as
+Figure~\ref{fig:dense}, hybrid output is
+often preferable.
+
+\section{Dimension-aware export and validation}
+The package makes a figure directly at
+the final insertion width rather than
+guessing a scale factor after plotting.
+\texttt{latex\_style(width="column")}
+uses the manuscript's column width;
+\texttt{width="text"} uses the full text
+width for a two-column dashboard.
+\texttt{audit\_figure()} inspects physical
+measurements and small text; the
+\texttt{verify\_latex\_placement()} proof
+compares an unscaled exported PDF with the
+TeX width. The result is more informative
+than automatically forcing
+\verb|\includegraphics[width=\columnwidth]|
+to conceal an incorrectly sized file.
+
+For the final PDF, preserving the physical
+size is crucial: rescaling a 10\,pt label to
+half its width makes it effectively about
+5\,pt on the page. The dashboards in this
+article were therefore created at the real
+\verb|\textwidth| and inserted without
+a second scaling step.
+
 \section{Presentation at the final reading size}
 Good rendering is not only a question of pixel density. A diagnostic figure
 can contain the right information and still be unreadable when reduced from
@@ -358,14 +487,65 @@ not a substitute for user testing. Likewise, the degraded grayscale
 panel represents intentionally reduced tonal resolution rather than
 a calibrated office printer.
 
-\section{Reproducibility}
-The accompanying script uses a fixed random seed, saves a JSON report
-with font lookup, physical widths, and audit results, and compiles a
-standalone proof confirming that the PDF figure's unscaled width
-matches the measured LaTeX column.
+\section{Reproducibility and the library catalogue}
+The accompanying script builds every figure from a
+fixed random seed. It records the detected LaTeX
+font, physical dimensions, luminance grid,
+palette, opacity, output files and audits in
+\texttt{generated/report.json}. It compiles a
+separate TeX insertion proof checking the
+physical width of the first PDF and confirms that
+both accessibility dashboards have no embedded
+raster images.
 
-Matching nominal point size, using PGF, and inspecting grayscale do not
-eliminate a final visual review of dense legends, labels and scientific
-clarity.
+The \href{https://heri-espino.github.io/Colors/features.html}
+{feature catalogue} documents the public API
+and the separate interactive and documentation
+tools. The \href{https://heri-espino.github.io/Colors/notebooks/index.html}
+{notebook cookbook} provides runnable examples
+of lines, time series, distributions, ridge
+plots, heatmaps, uncertainty bands, grayscale,
+alpha and more. Source code is available at
+\url{https://github.com/heri-espino/Colors}.
+
+To reproduce the full presentation on a Mac
+with a compatible LaTeX installation:
+\begin{verbatim}
+git pull --ff-only
+bash examples/latex_publication/\
+run_macos.sh --open
+\end{verbatim}
+The resulting article is
+\texttt{generated/main.pdf}. Vector dashboard
+PDFs and PGFs are saved alongside it; small
+PNG files are provided only for fast Sphinx
+previews. The optional \texttt{--push} flag
+explicitly commits the selected publication
+assets, not source fonts or the whole build
+directory.
+
+\subsection{Scope and limitations}
+Controlled contrast between opaque colours
+does not by itself guarantee readability on
+a particular background. Fixed colour-blind-
+friendly hues do not eliminate the need for
+shape and linestyle cues. Colour-vision
+simulations are approximations, not clinical
+predictions. Printer-specific profiles and
+the final size of captions still matter.
+
+PGF provides the document's font definitions,
+but cannot automatically resolve a crowded
+legend or annotation. PDF may be vector,
+hybrid or raster. Full-document visual
+inspection remains important even when all
+programmatic audits pass.
+
+Finally, LaTeX preamble inspection compiles
+the supplied source in a subprocess; run it
+only on trusted manuscript files. The
+ability to reuse fonts from a local TeX
+installation is not an invitation to copy,
+redistribute or fetch proprietary font files.
 
 \end{document}
