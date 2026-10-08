@@ -12,6 +12,7 @@
        <div class="cc-actions">
          <a class="cc-button primary" href="studio.html">Open Palette Studio</a>
          <a class="cc-button" href="gallery.html">See the plot gallery</a>
+         <a class="cc-button" href="notebooks/index.html">Browse 12 notebooks</a>
          <a class="cc-button" href="quickstart.html">Quickstart</a>
        </div>
      </div>
@@ -23,6 +24,52 @@
        <span style="background:#f198ff;color:#111">#f198ff</span>
      </div>
    </section>
+
+Notebook cookbook: 12 executable demos
+--------------------------------------
+
+The complete notebook collection contains over 30 saved Matplotlib figures,
+with runnable code directly alongside each output. Choose a topic below or
+:doc:`browse all notebooks <notebooks/index>`.
+
+.. grid:: 1 2 2 3
+   :gutter: 2
+
+   .. grid-item-card:: Histograms & distributions
+      :link: notebooks/02_histograms_distributions
+      :link-type: doc
+
+      Histograms, KDE-like density curves, ECDF and cumulative distributions.
+
+   .. grid-item-card:: Box, violin & ridge
+      :link: notebooks/03_box_violin_ridge
+      :link-type: doc
+
+      Four ways to compare distributions by group.
+
+   .. grid-item-card:: Lines & time series
+      :link: notebooks/01_lines_time_series
+      :link-type: doc
+
+      Multi-series lines, markers, rolling trends and step plots.
+
+   .. grid-item-card:: Scatter & regression
+      :link: notebooks/04_scatter_relationships
+      :link-type: doc
+
+      Scatter, fitted trends, bubble and hexbin plots.
+
+   .. grid-item-card:: Heatmaps & matrices
+      :link: notebooks/05_heatmaps_matrices
+      :link-type: doc
+
+      Heatmaps, correlation matrices, contours and pcolormesh.
+
+   .. grid-item-card:: All 12 notebooks
+      :link: notebooks/index
+      :link-type: doc
+
+      Uncertainty, grayscale, paper figures, colormaps, alpha and more.
 
 A plotting library should show plots
 ------------------------------------
