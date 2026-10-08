@@ -173,6 +173,32 @@ def test_vector_scatter_keeps_marker_geometry_alpha_and_white_edges():
     plt.close(fig)
 
 
+def test_compact_vector_scatter_dashboard_has_no_clipped_labels():
+    """Physical 452 TeX pt wide 3 x 2 publication layout must pass audits."""
+    layout = cc.LatexLayout.from_dimensions(
+        columnwidth_pt=217.69, textwidth_pt=452, fontsize_pt=10
+    )
+    source, ax = plt.subplots()
+    for i, (marker, color) in enumerate(zip(
+        ("o", "s", "^"), ("#E69F00", "#0072B2", "#009E73")
+    )):
+        ax.scatter([i, i + .5], [i / 2, i / 2 + .4],
+                   marker=marker, color=color, s=48, alpha=.68,
+                   edgecolors="white", linewidths=.22, label=f"Group {i+1}")
+    ax.set(xlabel="Measurement A", ylabel="Measurement B")
+    with cc.latex_style(layout, width="text", rasterize=False) as pub:
+        panel, _ = cc.show_vector_accessibility_panel(
+            source, ncols=3,
+            figsize=(layout.width_inches("text"), 4.05),
+            axis_label_fontsize=10, title_fontsize=10,
+            tick_fontsize=8, legend_fontsize=8,
+        )
+        report = pub.audit(panel)
+        assert report.passed, report.warnings
+        plt.close(panel)
+    plt.close(source)
+
+
 def test_vector_dashboard_rejects_unsupported_heatmaps():
     fig, ax = plt.subplots()
     ax.imshow(np.ones((2, 3)))
