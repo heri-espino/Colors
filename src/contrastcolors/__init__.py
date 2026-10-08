@@ -1,5 +1,16 @@
 """Contrast-controlled color palettes for scientific Python."""
 
+from .accessibility import (
+    DEFAULT_ACCESSIBILITY_MODES,
+    figure_to_rgba,
+    figure_variants,
+    simulate_cvd_image,
+    simulate_figure,
+    show_accessibility_panel,
+    save_accessibility_panel,
+    to_grayscale_image,
+    to_print_stress_image,
+)
 from .alpha import AlphaCompensation, compensate_alpha, composite, minimum_alpha
 from .api import (
     DEFAULT_LINESTYLES,
@@ -7,6 +18,7 @@ from .api import (
     color_palette,
     contrast_palette,
     plot_scheme,
+    scatter_scheme,
     show_palette,
 )
 from .color_spaces import contrast_ratio, delta_e_ok, relative_luminance, srgb_to_oklab, to_hex, to_rgb
@@ -65,6 +77,16 @@ __all__ = [
     "available_styles",
     "panel_label",
     "plot_scheme",
+    "scatter_scheme",
+    "DEFAULT_ACCESSIBILITY_MODES",
+    "figure_to_rgba",
+    "figure_variants",
+    "simulate_cvd_image",
+    "simulate_figure",
+    "show_accessibility_panel",
+    "save_accessibility_panel",
+    "to_grayscale_image",
+    "to_print_stress_image",
     "save_figure",
     "set_style",
     "style_context",

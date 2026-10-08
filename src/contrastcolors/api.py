@@ -149,7 +149,7 @@ def show_palette(
     return ax
 
 
-DEFAULT_MARKERS = ("o", "s", "^", "D", "X", "v", "P", "*", "+", "x")
+DEFAULT_MARKERS = ("o", "s", "^", "D", "X", "P", "v", "<", ">", "*")
 DEFAULT_LINESTYLES = ("-", "--", ":", "-.", (0, (5, 2)), (0, (3, 1, 1, 1)))
 
 
@@ -214,4 +214,16 @@ def plot_scheme(
             "linestyle": line_values[i % len(line_values)],
         }
         for i, color in enumerate(colors)
+    ]
+
+
+def scatter_scheme(hues: Sequence[float] | str, **kwargs) -> list[dict]:
+    """Return distinct colors and group markers to pass into Axes.scatter.
+
+    Line styles are omitted since Matplotlib scatter does not accept them.
+    Registered palettes and plot_scheme parameters are fully supported.
+    """
+    return [
+        {"color": item["color"], "marker": item["marker"]}
+        for item in plot_scheme(hues, **kwargs)
     ]

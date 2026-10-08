@@ -72,6 +72,7 @@ HERI_SAVEFIG_KWARGS = {
 
 _RASTER_PATCHED = False
 _RASTERIZE_DENSE = False
+_ACCESSIBLE_SCATTER = False
 
 
 def available_styles() -> tuple[str, ...]:
@@ -130,6 +131,11 @@ def _install_rasterized_defaults() -> None:
     original_fill_between = Axes.fill_between
 
     def scatter(self, *args, **kwargs):
+        if _ACCESSIBLE_SCATTER and "marker" not in kwargs:
+            from .api import DEFAULT_MARKERS
+            index = getattr(self, "_contrastcolors_scatter_index", 0)
+            kwargs["marker"] = DEFAULT_MARKERS[index % len(DEFAULT_MARKERS)]
+            self._contrastcolors_scatter_index = index + 1
         if _RASTERIZE_DENSE:
             kwargs.setdefault("rasterized", True)
         return original_scatter(self, *args, **kwargs)
@@ -282,7 +288,11 @@ def _heri_rcparams(*, font: str, use_tex: bool) -> dict:
         "legend.frameon": False,
         "legend.borderaxespad": 0.25,
         "legend.handlelength": 1.8,
-        "axes.prop_cycle": mpl.cycler(color=HERI_PALETTE),
+        "axes.prop_cycle": (
+            mpl.cycler(color=HERI_PALETTE)
+            + mpl.cycler(marker=("o", "s", "^", "D", "X"))
+            + mpl.cycler(linestyle=("-", "--", ":", "-.", (0, (5, 2))))
+        ),
     }
     params.update(_font_rcparams(font, use_tex=use_tex))
     return params
@@ -308,11 +318,12 @@ def set_style(
     With rasterize=True, only dense artists are rasterized. Ordinary plot
     lines, errorbars, axes, text, ticks, legends, and annotations remain vector.
     """
-    global _RASTERIZE_DENSE
+    global _RASTERIZE_DENSE, _ACCESSIBLE_SCATTER
 
     name = str(style).strip().lower()
     if name in {"default", "matplotlib"}:
         _RASTERIZE_DENSE = False
+        _ACCESSIBLE_SCATTER = False
         mpl.rcdefaults()
         return
 
@@ -330,6 +341,7 @@ def set_style(
 
     _install_rasterized_defaults()
     _RASTERIZE_DENSE = bool(rasterize)
+    _ACCESSIBLE_SCATTER = True
 
     font_key = font.strip().lower()
     if use_tex == "auto":
@@ -360,10 +372,11 @@ def style_context(
     rasterize: bool = True,
 ) -> Iterator[None]:
     """Temporarily apply a style and restore previous Matplotlib state."""
-    global _RASTERIZE_DENSE
+    global _RASTERIZE_DENSE, _ACCESSIBLE_SCATTER
 
     previous = mpl.rcParams.copy()
     previous_rasterize = _RASTERIZE_DENSE
+    previous_scatter = _ACCESSIBLE_SCATTER
     try:
         set_style(
             style,
@@ -374,6 +387,7 @@ def style_context(
         yield
     finally:
         _RASTERIZE_DENSE = previous_rasterize
+        _ACCESSIBLE_SCATTER = previous_scatter
         mpl.rcParams.update(previous)
 
 
