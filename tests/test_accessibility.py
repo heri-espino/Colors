@@ -173,6 +173,50 @@ def test_vector_scatter_keeps_marker_geometry_alpha_and_white_edges():
     plt.close(fig)
 
 
+def test_vector_scatter_does_not_fill_entire_axes_with_marker_paths():
+    """Catch oversized PDF/PGF markers that shape/size metadata tests miss."""
+    rng = np.random.default_rng(20261007)
+    source, ax = plt.subplots()
+    for i, (marker, color) in enumerate(zip(
+        ("o", "s", "^"), ("#E69F00", "#0072B2", "#009E73")
+    )):
+        x = rng.normal(i * .65, .45, 34)
+        y = .5 * x + rng.normal(i * .45, .32, 34)
+        ax.scatter(x, y, s=48, marker=marker, color=color, alpha=.68,
+                   edgecolors="white", linewidths=.22, label=f"Group {i+1}")
+
+    panel, views = cc.show_vector_accessibility_panel(
+        source, modes=("original",), ncols=1, figsize=(3.5, 3.4)
+    )
+    panel.canvas.draw()
+    rgba = np.asarray(panel.canvas.buffer_rgba())
+    bbox = views[0].get_window_extent()
+    x0, y0, x1, y1 = map(int, (bbox.x0, bbox.y0, bbox.x1, bbox.y1))
+    height = rgba.shape[0]
+    # Sample the interior: no labels, borders, or legends.
+    interior = rgba[height-y1+20:height-y0-20, x0+20:x1-20, :3]
+    filled_fraction = np.mean(np.any(interior < 245, axis=2))
+    # Correctly sized 48 pt2 markers occupy a minority of the graph.
+    # The old direct PathCollection clone colored virtually every pixel.
+    assert filled_fraction < .45, f"Scatter paths expanded: {filled_fraction:.1%}"
+    plt.close(panel)
+    plt.close(source)
+
+
+def test_vector_print_stress_restores_gray_paper_background():
+    source, ax = plt.subplots()
+    ax.plot([0, 1], [0, 1], color="#0072B2")
+    panel, axes = cc.show_vector_accessibility_panel(
+        source, modes=("original", "grayscale", "print"), ncols=3
+    )
+    np.testing.assert_allclose(axes[0].get_facecolor()[:3], (1, 1, 1))
+    np.testing.assert_allclose(axes[1].get_facecolor()[:3], (1, 1, 1))
+    np.testing.assert_allclose(axes[2].get_facecolor()[:3], (.875, .875, .875))
+    assert all(not view.images for view in axes)
+    plt.close(panel)
+    plt.close(source)
+
+
 def test_compact_vector_scatter_dashboard_has_no_clipped_labels():
     """Physical 452 TeX pt wide 3 x 2 publication layout must pass audits."""
     layout = cc.LatexLayout.from_dimensions(
