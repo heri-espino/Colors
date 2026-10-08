@@ -161,52 +161,63 @@ def show_accessibility_panel(
     ncols: int = 3,
     figsize: tuple[float, float] | None = None,
     titles: bool = True,
+    title_fontsize: float = 10.0,
+    title_pad: float = 0.012,
     severity: float = 100,
     max_width: int | None = 900,
 ) -> tuple[plt.Figure, np.ndarray]:
-    """Make a panel with original, grayscale, print and three CVD views.
+    """Make a compact panel with the original and accessibility simulations.
 
-    Titles are placed in a dedicated row above each image, rather than as
-    ordinary Matplotlib subplot titles over a rasterized plot. The original
-    figure remains intact. Returns only the image axes in a flat array.
+    Titles are centered to each *rendered image* rather than a separate
+    layout column, which can be wider than the image due to equal aspect.
+    The titles are placed above (not over) the plot image and remain readable
+    when the panel is printed at the final manuscript size.
+
+    Adjust ```ncols``` and ```figsize``` to choose a landscape or portrait
+    layout. Returns a new figure and a flat array of image axes; the source
+    figure is never changed.
     """
     if not modes or ncols < 1:
         raise ValueError("Supply modes and ncols >= 1")
+    if not np.isfinite(title_fontsize) or title_fontsize <= 0:
+        raise ValueError("title_fontsize must be positive")
+    if not np.isfinite(title_pad) or title_pad < 0:
+        raise ValueError("title_pad must be non-negative")
     views = figure_variants(fig, modes, severity=severity, max_width=max_width)
     cols = min(ncols, len(modes))
     rows = ceil(len(modes) / cols)
-    # A separate header axis for every preview prevents title overlap with
-    # source figures' legends, axis labels, annotations, and adjacent rows.
-    panel = plt.figure(figsize=figsize or (4.3 * cols, 3.55 * rows))
-    grid = panel.add_gridspec(
-        rows * 2, cols,
-        height_ratios=[0.12, 1.0] * rows,
-        left=0.018, right=0.982, bottom=0.025, top=0.982,
-        hspace=0.09, wspace=0.055,
+    panel, grid = plt.subplots(
+        rows, cols,
+        figsize=figsize or (4.0 * cols, 3.2 * rows),
+        squeeze=False,
     )
-    image_axes = []
-    for index, mode in enumerate(modes):
-        row, col = divmod(index, cols)
-        header = panel.add_subplot(grid[2 * row, col])
-        header.axis("off")
+    # Do not apply tight_layout: Matplotlib cannot reserve reliable space
+    # for titles attached to rasterized snapshots containing their own text.
+    panel.subplots_adjust(
+        left=0.025, right=0.975, bottom=0.035, top=0.965,
+        hspace=0.25 if rows > 1 else 0.08,
+        wspace=0.10,
+    )
+    flattened = grid.ravel()
+    for ax, mode in zip(flattened, modes):
+        ax.imshow(views[mode], interpolation="antialiased", aspect="equal")
+        ax.set_axis_off()
         if titles:
             label = {
                 "print": "Print stress",
                 "grayscale": "Grayscale",
             }.get(mode, mode.capitalize())
-            header.text(
-                0.5, 0.5, label, ha="center", va="center",
-                fontsize=12.0, fontweight="semibold",
-                transform=header.transAxes,
+            # An axes title is centered on the *displayed* image rectangle.
+            # It is close to its image and uses regular rather than bold text.
+            ax.text(
+                0.5, 1.0 + title_pad, label,
+                ha="center", va="bottom", fontweight="normal",
+                fontsize=title_fontsize, transform=ax.transAxes,
+                clip_on=False,
             )
-        ax = panel.add_subplot(grid[2 * row + 1, col])
-        ax.imshow(views[mode], interpolation="antialiased")
+    for ax in flattened[len(modes):]:
         ax.set_axis_off()
-        image_axes.append(ax)
-    # No tight_layout(): it can draw labels from one image into the header
-    # of another, particularly when the original plot has a top legend.
-    return panel, np.asarray(image_axes, dtype=object)
-
+    return panel, flattened
 
 def save_accessibility_panel(fig: plt.Figure, filename: str | Path, *,
                              dpi: int = 180, **kwargs) -> Path:
