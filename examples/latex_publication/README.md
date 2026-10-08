@@ -1,7 +1,16 @@
 # Reproducible LaTeX publication example
 
-The demonstration generates a complete 10 pt two-column article. Its
-plots use measured physical widths from main.tex.
+The demonstration starts with a full-colour editorial cover, then continues
+as a 10 pt two-column technical field guide. Its plots use measured physical
+widths from main.tex. The cover's 30 native TikZ vector swatches are generated
+by the real ContrastGrid algorithm (5 WCAG luminance levels × 6 OKLCH hue
+choices), not raster images or manually invented palette values.
+
+The cover's navy background, typography, colour mosaic, three-stage workflow,
+and navigation are deliberately more like a short scientific design book than
+a generic article template. Body section headings use restrained colour
+accents, while PGF plots inherit actual LaTeX fonts. The PDF remains text-
+selectable and vector-first.
 
 Outputs:
 
