@@ -17,3 +17,6 @@ docs/_build/
 .conda/
 .DS_Store
 *.log
+
+# Publication example outputs; final PDF is copied into Sphinx assets
+examples/latex_publication/generated/

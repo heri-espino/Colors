@@ -223,6 +223,13 @@ Explore next
       Match the document's real column width and body font, audit labels,
       and compile a proof.
 
+   .. grid-item-card:: Full LaTeX publication example
+      :link: publication_demo
+      :link-type: doc
+
+      A two-column PDF, true PGF fonts, vector/raster plots and print/CVD
+      comparisons built reproducibly on macOS.
+
    .. grid-item-card:: Alpha
       :link: alpha
       :link-type: doc
@@ -239,6 +246,7 @@ Explore next
    studio
    accessibility
    publication
+   publication_demo
    customization
    quickstart
    palettes

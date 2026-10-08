@@ -1,0 +1,48 @@
+# Reproducible LaTeX publication example
+
+The demonstration generates a complete 10 pt two-column article. Its
+plots use measured physical widths from main.tex.
+
+Outputs:
+
+- lines.pgf: manuscript-owned LaTeX font glyphs in the final PDF.
+- lines.pdf: direct PDF at exactly the same physical size.
+- groups.pdf: scatter groups separated by marker and color.
+- dense.pdf: rasterized point cloud with vector labels.
+- accessibility.png: original, B/W, print stress, and three CVD modes.
+- lines_proof.pdf: independent TeX verification of the PDF's real width.
+- report.json: TeX font, exact dimensions and per-figure warnings.
+- main.pdf: final article containing all comparisons.
+
+## Run on macOS
+
+~~~bash
+git pull
+./examples/latex_publication/run_macos.sh --open
+~~~
+
+If necessary:
+
+~~~bash
+chmod +x examples/latex_publication/run_macos.sh
+~~~
+
+Requires MacTeX or compatible TeX Live (pdflatex, pgf, lmodern,
+microtype, graphicx, kpsewhich), and Conda or Python 3.10+.
+If TeX has its fonts, no separate macOS font installation is required.
+
+Intermediate outputs are ignored by Git. The final PDF and accessibility
+PNG are also copied to docs/source/_static so Sphinx can display them.
+
+After reviewing the PDF:
+
+~~~bash
+./examples/latex_publication/run_macos.sh --push
+~~~
+
+This explicitly commits and pushes only those two published assets.
+The default build does not push or commit anything.
+
+**Important:** the CVD images are approximate simulations; they do not
+certify universal accessibility. PGF obtains the document's font glyphs
+only when typeset by the original LaTeX document.

@@ -61,6 +61,31 @@ To publish the Sphinx site, go to GitHub **Settings > Pages**, select
 **GitHub Actions** as the source, and run the manual `pages` workflow.
 A default Jekyll Pages deployment does not build Sphinx.
 
+## macOS: complete LaTeX publication showcase
+
+There is now a reproducible, two-column scientific manuscript testing
+actual LaTeX fonts, physical sizes, PGF vs vector PDF, grouped scatter,
+hybrid rasterization and a six-way black-and-white / CVD comparison.
+
+Requires MacTeX or compatible TeX Live and Conda or Python 3.10+.
+
+~~~bash
+git pull
+./examples/latex_publication/run_macos.sh --open
+~~~
+
+The script generates a complete paper PDF and a font/layout audit. The
+finished PDF and accessibility preview are copied to Sphinx static assets.
+
+After reviewing the results, the following command explicitly commits
+and pushes just the PDF and the PNG:
+
+~~~bash
+./examples/latex_publication/run_macos.sh --push
+~~~
+
+See examples/latex_publication/README.md for the complete workflow.
+
 ## Install locally
 
 ```bash
