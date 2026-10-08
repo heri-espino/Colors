@@ -16,8 +16,8 @@ while (($#)); do
     --open) OPEN=1 ;;
     --help|-h)
       echo "Usage: ./examples/latex_publication/run_macos.sh [--commit] [--push] [--open]"
-      echo "  --commit  Commit only the final PDF and accessibility image"
-      echo "  --push    Also push those two results to the current branch"
+      echo "  --commit  Commit the manuscript, three figure PDFs and three web PNG previews"
+      echo "  --push    Also push those seven results to the current branch"
       echo "  --open    Open the final manuscript PDF in Preview"
       exit 0 ;;
     *) echo "Unknown option: $1" >&2; exit 2 ;;
