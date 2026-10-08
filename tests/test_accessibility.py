@@ -84,20 +84,33 @@ def test_scheme_and_automatic_identifiers():
 
 
 
-def test_panel_titles_live_in_separate_non_overlapping_headers(small_fig):
+@pytest.mark.parametrize("ncols", [2, 3])
+def test_panel_titles_centered_just_above_the_rendered_image(small_fig, ncols):
     panel, image_axes = cc.show_accessibility_panel(
-        small_fig, max_width=220, ncols=2, figsize=(8.8, 10)
+        small_fig, ncols=ncols, max_width=220,
+        figsize=(10, 12) if ncols == 2 else (13, 8),
+        title_fontsize=10, title_pad=0.01,
     )
     panel.canvas.draw()
-    headers = [
-        ax for ax in panel.axes
-        if ax not in tuple(image_axes)
-    ]
+    renderer = panel.canvas.get_renderer()
     assert len(image_axes) == 6
-    assert len(headers) == 6
-    for header, image in zip(headers, image_axes):
-        # Header is physically above its image and cannot cover a legend.
-        hb, ib = header.get_position(), image.get_position()
-        assert hb.y0 >= ib.y1 - 1e-8
-        assert len(header.texts) == 1
+    assert len(panel.axes) == 6
+    for ax in image_axes:
+        assert len(ax.texts) == 1
+        title = ax.texts[0]
+        text_box = title.get_window_extent(renderer)
+        image_box = ax.get_window_extent(renderer)
+        assert title.get_fontweight() == "normal"
+        # Centered on the actual image, not on a wider header cell.
+        assert abs((text_box.x0 + text_box.x1) / 2 -
+                   (image_box.x0 + image_box.x1) / 2) < 2.0
+        assert text_box.y0 >= image_box.y1 - 1.0
+        assert text_box.y0 - image_box.y1 < 15.0
     plt.close(panel)
+
+
+def test_panel_rejects_unusable_title_spacing(small_fig):
+    with pytest.raises(ValueError):
+        cc.show_accessibility_panel(small_fig, title_fontsize=0)
+    with pytest.raises(ValueError):
+        cc.show_accessibility_panel(small_fig, title_pad=-1)

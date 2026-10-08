@@ -50,3 +50,16 @@ The default build does not push or commit anything.
 **Important:** the CVD images are approximate simulations; they do not
 certify universal accessibility. PGF obtains the document's font glyphs
 only when typeset by the original LaTeX document.
+
+## Paper dashboard layouts and pie separators
+
+The example deliberately tests two formats in the **same two-column** LaTeX
+document. A portrait 2 × 3 line-series accessibility panel is placed in a
+dedicated float page using `figure* [p]`, with explanatory text. A landscape
+3 × 2 scatter accessibility panel spans both text columns using
+`figure* [t]`, leaving room for normal article paragraphs.
+
+Both panels use regular-weight headings centered above their respective
+rendered images, close enough not to waste vertical space. A separate
+`pie.pdf` figure demonstrates `cc.pie_plot()`: its wedge boundaries are
+white, not black, by default.

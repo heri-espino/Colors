@@ -16,9 +16,13 @@ Figures included
 - **Grouped scatter:** larger markers, distinct colors and luminances for
   each category, with the legend above the data region.
 - **Dense scatter:** rasterized points with vector axes and labels.
-- **Six views:** original, grayscale, print-stress, deuteranopia,
-  protanopia and tritanopia. Panel headings are outside each preview,
-  and the images use a two-column layout for legibility in the paper.
+- **Full-page series dashboard:** six views in a portrait 2 × 3 grid,
+  displayed on a dedicated LaTeX float page with an explanatory paragraph.
+- **Horizontal scatter dashboard:** six views in a landscape 3 × 2 grid,
+  spanning both text columns with surrounding article prose.
+- **Compact labels:** regular-weight titles are visually centered over the
+  actual rendered image and placed close to it without covering plot text.
+- **Pie chart:** print-safe wedges with clean white separators by default.
 - **Grayscale contrast:** when three categorical series are plotted,
   the default scheme spreads their relative luminances more strongly;
   points use bigger, outlined markers and legends stay outside data.
@@ -54,6 +58,7 @@ Locally generated files are under:
    examples/latex_publication/generated/lines.pdf
    examples/latex_publication/generated/groups.pdf
    examples/latex_publication/generated/dense.pdf
+   examples/latex_publication/generated/pie.pdf
    examples/latex_publication/generated/accessibility.png
    examples/latex_publication/generated/lines_proof.pdf
    examples/latex_publication/generated/report.json
@@ -114,12 +119,16 @@ in LaTeX. A direct PDF can have equal nominal font size without identical
 glyphs. The six-view panel provides diagnostic simulations rather than
 universal accessibility certification.
 
-The publication example uses the adaptive ``print_safe_luminances`` defaults
-for three series. Relative luminances are more widely spaced than for a
-five- or ten-series palette. The original plot places its legend above the
-data axes, and each accessibility panel has a separate title strip to prevent
-titles colliding with axis labels. Panels are arranged in **two columns by
-three rows**, so the final ``figure*`` can be read at journal scale.
+The publication example uses the adaptive ``print_safe_luminances``
+defaults for three series. Relative luminances are more widely spaced than
+for a five- or ten-series palette. The source legends sit above the data
+axes. Dashboard labels are centered on their own rendered images, with a
+small title gap instead of a separate, oversized heading row.
+
+The six-view **series panel** uses two internal columns and three rows and
+occupies a dedicated float page; the **scatter panel** uses three internal
+columns and two rows, taking the full width of a two-column journal page.
+The accompanying article text explains why the aspect ratios differ.
 
 The preview includes grayscale rendering to check whether luminance alone
 is sufficient; marker shapes and dashed line patterns remain necessary,
