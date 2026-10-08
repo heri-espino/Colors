@@ -5,7 +5,7 @@ Every image on this page is rendered by Matplotlib from the installed
 ``contrastcolors`` package during the documentation build.
 
 For the complete gallery with runnable code and saved figures, open the
-:doc:`12-notebook cookbook <notebooks/index>`. You can also browse the
+:doc:`13-notebook cookbook <notebooks/index>`. You can also browse the
 `raw notebooks on GitHub <https://github.com/heri-espino/Colors/tree/main/docs/source/notebooks>`_.
 
 Line plots

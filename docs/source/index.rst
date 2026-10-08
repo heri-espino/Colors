@@ -25,7 +25,7 @@
      </div>
    </section>
 
-Notebook cookbook: 12 executable demos
+Notebook cookbook: 13 executable demos
 --------------------------------------
 
 The complete notebook collection contains over 30 saved Matplotlib figures,
@@ -65,7 +65,7 @@ with runnable code directly alongside each output. Choose a topic below or
 
       Heatmaps, correlation matrices, contours and pcolormesh.
 
-   .. grid-item-card:: All 12 notebooks
+   .. grid-item-card:: All 13 notebooks
       :link: notebooks/index
       :link-type: doc
 

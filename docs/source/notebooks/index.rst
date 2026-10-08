@@ -1,7 +1,7 @@
 Notebook cookbook
 =================
 
-These notebooks are executable Sphinx pages. During the documentation build,
+These 13 notebooks are executable Sphinx pages. Every figure is immediately followed by a six-view accessibility panel. During the documentation build,
 MyST-NB runs the code against the installed version of contrastcolors and
 embeds the real Matplotlib outputs.
 
