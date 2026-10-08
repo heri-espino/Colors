@@ -257,6 +257,94 @@ def inspect_latex(
     return _parse_layout_log(log)
 
 
+
+@dataclass(frozen=True)
+class LatexFontInfo:
+    """Information about font resources accessible through the TeX installation.
+
+    A TFM stores font *metrics*, not the letter outlines. When outline_path
+    is None, using PGF inside the manuscript is still the reliable way to
+    typeset the figure with the manuscript's exact TeX font.
+    """
+
+    family_code: str
+    tex_font_name: str
+    outline_path: Path | None
+    metrics_path: Path | None
+    source: str
+
+    @property
+    def has_font_file(self) -> bool:
+        return self.outline_path is not None
+
+
+def _kpsewhich(filename: str) -> Path | None:
+    """Ask TeX's file database for one resource without scanning directories."""
+    executable = shutil.which("kpsewhich")
+    if executable is None:
+        return None
+    try:
+        result = subprocess.run(
+            [executable, filename], capture_output=True, text=True,
+            check=False, timeout=8,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if result.returncode != 0 or not result.stdout.strip():
+        return None
+    # Usually one absolute filename, but use only the first non-empty line.
+    path = Path(result.stdout.strip().splitlines()[0])
+    return path if path.is_file() else None
+
+
+def find_latex_font(
+    tex_file: str | Path,
+    *,
+    engine: Literal["pdflatex", "xelatex", "lualatex"] = "pdflatex",
+    timeout: int = 60,
+) -> LatexFontInfo:
+    """Inspect the TeX font and locate available files without downloads.
+
+    Reports the font identifier from the document's normal body text.
+    For Type 1 / traditional LaTeX fonts, kpsewhich often finds a TFM
+    metrics file, even when a matching outline file cannot be identified
+    automatically. For XeLaTeX/LuaLaTeX it may find an OTF/TTF font file.
+    Returning a metrics path is not proof that Matplotlib can use the font.
+    """
+    layout = inspect_latex(tex_file, engine=engine, timeout=timeout)
+    font_name = layout.font_name.strip()
+    # XeTeX/LuaTeX can print [path/font.otf]:mode=... as \fontname.
+    outline: Path | None = None
+    bracket = re.match(r"^\[([^\]]+\.(?:otf|ttf|ttc))\]", font_name, re.IGNORECASE)
+    if bracket:
+        candidate = Path(bracket.group(1))
+        if candidate.is_file():
+            outline = candidate.resolve()
+        else:
+            outline = _kpsewhich(candidate.name)
+    tex_name = font_name.split()[0] if font_name else "unknown"
+    # The simplest form is "cmr10 at 10.0pt" or "pplr7t at 10.0pt".
+    clean_name = re.sub(r"[^A-Za-z0-9_.-]", "", tex_name)
+    metrics: Path | None = None
+    if clean_name:
+        if outline is None:
+            for ext in ("otf", "ttf", "ttc", "pfb"):
+                outline = _kpsewhich(f"{clean_name}.{ext}")
+                if outline is not None:
+                    break
+        metrics = _kpsewhich(f"{clean_name}.tfm")
+    source = (
+        "font outlines found in TeX" if outline else
+        "TeX metrics found; outline file not identified" if metrics else
+        "font identifier available; TeX file location unresolved"
+    )
+    return LatexFontInfo(
+        family_code=layout.font_family,
+        tex_font_name=layout.font_name,
+        outline_path=outline, metrics_path=metrics, source=source,
+    )
+
+
 @dataclass(frozen=True)
 class FigureAudit:
     """Physical measurements and warnings at the intended LaTeX insertion size."""
@@ -446,6 +534,7 @@ class PublicationStyle:
     width: Literal["column", "text", "page"] | float = "column"
     height_ratio: float = 0.65
     minimum_text_pt: float = 7.0
+    tex_engine: str = "pdflatex"
 
     def subplots(self, *, height_ratio: float | None = None, **kwargs):
         """Create a Matplotlib figure already sized to its LaTeX slot."""
@@ -470,6 +559,28 @@ class PublicationStyle:
             minimum_text_pt=self.minimum_text_pt, **kwargs,
         )
 
+
+    def savefig_pgf(
+        self, fig: mpl.figure.Figure, filename: str | Path, *,
+        dpi: int = 600, **kwargs,
+    ) -> Path:
+        """Save a vector PGF picture to be typeset by the manuscript's LaTeX.
+
+        This does not require the manuscript font to be installed in Windows.
+        Include with \input{figure.pgf} in the original LaTeX document.
+        For exact font matching, PGF must be typeset in that document; the
+        standalone preview in Matplotlib may use approximate font metrics.
+        """
+        target = Path(filename).with_suffix(".pgf")
+        target.parent.mkdir(parents=True, exist_ok=True)
+        options = {"bbox_inches": None, "pad_inches": 0, "dpi": dpi, **kwargs}
+        with mpl.rc_context({
+            "pgf.texsystem": self.tex_engine,
+            "pgf.rcfonts": False,
+        }):
+            fig.savefig(target, format="pgf", **options)
+        return target
+
     def savefig(
         self, fig: mpl.figure.Figure, filename: str | Path, *,
         audit: bool = True, dpi: int = 600, **kwargs,
@@ -493,7 +604,10 @@ class PublicationStyle:
         path.parent.mkdir(parents=True, exist_ok=True)
         opts = {"bbox_inches": None, "pad_inches": 0, "dpi": dpi, **kwargs}
         if path.suffix.lower() == ".pgf":
-            fig.savefig(path, **opts)
+            self.savefig_pgf(
+                fig, path, **{key: value for key, value in opts.items() if key != "dpi"},
+                dpi=dpi,
+            )
         else:
             save_figure(fig, path, **opts)
         return path
@@ -544,6 +658,7 @@ def latex_style(
         yield PublicationStyle(
             layout=layout, width=width,
             height_ratio=height_ratio, minimum_text_pt=minimum_text_pt,
+            tex_engine=engine,
         )
 
 
