@@ -222,7 +222,16 @@ class ContrastGrid:
                     black_contrast = contrast_ratio(cell.rgb, "black")
                     white_contrast = contrast_ratio(cell.rgb, "white")
                     text_color = "black" if black_contrast >= white_contrast else "white"
-                    ax.text(j + 0.5, rows - 0.5 - i, cell.hex, ha="center", va="center", color=text_color, fontsize=8)
+                    # Keep the visible #RRGGBB notation in both Matplotlib
+                    # PDF and native PGF. An unescaped "#" makes TeX abort
+                    # during backend_pgf's text measurement. Plain "\\#"
+                    # instead displays a literal backslash in non-TeX PDF.
+                    # MathText's escaped hash works in both exporters.
+                    tex_safe_hex = r"$\\#$" + cell.hex[1:]
+                    ax.text(
+                        j + 0.5, rows - 0.5 - i, tex_safe_hex,
+                        ha="center", va="center", color=text_color, fontsize=8,
+                    )
 
         ax.set_xlim(0, cols)
         ax.set_ylim(0, rows)
