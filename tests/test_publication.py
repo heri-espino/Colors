@@ -150,9 +150,11 @@ def test_latex_proof_requires_pdf(monkeypatch, tmp_path):
 
     def fake_run(source, *, source_dir, engine, timeout, output_pdf=None):
         assert r"\usepackage{graphicx}" in source
-        assert r"\includegraphics[width=\columnwidth]" in source
+        assert r"\includegraphics[width=\columnwidth]" not in source
+        assert r"\typeout{CCLAYOUT:FIGURE=\the\wd\ccfigurebox}" in source
         assert str(graphic.resolve().as_posix()) in source
-        return "CCLAYOUT:COLUMN=250pt\nCCLAYOUT:TEXT=500pt\nCCLAYOUT:FONT=10pt\n"
+        return ("CCLAYOUT:COLUMN=250pt\nCCLAYOUT:TEXT=500pt\n"
+                "CCLAYOUT:FONT=10pt\nCCLAYOUT:FIGURE=250pt\n")
     monkeypatch.setattr(pub, "_run_tex", fake_run)
     result = cc.verify_latex_placement(tex, graphic)
     assert result.columnwidth_pt == 250
@@ -184,3 +186,23 @@ def test_optional_real_latex_probe_when_installed(tmp_path):
     actual = cc.inspect_latex(tex, timeout=30)
     assert actual.fontsize_pt == pytest.approx(10.0)
     assert actual.columnwidth_pt < actual.textwidth_pt
+
+
+def test_latex_proof_checks_real_unscaled_width(monkeypatch, tmp_path):
+    tex = tmp_path / "paper.tex"
+    tex.write_text(r"\documentclass{article}" + "\n" + r"\begin{document}")
+    pdf = tmp_path / "fig.pdf"
+    pdf.write_bytes(b"%PDF-1.4\n")
+    def wrong(source, *, source_dir, engine, timeout, output_pdf=None):
+        return ("CCLAYOUT:COLUMN=250pt\nCCLAYOUT:TEXT=500pt\n"
+                "CCLAYOUT:FONT=10pt\nCCLAYOUT:FIGURE=245pt\n")
+    monkeypatch.setattr(pub, "_run_tex", wrong)
+    with pytest.raises(cc.LatexProbeError, match="Figure has width"):
+        cc.verify_latex_placement(tex, pdf)
+    def right(source, *, source_dir, engine, timeout, output_pdf=None):
+        assert r"\onecolumn" in source
+        return ("CCLAYOUT:COLUMN=250pt\nCCLAYOUT:TEXT=500pt\n"
+                "CCLAYOUT:FONT=10pt\nCCLAYOUT:FIGURE=500pt\n")
+    monkeypatch.setattr(pub, "_run_tex", right)
+    layout = cc.verify_latex_placement(tex, pdf, width="text")
+    assert layout.textwidth_pt == 500

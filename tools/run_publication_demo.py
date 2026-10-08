@@ -50,7 +50,8 @@ def main() -> int:
         if args.tex:
             proof = args.output / "publication_proof.pdf"
             cc.verify_latex_placement(
-                args.tex, pdf, engine=args.engine, proof_pdf=proof
+                args.tex, pdf, width="column",
+                engine=args.engine, proof_pdf=proof
             )
             print("LaTeX proof:", proof)
         return 0

@@ -101,7 +101,10 @@ Compile a proof PDF
    )
 
 This compiles a **separate minimal document** with your template preamble
-and the graphic inserted at column width, to detect TeX compilation errors.
+and an *unscaled* copy of the PDF, comparing the physical PDF width against
+the measured column width (default tolerance: 0.75 TeX points). The proof
+also shows normal document text for a typography comparison. For a wide
+two-column figure use width="text".
 It does not validate the final position of a float inside the manuscript.
 
 Matching the actual font glyphs

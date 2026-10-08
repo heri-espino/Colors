@@ -111,7 +111,9 @@ def _latex_preamble(source: str) -> str:
     return uncommented[:match.start()]
 
 
-def _measurement_source(preamble: str, *, graphics: Path | None = None) -> str:
+def _measurement_source(
+    preamble: str, *, graphics: Path | None = None, graphics_width: str = "column"
+) -> str:
     """Compile a minimal probe using the manuscript's actual preamble."""
     commands = [
         r"\begin{document}",
@@ -128,9 +130,21 @@ def _measurement_source(preamble: str, *, graphics: Path | None = None) -> str:
         # Require graphicx in the probe preamble even if the source omitted it.
         # This probe is a standalone publication-size insertion proof.
         escaped = graphics.resolve().as_posix().replace("\\", "/")
+        if graphics_width not in ("column", "text"):
+            raise ValueError("graphics_width must be 'column' or 'text'.")
+        # Measure the original PDF's physical size without hiding a mismatch
+        # behind includegraphics[width=...]. The standalone proof also shows
+        # regular document text to allow a side-by-side typography inspection.
         commands.extend([
-            r"\par\noindent",
-            r"\includegraphics[width=\columnwidth]{" + escaped + "}",
+            r"\newsavebox{\ccfigurebox}",
+            r"\sbox{\ccfigurebox}{\includegraphics{" + escaped + "}}",
+            r"\typeout{CCLAYOUT:FIGURE=\the\wd\ccfigurebox}",
+        ])
+        if graphics_width == "text":
+            commands.append(r"\onecolumn")
+        commands.extend([
+            r"\par\noindent Reference manuscript text at the normal body font size.",
+            r"\par\medskip\noindent\usebox{\ccfigurebox}",
             r"\par",
         ])
     commands.append(r"\end{document}")
@@ -538,14 +552,17 @@ def verify_latex_placement(
     figure_pdf: str | Path,
     *,
     proof_pdf: str | Path | None = None,
+    width: Literal["column", "text"] = "column",
+    tolerance_pt: float = 0.75,
     engine: Literal["pdflatex", "xelatex", "lualatex"] = "pdflatex",
     timeout: int = 60,
 ) -> LatexLayout:
-    """Compile a standalone proof inserting a PDF at the document column width.
+    """Compile a one-page proof with unscaled PDF at the intended TeX width.
 
-    Uses the document preamble, not its body; confirms the figure can be
-    included by the chosen TeX engine. If proof_pdf is supplied, saves the
-    resulting one-page proof. Compilation failures propagate as errors.
+    Verifies the insertion width in TeX points rather than silently resizing
+    the PDF. The proof includes reference manuscript body text for comparison.
+    For full-width two-column figures, select width='text'.
+    This does not analyze float placement in the full manuscript.
     """
     source = Path(tex_file).expanduser().resolve()
     figure = Path(figure_pdf).expanduser().resolve()
@@ -555,8 +572,24 @@ def verify_latex_placement(
         raise FileNotFoundError("Both TeX source and exported PDF must exist.")
     preamble = _latex_preamble(source.read_text(encoding="utf-8-sig"))
     log = _run_tex(
-        _measurement_source(preamble, graphics=figure),
+        _measurement_source(preamble, graphics=figure, graphics_width=width),
         source_dir=source.parent, engine=engine, timeout=timeout,
         output_pdf=Path(proof_pdf).expanduser().resolve() if proof_pdf else None,
     )
-    return _parse_layout_log(log)
+    layout = _parse_layout_log(log)
+    if width not in ("column", "text"):
+        raise ValueError("width must be 'column' or 'text'.")
+    if not math.isfinite(tolerance_pt) or tolerance_pt < 0:
+        raise ValueError("tolerance_pt must be non-negative and finite.")
+    found = re.search(r"CCLAYOUT:FIGURE=([0-9.]+)pt", log)
+    if found is None:
+        raise LatexProbeError("The LaTeX proof did not measure the inserted PDF width.")
+    observed = float(found.group(1))
+    expected = layout.width_pt(width)
+    if abs(observed - expected) > tolerance_pt:
+        raise LatexProbeError(
+            f"Figure has width {observed:.2f} TeX pt, "
+            f"but {width} width is {expected:.2f} TeX pt. "
+            "Export at the target physical width instead of scaling on insertion."
+        )
+    return layout
