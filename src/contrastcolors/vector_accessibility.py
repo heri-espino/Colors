@@ -91,7 +91,12 @@ def _replot_lines(source, destination, mode: str, severity: float):
 
 
 def _replot_scatter(source, destination, mode: str, severity: float):
-    """Copy scatter PathCollections without turning individual points into pixels."""
+    """Redraw scatter using Matplotlib's marker-size and data transforms.
+
+    Constructing PathCollection directly skips the marker-size transform,
+    so small scatter markers expand into enormous filled polygons in PGF.
+    The source's normalized marker Path may be passed to Axes.scatter.
+    """
     legend_handles = []
     for original in source.collections:
         if not isinstance(original, PathCollection):
@@ -100,27 +105,36 @@ def _replot_scatter(source, destination, mode: str, severity: float):
             )
         if not original.get_visible():
             continue
+
+        paths = original.get_paths()
+        if len(paths) != 1:
+            raise NotImplementedError(
+                "Vector dashboard expects one marker path per scatter collection."
+            )
+        offsets = original.get_offsets()
+        if len(offsets) == 0:
+            continue
+
         faces = _color_array(original.get_facecolors(), mode, severity)
         original_edges = original.get_edgecolors()
         edges = _color_array(original_edges, mode, severity)
-        # Preserve deliberate white separators even in the harsh "print"
-        # diagnostic. They are a geometric accessibility cue, not a hue.
+
+        # White separator strokes are a geometric cue, not a hue.
         if len(edges):
             whites = np.all(np.isclose(original_edges[:, :3], 1.0), axis=1)
             edges[whites, :3] = 1.0
-        clone = PathCollection(
-            original.get_paths(),
-            sizes=original.get_sizes(),
-            offsets=original.get_offsets(),
-            offset_transform=destination.transData,
-            facecolors=faces,
-            edgecolors=edges,
+
+        clone = destination.scatter(
+            offsets[:, 0], offsets[:, 1],
+            s=original.get_sizes(),
+            marker=paths[0],
+            facecolors=faces if len(faces) else "none",
+            edgecolors=edges if len(edges) else "none",
             linewidths=original.get_linewidths(),
             label=original.get_label(),
             zorder=original.get_zorder(),
+            rasterized=False,
         )
-        clone.set_rasterized(False)
-        destination.add_collection(clone, autolim=False)
         if not clone.get_label().startswith("_"):
             legend_handles.append(clone)
     return legend_handles
@@ -180,7 +194,11 @@ def show_vector_accessibility_panel(
     handles = []
     for index, mode in enumerate(modes):
         dest = axes[index]
-        dest.set_facecolor("white")
+        # Match the old 9-level print-stress diagnostic: paper white is
+        # mapped to 0.875 gray, without rasterizing the dashboard.
+        dest.set_facecolor(
+            _color_view("white", "print", severity) if mode == "print" else "white"
+        )
         dest.set_axisbelow(True)
         dest.grid(True, alpha=.24, linewidth=.5)
         local_handles = _replot_lines(ax, dest, mode, severity)
