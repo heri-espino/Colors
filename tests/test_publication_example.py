@@ -14,9 +14,11 @@ def test_manuscript_has_all_demo_graphics():
     assert r"\input{generated/lines.pgf}" in tex
     assert r"\includegraphics{generated/lines.pdf}" in tex
     assert r"\includegraphics{generated/dense.pdf}" in tex
+    assert r"\input{generated/groups.pgf}" in tex
     assert r"\includegraphics[width=\textwidth]{generated/groups_accessibility.png}" in tex
     assert r"\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{generated/accessibility.png}" in tex
-    assert r"\includegraphics{generated/pie.pdf}" in tex
+    assert "pie.pdf" not in tex
+    assert r"\section{Categorical pie-chart boundaries}" not in tex
     assert r"\begin{figure*}[p]" in tex
     assert r"\begin{figure*}[t]" in tex
     assert r"\clearpage" in tex
@@ -34,8 +36,11 @@ def test_generated_graphics_use_public_apis():
     assert "np.random.default_rng(20261007)" in script
     assert "lines.pgf" in script
     assert "lines.pdf" in script
-    assert "pie.pdf" in script
-    assert "cc.pie_plot(" in script
+    assert "pie.pdf" not in script
+    assert "cc.pie_plot(" not in script
+    assert "groups.pgf" in script
+    assert 'edgecolors="white"' in script
+    assert "match_manuscript_axes(ax, layout.fontsize_pt)" in script
     assert "ncols=3" in script and "ncols=2" in script
 
 

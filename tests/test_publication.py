@@ -241,3 +241,25 @@ def test_pdf_and_svg_keep_exact_latex_width_with_heri_tight_default(layout, tmp_
         )
         # Export must not switch off the caller's Heri crop preference.
         assert mpl.rcParams["savefig.bbox"] == "tight"
+
+
+def test_publication_axis_label_typography_defaults_and_customizable(layout):
+    with cc.latex_style(layout, width="column") as p:
+        fig, ax = p.subplots()
+        ax.set(xlabel="x axis", ylabel="y axis")
+        assert mpl.rcParams["axes.labelweight"] == "normal"
+        assert ax.xaxis.label.get_fontsize() == pytest.approx(layout.fontsize_pt)
+        assert ax.yaxis.label.get_fontsize() == pytest.approx(layout.fontsize_pt)
+        assert ax.xaxis.label.get_fontweight() == "normal"
+        assert ax.yaxis.label.get_fontweight() == "normal"
+    with cc.latex_style(layout, axis_label_scale=0.9,
+                        axis_label_weight="bold") as p:
+        fig, ax = p.subplots()
+        ax.set(xlabel="x", ylabel="y")
+        assert ax.xaxis.label.get_fontsize() == pytest.approx(
+            layout.fontsize_pt * 0.9
+        )
+        assert ax.yaxis.label.get_fontweight() == "bold"
+    with pytest.raises(ValueError):
+        with cc.latex_style(layout, axis_label_scale=0):
+            pass

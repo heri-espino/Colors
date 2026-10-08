@@ -634,15 +634,23 @@ def latex_style(
     height_ratio: float = 0.65,
     minimum_text_pt: float = 7.0,
     rasterize: bool = True,
+    axis_label_scale: float = 1.0,
+    axis_label_weight: str = "normal",
     timeout: int = 60,
 ) -> Iterator[PublicationStyle]:
     """Context-manage publication-sized figures using LaTeX measurements.
 
-    Font sizes match the body text in *points*: axis labels use body size,
-    ticks/legends 80% and panel titles 100%. font='auto' infers serif/sans
+    Font sizes match the body text in *points*: axis labels default to body
+    size and normal weight; ticks/legends 80% and panel titles 100%.
+    Customize axis_label_scale and axis_label_weight when needed.
+    font='auto' infers serif/sans
     from the LaTeX family code, but does NOT guarantee identical glyphs.
     For exact document font rendering, export a PGF and input it in LaTeX.
     """
+    if not math.isfinite(axis_label_scale) or axis_label_scale <= 0:
+        raise ValueError("axis_label_scale must be positive and finite.")
+    if not isinstance(axis_label_weight, str) or not axis_label_weight.strip():
+        raise ValueError("axis_label_weight must be a nonempty font weight.")
     layout = (
         tex_file if isinstance(tex_file, LatexLayout)
         else inspect_latex(tex_file, engine=engine, timeout=timeout)
@@ -655,7 +663,9 @@ def latex_style(
     with style_context("heri", font=family, use_tex=False, rasterize=rasterize):
         mpl.rcParams.update({
             "font.size": layout.fontsize_pt,
-            "axes.labelsize": layout.fontsize_pt,
+            "font.weight": "normal",
+            "axes.labelsize": axis_label_scale * layout.fontsize_pt,
+            "axes.labelweight": axis_label_weight,
             "axes.titlesize": layout.fontsize_pt,
             "xtick.labelsize": 0.8 * layout.fontsize_pt,
             "ytick.labelsize": 0.8 * layout.fontsize_pt,

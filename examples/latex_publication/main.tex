@@ -64,22 +64,27 @@ PGF instead instructs LaTeX to typeset text when the figure is included.
 \section{Grouped scatter}
 A categorical plot should not rely on hue alone.
 Figure~\ref{fig:groups} assigns each category a distinct color and marker.
+White marker outlines separate overlapping observations without adding
+visual weight, and all axis labels use the document's normal 10 pt text size.
 All observations in one category keep the same marker. Three groups
 use broadly spaced relative luminances so their grayscale variants remain
 visibly separated. Legends sit above the data rather than covering points.
 
 \begin{figure}[tb]
   \centering
-  \includegraphics{generated/groups.pdf}
-  \caption{Categorical scatter with redundant color and marker encoding,
-  exported at the manuscript's actual column width.}
+  \input{generated/groups.pgf}
+  \caption{Categorical scatter with color and marker encoding, exported
+  at the manuscript's actual column width. White point outlines improve
+  separation, while the axis labels are typeset in the same nominal size
+  and font as Figure~\ref{fig:pgf}.}
   \label{fig:groups}
 \end{figure}
 
 \section{Hybrid vector and raster export}
 Large scatter clouds can make vector PDFs unnecessarily heavy.
 Figure~\ref{fig:dense} rasterizes dense points but retains the surrounding
-axes, labels and ticks as vectors.
+axes, labels and ticks as vectors. Its axis labels also use the same normal
+weight and physical point size as the line and grouped-scatter plots.
 
 \begin{figure}[tb]
   \centering
@@ -186,23 +191,6 @@ They are useful stress tests, but viewers differ and the simulation is
 not a substitute for user testing. Likewise, the degraded grayscale
 panel represents intentionally reduced tonal resolution rather than
 a calibrated office printer.
-
-\section{Categorical pie-chart boundaries}
-The new pie-chart helper uses white boundaries between wedges rather than
-dark outlines. This gives the chart a lighter appearance and retains
-explicit segment separation, including in the grayscale preview.
-For categorical comparisons requiring precise quantitative judgments,
-a bar chart is typically easier to read; the pie chart is included
-here as an example of a consistent visual default.
-
-\begin{figure}[tb]
-  \centering
-  \includegraphics{generated/pie.pdf}
-  \caption{\textbf{Default pie style.} Clean white boundaries separate
-  sectors; the wedge luminances follow the same paper-aware palette policy
-  used for the line and scatter examples.}
-  \label{fig:pie}
-\end{figure}
 
 \section{Reproducibility}
 The accompanying script uses a fixed random seed, saves a JSON report

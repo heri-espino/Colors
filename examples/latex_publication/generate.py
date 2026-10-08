@@ -34,6 +34,19 @@ def audit(publication, figure, label: str, records: dict) -> None:
         print("    " + warning)
 
 
+def match_manuscript_axes(ax, fontsize_pt: float) -> None:
+    """Use Figure 1's axis typography on all demonstration plots.
+
+    Sizes refer to physical typesetting points, not screen pixels. LaTeX
+    export via PGF supplies the actual document glyphs where possible.
+    """
+    for label in (ax.xaxis.label, ax.yaxis.label):
+        label.set_fontsize(fontsize_pt)
+        label.set_fontweight("normal")
+    ax.tick_params(axis="both", labelsize=0.8 * fontsize_pt)
+
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--tex", type=Path, default=HERE / "main.tex")
@@ -72,6 +85,7 @@ def main() -> int:
                 markersize=6.0, label=f"Series {i + 1}", **style
             )
         ax.set(xlabel=r"Time ($t$)", ylabel=r"Response ($y$)")
+        match_manuscript_axes(ax, layout.fontsize_pt)
         # Never cover a curve with a legend; constrain layout allocates
         # room for this legend outside the axes.
         ax.legend(
@@ -97,10 +111,11 @@ def main() -> int:
             y = 0.50 * x + data.normal(i * 0.45, 0.32, size=34)
             ax.scatter(
                 x, y, s=52, alpha=0.96,
-                edgecolors="#292929", linewidths=0.55,
+                edgecolors="white", linewidths=1.0,
                 label=f"Group {i + 1}", **style
             )
         ax.set(xlabel="Measurement A", ylabel="Measurement B")
+        match_manuscript_axes(ax, layout.fontsize_pt)
         ax.legend(
             loc="lower center", bbox_to_anchor=(0.5, 1.015),
             ncol=3, frameon=False, fontsize=8,
@@ -113,6 +128,7 @@ def main() -> int:
             figsize=(12.6, 6.6), title_fontsize=10.5, title_pad=0.010,
         )
         pub.savefig(fig, out / "groups.pdf", audit=False)
+        pub.savefig(fig, out / "groups.pgf", audit=False)
         plt.close(fig)
 
     with cc.latex_style(tex, width="column", engine=args.engine, rasterize=True) as pub:
@@ -125,27 +141,9 @@ def main() -> int:
         if not points.get_rasterized():
             raise RuntimeError("Dense scatter was not rasterized.")
         ax.set(xlabel="Feature", ylabel="Outcome")
+        match_manuscript_axes(ax, layout.fontsize_pt)
         audit(pub, fig, "dense", diagnostics)
         pub.savefig(fig, out / "dense.pdf", audit=False, dpi=300)
-        plt.close(fig)
-
-    with cc.latex_style(tex, width="column", engine=args.engine, rasterize=False) as pub:
-        fig, ax = pub.subplots(height_ratio=0.90)
-        pieces = [35, 30, 20, 15]
-        wedges, _ = cc.pie_plot(
-            pieces, ax=ax,
-            labels=None,
-            autopct=None,
-        )
-        ax.legend(
-            wedges,
-            [f"Category {i + 1}: {v}%" for i, v in enumerate(pieces)],
-            loc="lower center", bbox_to_anchor=(0.5, -0.20),
-            ncol=2, frameon=False, fontsize=7.5,
-        )
-        ax.set(aspect="equal")
-        audit(pub, fig, "pie", diagnostics)
-        pub.savefig(fig, out / "pie.pdf", audit=False)
         plt.close(fig)
 
     cc.verify_latex_placement(
@@ -154,8 +152,8 @@ def main() -> int:
     )
     names = (
         "lines.pdf", "lines.pgf", "lines_proof.pdf",
-        "groups.pdf", "dense.pdf", "accessibility.png",
-        "groups_accessibility.png", "pie.pdf",
+        "groups.pdf", "groups.pgf", "dense.pdf", "accessibility.png",
+        "groups_accessibility.png",
     )
     for name in names:
         file = out / name

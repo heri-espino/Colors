@@ -13,8 +13,9 @@ Figures included
 
 - **PGF vs PDF:** the same line graph appears twice, comparing
   manuscript-owned font glyphs with direct Matplotlib vector export.
-- **Grouped scatter:** larger markers, distinct colors and luminances for
-  each category, with the legend above the data region.
+  The categorical scatter is also included as PGF for matching fonts.
+- **Grouped scatter:** larger markers with **white boundaries**, distinct
+  colors and luminances, an external legend, and TeX-native PGF text.
 - **Dense scatter:** rasterized points with vector axes and labels.
 - **Full-page series dashboard:** six views in a portrait 2 × 3 grid,
   displayed on a dedicated LaTeX float page with an explanatory paragraph.
@@ -22,7 +23,6 @@ Figures included
   spanning both text columns with surrounding article prose.
 - **Compact labels:** regular-weight titles are visually centered over the
   actual rendered image and placed close to it without covering plot text.
-- **Pie chart:** print-safe wedges with clean white separators by default.
 - **Grayscale contrast:** when three categorical series are plotted,
   the default scheme spreads their relative luminances more strongly;
   points use bigger, outlined markers and legends stay outside data.
@@ -57,8 +57,8 @@ Locally generated files are under:
    examples/latex_publication/generated/lines.pgf
    examples/latex_publication/generated/lines.pdf
    examples/latex_publication/generated/groups.pdf
+   examples/latex_publication/generated/groups.pgf
    examples/latex_publication/generated/dense.pdf
-   examples/latex_publication/generated/pie.pdf
    examples/latex_publication/generated/accessibility.png
    examples/latex_publication/generated/lines_proof.pdf
    examples/latex_publication/generated/report.json
@@ -133,3 +133,9 @@ The accompanying article text explains why the aspect ratios differ.
 The preview includes grayscale rendering to check whether luminance alone
 is sufficient; marker shapes and dashed line patterns remain necessary,
 especially where color pairs converge under simulated CVD.
+
+All original charts follow the Figure 1 typography convention: axis labels
+are normal weight and match the document body in nominal point size.
+Figure 3 also uses PGF when included in the article, guaranteeing that its
+text is typeset with the same LaTeX font setup as Figure 1.
+The pie-chart example is not part of this publication demo.
