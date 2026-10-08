@@ -37,7 +37,7 @@ for program in pdflatex kpsewhich; do
   fi
 done
 
-for package in lmodern.sty pgf.sty microtype.sty graphicx.sty; do
+for package in lmodern.sty pgf.sty microtype.sty graphicx.sty booktabs.sty tabularx.sty hyperref.sty; do
   if ! kpsewhich "$package" >/dev/null 2>&1; then
     echo "Your TeX installation lacks $package. Install that TeX package first." >&2
     exit 1
@@ -144,8 +144,8 @@ if ((COMMIT)); then
       docs/source/_static/publication_scatter_accessibility.png \
       docs/source/_static/publication_accessibility.pdf \
       docs/source/_static/publication_scatter_accessibility.pdf \
-    docs/source/_static/publication_palette_grid.pdf \
-    docs/source/_static/publication_palette_grid.png
+      docs/source/_static/publication_palette_grid.pdf \
+      docs/source/_static/publication_palette_grid.png
   else
     echo "The published results are unchanged."
   fi
