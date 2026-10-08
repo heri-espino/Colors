@@ -14,6 +14,8 @@ selectable and vector-first.
 
 Outputs:
 
+- cover_palette.tex: native TikZ mosaic generated from five controlled luminance
+  levels and six hues, used directly on the PDF cover; not an embedded bitmap.
 - lines.pgf: manuscript-owned LaTeX font glyphs in the final PDF.
 - lines.pdf: direct PDF at exactly the same physical size, with an external legend
   and print-safe luminance spacing for the three lines.
