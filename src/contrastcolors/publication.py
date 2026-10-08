@@ -567,7 +567,7 @@ class PublicationStyle:
         """Save a vector PGF picture to be typeset by the manuscript's LaTeX.
 
         This does not require the manuscript font to be installed in Windows.
-        Include with \input{figure.pgf} in the original LaTeX document.
+        Include as a PGF input in the original LaTeX manuscript.
         For exact font matching, PGF must be typeset in that document; the
         standalone preview in Matplotlib may use approximate font metrics.
         """

@@ -121,8 +121,8 @@ with cc.latex_style("paper/main.tex") as pub:
     pub.savefig(fig, "paper/figures/figure.pgf")
 ~~~
 
-Include the PGF in the document with LaTeX input{figures/figure.pgf}
-(using the normal LaTeX backslash). A TFM is font metrics, not an outline
+Include the PGF in the manuscript with the LaTeX command
+`\\input{figures/figure.pgf}`. A TFM is font metrics, not an outline
 font: no need to manually install it into Matplotlib.
 
 See [publication guide](docs/source/publication.rst).

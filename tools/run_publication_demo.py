@@ -27,6 +27,11 @@ def main() -> int:
 
     if args.tex:
         layout = cc.inspect_latex(args.tex, engine=args.engine)
+        detected = cc.find_latex_font(args.tex, engine=args.engine)
+        print(f"LaTeX body font: {detected.tex_font_name}")
+        print(f"Font outline (if located): {detected.outline_path}")
+        print(f"Font metrics (if located): {detected.metrics_path}")
+        print(f"Font resolution: {detected.source}")
         print(f"Measured {args.tex}: column {layout.columnwidth_pt:.2f} pt, "
               f"text {layout.textwidth_pt:.2f} pt, font {layout.fontsize_pt:.2f} pt.")
     else:
