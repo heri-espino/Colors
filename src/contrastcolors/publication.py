@@ -310,7 +310,20 @@ def audit_figure(
         renderer = fig.canvas.get_renderer()
         bbox = fig.bbox
         margin = 3.0
-        for text in fig.findobj(match=Text):
+        # Do not inspect the complete Artist tree for clipping: Matplotlib
+        # keeps hidden/internal tick Text objects at off-canvas coordinates.
+        # Restrict the check to explicitly displayed titles, axis labels,
+        # annotations and legends.
+        visible_labels = []
+        for ax in fig.axes:
+            visible_labels.extend((ax.title, ax.xaxis.label, ax.yaxis.label))
+            visible_labels.extend(ax.texts)
+            legend = ax.get_legend()
+            if legend is not None and legend.get_visible():
+                visible_labels.extend(legend.get_texts())
+        if getattr(fig, "_suptitle", None) is not None:
+            visible_labels.append(fig._suptitle)
+        for text in visible_labels:
             if not text.get_visible() or not text.get_text().strip():
                 continue
             bounds = text.get_window_extent(renderer=renderer)
@@ -536,10 +549,10 @@ def verify_latex_placement(
     """
     source = Path(tex_file).expanduser().resolve()
     figure = Path(figure_pdf).expanduser().resolve()
-    if not source.is_file() or not figure.is_file():
-        raise FileNotFoundError("Both TeX source and exported PDF must exist.")
     if figure.suffix.lower() != ".pdf":
         raise ValueError("verify_latex_placement currently requires a PDF figure.")
+    if not source.is_file() or not figure.is_file():
+        raise FileNotFoundError("Both TeX source and exported PDF must exist.")
     preamble = _latex_preamble(source.read_text(encoding="utf-8-sig"))
     log = _run_tex(
         _measurement_source(preamble, graphics=figure),
