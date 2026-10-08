@@ -88,6 +88,7 @@ if [[ ! -s "$OUT/main.pdf" ]]; then
   echo "Compilation did not create $OUT/main.pdf" >&2
   exit 1
 fi
+PDF="$OUT/main.pdf"
 
 # Only published deliverables are copied into the Sphinx static directory.
 cp "$OUT/main.pdf" "$ROOT/docs/source/_static/publication_demo.pdf"
@@ -118,11 +119,12 @@ if ((COMMIT)); then
     docs/source/_static/publication_scatter_accessibility.png
   if ! git diff --cached --quiet -- \
     docs/source/_static/publication_demo.pdf \
-    docs/source/_static/publication_accessibility.png; then
+    docs/source/_static/publication_accessibility.png \
+    docs/source/_static/publication_scatter_accessibility.png; then
     git commit -m "Publish LaTeX font and accessibility demonstration" -- \
       docs/source/_static/publication_demo.pdf \
       docs/source/_static/publication_accessibility.png \
-    docs/source/_static/publication_scatter_accessibility.png
+      docs/source/_static/publication_scatter_accessibility.png
   else
     echo "The published results are unchanged."
   fi
