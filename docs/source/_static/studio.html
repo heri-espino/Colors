@@ -596,40 +596,150 @@ function renderAlpha(){
 function pyList(values,quote){
   return'['+values.map(v=>quote?"'"+v+"'":String(Number(v.toFixed? v.toFixed(6):v))).join(', ')+']';
 }
+function getPresetName(){
+  const name=$('presetName').value.trim();
+  return /^[A-Za-z][A-Za-z0-9_]{0,47}$/.test(name)?name:null;
+}
+function paletteRegistration(name){
+  const linePython=series.map(item=>lineDefs[item.line].py);
+  return [
+    'cc.register_palette(',
+    '    '+JSON.stringify(name)+',',
+    '    hues='+pyList(series.map(item=>Number(item.hue)),false)+',',
+    '    ratio='+Number($('ratio').value)+',',
+    '    start_luminance='+Number($('startY').value)+',',
+    '    chroma='+Number($('chroma').value)+',',
+    '    markers='+pyList(series.map(item=>item.marker),true)+',',
+    '    linestyles=['+linePython.join(', ')+'],',
+    '    overwrite=True,',
+    ')'
+  ].join('\n');
+}
+function plotPython(type){
+  const shared = {
+    lines:[
+      'x = np.linspace(0, 12, 300)',
+      'for i, style in enumerate(scheme):',
+      '    y = np.sin(0.62 * x + i * 0.52) + i * 0.36',
+      '    ax.plot(x, y, markevery=42, label=f"Series {i + 1}", **style)',
+      'ax.set(xlabel="x", ylabel="Response", title="Line plot")',
+      'ax.legend(ncol=3)',
+    ],
+    time:[
+      't = np.arange(100)',
+      'for i, style in enumerate(scheme):',
+      '    y = (0.25 * np.sin(0.055 * t + i * 0.5)',
+      '         + 0.06 * np.sin(0.24 * t + i) + 0.01 * t + i * 0.14)',
+      '    ax.plot(t, y, markevery=15, label=f"Series {i + 1}", **style)',
+      'ax.set(xlabel="Period", ylabel="Value", title="Time series")',
+      'ax.legend(ncol=3)',
+    ],
+    histogram:[
+      'rng = np.random.default_rng(17)',
+      'for i, style in enumerate(scheme):',
+      '    data = rng.normal(loc=0.65 * i, scale=0.9, size=650)',
+      '    ax.hist(data, bins=32, density=True, color=style["color"],',
+      '            alpha=0.42, label=f"Group {i + 1}")',
+      'ax.set(xlabel="Value", ylabel="Density", title="Overlaid histograms")',
+      'ax.legend(ncol=3)',
+    ],
+    box:[
+      'rng = np.random.default_rng(17)',
+      'samples = [rng.normal(i * 0.3, 0.7 + i * 0.05, 250)',
+      '           for i in range(len(scheme))]',
+      'bp = ax.boxplot(samples, patch_artist=True)',
+      'for patch, style in zip(bp["boxes"], scheme):',
+      '    patch.set_facecolor(style["color"])',
+      '    patch.set_alpha(0.85)',
+      'ax.set(xlabel="Group", ylabel="Value", title="Box plots")',
+    ],
+    violin:[
+      'rng = np.random.default_rng(17)',
+      'samples = [rng.normal(i * 0.3, 0.7 + i * 0.05, 250)',
+      '           for i in range(len(scheme))]',
+      'vp = ax.violinplot(samples, showmedians=True)',
+      'for body, style in zip(vp["bodies"], scheme):',
+      '    body.set_facecolor(style["color"])',
+      '    body.set_alpha(0.8)',
+      'ax.set(xlabel="Group", ylabel="Value", title="Violin plots")',
+    ],
+    ridge:[
+      'x = np.linspace(-3, 7, 240)',
+      'for i, style in enumerate(scheme):',
+      '    mu = 0.60 * i',
+      '    density = np.exp(-0.5 * ((x - mu) / 0.9) ** 2)',
+      '    ax.fill_between(x, i, i + 0.72 * density,',
+      '                    color=style["color"], alpha=0.6)',
+      '    ax.plot(x, i + 0.72 * density, color=style["color"])',
+      'ax.set_yticks(range(len(scheme)),',
+      '              [f"Group {i + 1}" for i in range(len(scheme))])',
+      'ax.set(xlabel="Value", title="Ridge plots")',
+    ],
+    scatter:[
+      'rng = np.random.default_rng(17)',
+      'for i, style in enumerate(scheme):',
+      '    x = rng.normal(i * 0.6, 0.75, 75)',
+      '    y = 0.55 * x + rng.normal(i * 0.3, 0.5, 75)',
+      '    ax.scatter(x, y, color=[style["color"]], marker=style["marker"],',
+      '               s=28, label=f"Group {i + 1}")',
+      'ax.set(xlabel="x", ylabel="y", title="Scatter plot")',
+      'ax.legend(ncol=3)',
+    ],
+    heatmap:[
+      'from matplotlib.colors import ListedColormap',
+      'rows, cols = np.indices((12, 22))',
+      'data = (cols + rows // 2',
+      '        + np.floor(3 * np.sin((cols + rows) * 0.4)).astype(int)) % len(scheme)',
+      'cmap = ListedColormap([style["color"] for style in scheme])',
+      'image = ax.imshow(data, cmap=cmap, vmin=-0.5,',
+      '                  vmax=len(scheme) - 0.5, interpolation="nearest")',
+      'fig.colorbar(image, ax=ax, ticks=np.arange(len(scheme)))',
+      'ax.set(xlabel="Column", ylabel="Row", title="Categorical heatmap")',
+    ],
+    bar:[
+      'rng = np.random.default_rng(17)',
+      'labels = np.arange(5)',
+      'width = 0.82 / len(scheme)',
+      'for i, style in enumerate(scheme):',
+      '    heights = 0.7 + 0.16 * labels + rng.uniform(0, 0.55, 5)',
+      '    ax.bar(labels + (i - (len(scheme) - 1) / 2) * width,',
+      '           heights, width=width, color=style["color"],',
+      '           label=f"Series {i + 1}")',
+      'ax.set_xticks(labels, [f"G{j + 1}" for j in labels])',
+      'ax.set(xlabel="Category", ylabel="Value", title="Grouped bars")',
+      'ax.legend(ncol=3)',
+    ]
+  };
+  return shared[type]||shared.lines;
+}
 function renderCode(){
   if(!validConfig()){$('code').value='# Invalid palette configuration';return}
-  const hues=series.map(s=>Number(s.hue));
-  const markers=series.map(s=>s.marker);
-  const linePython=series.map(s=>lineDefs[s.line].py);
+  const name=getPresetName()||'paper_palette';
   const font=$('font').value.trim()||'Arial';
   const code=[
+    'import numpy as np',
     'import matplotlib.pyplot as plt',
     'import contrastcolors as cc',
     '',
     'cc.set_style(',
-    '    "heri",',
+    '    '+JSON.stringify($('styleName').value)+',',
     '    font='+JSON.stringify(font)+',',
     '    rasterize='+($('rasterize').value==='true'?'True':'False')+',',
     ')',
     '',
+    paletteRegistration(name),
+    '',
     'scheme = cc.plot_scheme(',
-    '    hues='+pyList(hues,false)+',',
-    '    ratio='+Number($('ratio').value)+',',
-    '    start_luminance='+Number($('startY').value)+',',
-    '    chroma='+Number($('chroma').value)+',',
+    '    '+JSON.stringify(name)+',',
     '    alpha='+Number($('alpha').value)+',',
     '    background='+JSON.stringify($('background').value)+',',
     '    preserve_apparent='+($('preserve').checked?'True':'False')+',',
-    '    markers='+pyList(markers,true)+',',
-    '    linestyles=['+linePython.join(', ')+'],',
     ')',
     '',
-    'fig, ax = plt.subplots()',
-    'for y, kwargs in zip(series, scheme):',
-    '    ax.plot(x, y, **kwargs)',
-    '',
-    'ax.legend()',
-    'cc.save_figure(fig, "figure.pdf", dpi='+Math.round(Number($('dpi').value)||600)+')'
+    'fig, ax = plt.subplots(figsize=(8.2, 4.2))',
+    ...plotPython(plotType),
+    'fig.tight_layout()',
+    'cc.save_figure(fig, "figure.pdf", dpi='+Math.round(Number($('dpi').value)||600)+')',
   ].join('\n');
   $('code').value=code;
 }
@@ -648,11 +758,16 @@ function renderAll(){
   renderChart();renderReport();renderAlpha();renderCode();
 }
 ['nColors','ratio','startY','chroma'].forEach(id=>$(id).addEventListener('input',renderAll));
-['alpha','background','preserve','font','rasterize','dpi'].forEach(id=>$(id).addEventListener('input',()=>{renderChart();renderReport();renderAlpha();renderCode()}));
+['alpha','background','preserve','font','rasterize','dpi','styleName','presetName'].forEach(id=>$(id).addEventListener('input',()=>{renderChart();renderReport();renderAlpha();renderCode()}));
 document.querySelectorAll('[data-mode]').forEach(btn=>btn.addEventListener('click',()=>{
   previewMode=btn.dataset.mode;
   document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b===btn));
   renderChart();
+}));
+document.querySelectorAll('[data-plot]').forEach(btn=>btn.addEventListener('click',()=>{
+  plotType=btn.dataset.plot;
+  document.querySelectorAll('[data-plot]').forEach(other=>other.classList.toggle('active',other===btn));
+  renderChart();renderCode();
 }));
 $('copyCode').addEventListener('click',async()=>{
   const text=$('code').value;let ok=false;
@@ -660,18 +775,184 @@ $('copyCode').addEventListener('click',async()=>{
   if(!ok){$('code').focus();$('code').select();try{ok=document.execCommand('copy')}catch(e){}}
   $('copyStatus').textContent=ok?'Copied to clipboard.':'Select the code and copy it manually.';
 });
+const STORAGE_KEY='contrastcolors.studio.designs.v2';
+function designSnapshot(){
+  return {
+    version:2,
+    name:getPresetName()||'paper_palette',
+    plotType:plotType,
+    previewMode:previewMode,
+    palette:{
+      hues:series.map(item=>Number(item.hue)),
+      ratio:Number($('ratio').value),
+      start_luminance:Number($('startY').value),
+      chroma:Number($('chroma').value)
+    },
+    identifiers:{
+      markers:series.map(item=>item.marker),
+      linestyles:series.map(item=>item.line)
+    },
+    alpha:{
+      alpha:Number($('alpha').value),
+      background:$('background').value,
+      preserve_apparent:$('preserve').checked
+    },
+    style:{
+      name:$('styleName').value,
+      font:$('font').value,
+      rasterize:$('rasterize').value==='true',
+      dpi:Number($('dpi').value)
+    }
+  };
+}
+function normalizeDesign(raw){
+  if(!raw||typeof raw!=='object'||!raw.palette||typeof raw.palette!=='object'){
+    throw Error('Invalid design JSON: missing palette.');
+  }
+  const p=raw.palette;
+  if(!Array.isArray(p.hues)||p.hues.length<2||p.hues.length>10||
+     p.hues.some(v=>typeof v!=='number'||!Number.isFinite(v)||v<0||v>359)){
+    throw Error('Hues must contain 2–10 angles in [0,359].');
+  }
+  const ratio=Number(p.ratio),start=Number(p.start_luminance),chroma=Number(p.chroma);
+  if(!Number.isFinite(ratio)||ratio<1||ratio>3||!Number.isFinite(start)||start<0||start>1||
+     !Number.isFinite(chroma)||chroma<0||chroma>.35||
+     (start+.05)/Math.pow(ratio,p.hues.length-1)-.05 < -1e-10){
+    throw Error('The supplied contrast/luminance/chroma configuration is not valid.');
+  }
+  const id=raw.identifiers||{},a=raw.alpha||{},style=raw.style||{};
+  const markers=Array.isArray(id.markers)?id.markers:markerDefaults;
+  const lines=Array.isArray(id.linestyles)?id.linestyles:lineDefaults;
+  const markerList=p.hues.map((_,i)=>{
+    const item=markers[i%markers.length];
+    return markerDefaults.includes(item)?item:markerDefaults[i%markerDefaults.length];
+  });
+  const lineList=p.hues.map((_,i)=>{
+    const item=lines[i%lines.length];
+    return Object.hasOwn(lineDefs,item)?item:
+      (Object.keys(lineDefs).find(key=>lineDefs[key].py===item)||lineDefaults[i%lineDefaults.length]);
+  });
+  const name=typeof raw.name==='string'&&/^[A-Za-z][A-Za-z0-9_]{0,47}$/.test(raw.name)?
+    raw.name:'paper_palette';
+  const alpha=Number(a.alpha);
+  const dpi=Number(style.dpi);
+  return {
+    name:name,ratio:ratio,start:start,chroma:chroma,hues:p.hues,
+    markers:markerList,lines:lineList,
+    alpha:Number.isFinite(alpha)?clamp(alpha,.05,1):.8,
+    background:/^#[A-Fa-f0-9]{6}$/.test(a.background)?a.background:'#ffffff',
+    preserve:a.preserve_apparent!==false,
+    font:typeof style.font==='string'?style.font.slice(0,100):'Arial',
+    rasterize:style.rasterize!==false,dpi:Number.isFinite(dpi)?clamp(Math.round(dpi),72,2400):600,
+    style:['heri','default'].includes(style.name)?style.name:'heri',
+    plot:Object.keys({lines:1,time:1,histogram:1,box:1,violin:1,ridge:1,scatter:1,heatmap:1,bar:1}).includes(raw.plotType)?raw.plotType:'lines',
+    mode:['color','gray','print'].includes(raw.previewMode)?raw.previewMode:'color'
+  };
+}
+function applyDesign(raw){
+  const d=normalizeDesign(raw);
+  $('nColors').value=d.hues.length;
+  $('ratio').value=d.ratio;
+  $('startY').value=d.start;
+  $('chroma').value=d.chroma;
+  $('alpha').value=d.alpha;
+  $('background').value=d.background;
+  $('preserve').checked=d.preserve;
+  $('font').value=d.font;
+  $('rasterize').value=String(d.rasterize);
+  $('dpi').value=d.dpi;
+  $('styleName').value=d.style;
+  $('presetName').value=d.name;
+  series=d.hues.map((hue,i)=>({hue:hue,marker:d.markers[i],line:d.lines[i]}));
+  plotType=d.plot;
+  previewMode=d.mode;
+  document.querySelectorAll('[data-plot]').forEach(b=>b.classList.toggle('active',b.dataset.plot===plotType));
+  document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===previewMode));
+  renderAll();
+}
+function loadStorage(){
+  try{
+    const data=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
+    return data&&typeof data==='object'&&!Array.isArray(data)?data:{};
+  }catch(e){
+    $('presetStatus').textContent='Browser storage unavailable. Use JSON export/import instead.';
+    return {};
+  }
+}
+function savedOptions(selected){
+  const options=$('savedPresetList');
+  const data=loadStorage();
+  options.innerHTML='';
+  options.add(new Option('Select a saved design',''));
+  Object.keys(data).sort().forEach(name=>options.add(new Option(name,name)));
+  options.value=selected||'';
+}
+function downloadFile(filename,content,type){
+  const blob=new Blob([content],{type:type});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),300);
+}
+$('savePreset').addEventListener('click',()=>{
+  if(!validConfig())return;
+  const name=getPresetName();
+  if(!name){$('presetStatus').textContent='Use a Python identifier: letters, digits and underscore; start with a letter.';return}
+  const data=loadStorage();data[name]=designSnapshot();
+  try{
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+    savedOptions(name);$('presetStatus').textContent='Saved '+name+' in this browser.';
+  }catch(e){$('presetStatus').textContent='Browser storage unavailable. Download JSON instead.'}
+});
+$('loadPreset').addEventListener('click',()=>{
+  const name=$('savedPresetList').value;
+  const raw=loadStorage()[name];
+  if(!raw){$('presetStatus').textContent='Select a saved design first.';return}
+  try{applyDesign(raw);$('presetStatus').textContent='Loaded '+name+'.'}
+  catch(e){$('presetStatus').textContent='Could not load design: '+e.message}
+});
+$('deletePreset').addEventListener('click',()=>{
+  const name=$('savedPresetList').value;
+  if(!name){$('presetStatus').textContent='Select a saved design first.';return}
+  const data=loadStorage();delete data[name];
+  try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));savedOptions();$('presetStatus').textContent='Deleted '+name+'.'}
+  catch(e){$('presetStatus').textContent='Browser storage unavailable.'}
+});
 $('downloadJson').addEventListener('click',()=>{
   if(!validConfig())return;
-  const data={
-    version:1,
-    palette:{hues:series.map(s=>s.hue),ratio:Number($('ratio').value),start_luminance:Number($('startY').value),chroma:Number($('chroma').value)},
-    identifiers:{markers:series.map(s=>s.marker),linestyles:series.map(s=>lineDefs[s.line].py)},
-    alpha:{alpha:Number($('alpha').value),background:$('background').value,preserve_apparent:$('preserve').checked},
-    style:{name:'heri',font:$('font').value,rasterize:$('rasterize').value==='true',dpi:Number($('dpi').value)}
-  };
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='contrastcolors-scheme.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),0);
+  downloadFile((getPresetName()||'paper_palette')+'.json',JSON.stringify(designSnapshot(),null,2),'application/json');
 });
+$('importJson').addEventListener('click',()=>$('importFile').click());
+$('importFile').addEventListener('change',async()=>{
+  const file=$('importFile').files[0];
+  if(!file)return;
+  try{
+    const data=JSON.parse(await file.text());
+    applyDesign(data);
+    $('presetStatus').textContent='Imported '+file.name+'. You can now save it locally.';
+  }catch(e){$('presetStatus').textContent='Import error: '+e.message}
+  $('importFile').value='';
+});
+$('downloadPy').addEventListener('click',()=>{
+  if(!validConfig())return;
+  const name=getPresetName();
+  if(!name){$('presetStatus').textContent='Enter a valid Python preset name first.';return}
+  const content=[
+    '"""contrastcolors palette registration exported from Palette Studio."""',
+    'import contrastcolors as cc',
+    '',
+    paletteRegistration(name),
+    '',
+    '# Import this module once before requesting its named palette:',
+    '# import '+name,
+    '# colors = cc.color_palette('+JSON.stringify(name)+')',
+    '# scheme = cc.plot_scheme('+JSON.stringify(name)+')',
+    ''
+  ].join('\n');
+  downloadFile(name+'.py',content,'text/x-python');
+  $('presetStatus').textContent='Downloaded '+name+'.py. Import this file in your Python project to register the palette.';
+});
+savedOptions();
 renderAll();
 })();
 </script>
