@@ -23,7 +23,7 @@ from .palette import color_for_luminance
 from .color_spaces import to_hex
 
 
-StyleName = Literal["heri", "default", "matplotlib"]
+StyleName = Literal["heri", "elegante", "default", "matplotlib"]
 
 HERI_LATEX_PREAMBLE = (
     r"\usepackage[T1]{fontenc}"
@@ -87,11 +87,38 @@ HERI_SAVEFIG_KWARGS = {
 _RASTER_PATCHED = False
 _RASTERIZE_DENSE = False
 _ACCESSIBLE_SCATTER = False
+_ELEGANT_ENABLED = False
+_ELEGANT_DRAW_PATCHED = False
+
+
+def _install_elegant_draw() -> None:
+    """Finalize numeric axes immediately before visible or exported rendering.
+
+    Matplotlib rcParams cannot express "endpoint ticks must equal view limits".
+    A lightweight draw hook does this when the elegante preset is active,
+    while an explicit apply_elegant_axes call also works without the preset.
+    """
+    global _ELEGANT_DRAW_PATCHED
+    if _ELEGANT_DRAW_PATCHED or getattr(Axes, "_contrastcolors_elegant_draw", False):
+        _ELEGANT_DRAW_PATCHED = True
+        return
+    original_draw = Axes.draw
+
+    def draw(self, renderer):
+        if _ELEGANT_ENABLED:
+            from .elegant import apply_elegant_axes
+            opts = getattr(self, "_contrastcolors_elegant_options", {})
+            apply_elegant_axes(self, **opts)
+        return original_draw(self, renderer)
+
+    Axes.draw = draw
+    Axes._contrastcolors_elegant_draw = True
+    _ELEGANT_DRAW_PATCHED = True
 
 
 def available_styles() -> tuple[str, ...]:
     """Return style names understood by set_style."""
-    return ("heri", "default")
+    return ("heri", "elegante", "default")
 
 
 def _latex_stack_available() -> bool:
@@ -334,16 +361,17 @@ def set_style(
     With rasterize=True, only dense artists are rasterized. Ordinary plot
     lines, errorbars, axes, text, ticks, legends, and annotations remain vector.
     """
-    global _RASTERIZE_DENSE, _ACCESSIBLE_SCATTER
+    global _RASTERIZE_DENSE, _ACCESSIBLE_SCATTER, _ELEGANT_ENABLED
 
     name = str(style).strip().lower()
     if name in {"default", "matplotlib"}:
         _RASTERIZE_DENSE = False
         _ACCESSIBLE_SCATTER = False
+        _ELEGANT_ENABLED = False
         mpl.rcdefaults()
         return
 
-    if name != "heri":
+    if name not in {"heri", "elegante"}:
         choices = ", ".join(repr(x) for x in available_styles())
         raise ValueError(f"Unknown style {style!r}. Available styles: {choices}.")
 
@@ -360,6 +388,9 @@ def set_style(
     _install_rasterized_defaults()
     _RASTERIZE_DENSE = bool(rasterize)
     _ACCESSIBLE_SCATTER = True
+    _ELEGANT_ENABLED = name == "elegante"
+    if _ELEGANT_ENABLED:
+        _install_elegant_draw()
 
     font_key = font.strip().lower()
     if use_tex == "auto":
@@ -378,7 +409,17 @@ def set_style(
             "Use use_tex=False (or use_tex='auto') for fonts such as Arial."
         )
 
-    mpl.rcParams.update(_heri_rcparams(font=font, use_tex=resolved_use_tex, palette=palette))
+    params = _heri_rcparams(font=font, use_tex=resolved_use_tex, palette=palette)
+    if name == "elegante":
+        params.update({
+            "axes.xmargin": 0.0,
+            "axes.ymargin": 0.0,
+            "axes.linewidth": 0.95,
+            "axes.edgecolor": "#202020",
+            "grid.alpha": 0.30,
+            "grid.linewidth": 0.45,
+        })
+    mpl.rcParams.update(params)
 
 
 @contextmanager
@@ -391,11 +432,12 @@ def style_context(
     palette: Literal["print-safe", "legacy"] = "print-safe",
 ) -> Iterator[None]:
     """Temporarily apply a style and restore previous Matplotlib state."""
-    global _RASTERIZE_DENSE, _ACCESSIBLE_SCATTER
+    global _RASTERIZE_DENSE, _ACCESSIBLE_SCATTER, _ELEGANT_ENABLED
 
     previous = mpl.rcParams.copy()
     previous_rasterize = _RASTERIZE_DENSE
     previous_scatter = _ACCESSIBLE_SCATTER
+    previous_elegant = _ELEGANT_ENABLED
     try:
         set_style(
             style,
@@ -408,6 +450,7 @@ def style_context(
     finally:
         _RASTERIZE_DENSE = previous_rasterize
         _ACCESSIBLE_SCATTER = previous_scatter
+        _ELEGANT_ENABLED = previous_elegant
         mpl.rcParams.update(previous)
 
 
