@@ -77,3 +77,49 @@ def test_print_safe_studio_defaults_adapt_to_color_count():
     assert "contrastcolors.print_safe_luminances" in html
     assert "Math.pow((light+.05)/(dark+.05),1/(n-1))" in html
     assert "ratio<1||ratio>8" in html
+
+
+def test_studio_historical_palettes_match_python_exactly():
+    """A browser preview must not quietly depart from Python's HEX scheme."""
+    import re
+    import contrastcolors as cc
+
+    html = STUDIO.read_text(encoding="utf-8")
+    el = Elements()
+    el.feed(html)
+    assert "builtinPalette" in el.ids
+    for name in cc.available_named_palettes("categorical"):
+        match = re.search(r"'" + re.escape(name) + r"':\\[([^]]+)\\]", html)
+        assert match, f"Missing browser palette: {name}"
+        actual = re.findall(r"#[A-F0-9]{6}", match.group(1))
+        assert actual == cc.named_palette(name, as_hex=True)
+    assert "let activeBuiltin=''" in html
+    assert "function leaveBuiltin()" in html
+    assert "function chooseBuiltin(name)" in html
+    assert "Measured adjacent CR (not a WCAG design constraint)" in html
+    assert "style:['heri','elegante','default']" in html
+    assert "cc.named_palette(" in html
+    assert "cc.plot_scheme(" in html
+    assert "builtinPalette:activeBuiltin" in html
+
+
+def test_studio_javascript_syntax_when_node_is_available(tmp_path):
+    import re
+    import shutil
+    import subprocess
+    import pytest
+
+    node = shutil.which("node")
+    if node is None:
+        pytest.skip("Node.js is not installed")
+    html = STUDIO.read_text(encoding="utf-8")
+    scripts = re.findall(r"<script[^>]*>(.*?)</script>", html, flags=re.S)
+    assert scripts
+    for index, script in enumerate(scripts):
+        if not script.strip():
+            continue
+        script_file = tmp_path / f"studio-{index}.js"
+        script_file.write_text(script, encoding="utf-8")
+        subprocess.run([node, "--check", str(script_file)], check=True,
+                       capture_output=True, text=True, timeout=12)
+
