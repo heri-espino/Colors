@@ -76,6 +76,23 @@ colors remain in ``cc.HERI_PALETTE`` and can be activated with:
 
 The continuous heatmap colormap is ``cc.HERI_CMAP``.
 
+Select published palettes without changing their original colours
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``heri`` and ``elegante`` also support built-in palettes as colour
+cycles. For example:
+
+.. code-block:: python
+
+   cc.set_style("elegante", palette="okabe-ito",
+                font="DejaVu Sans", use_tex=False)
+   cc.set_style("heri", palette="tol-bright",
+                font="DejaVu Sans", use_tex=False)
+
+See the visual :doc:`named_palettes` catalogue. Sequential palettes
+such as ``cividis`` are not used as categorical cycles; obtain their
+native Matplotlib map with ``cc.named_colormap("cividis")``.
+
 Elegante — balanced ticks and inset markers
 ---------------------------------------------
 
