@@ -2,7 +2,7 @@ Palettes and grids
 ==================
 
 Famous preinstalled palettes
----------------------------
+----------------------------
 
 You can use exact published schemes without registration.
 
