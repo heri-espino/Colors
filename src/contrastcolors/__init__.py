@@ -41,6 +41,13 @@ from .publication import (
     verify_latex_placement,
 )
 from .charts import pie_plot
+from .named_palettes import (
+    NamedPalette,
+    available_named_palettes,
+    get_named_palette,
+    named_palette,
+    named_colormap,
+)
 from .elegant import apply_elegant_axes, nice_tick_bounds
 from .contrast import print_safe_luminances
 from .style import (
@@ -91,6 +98,11 @@ __all__ = [
     "register_palette",
     "get_palette",
     "available_palettes",
+    "NamedPalette",
+    "available_named_palettes",
+    "get_named_palette",
+    "named_palette",
+    "named_colormap",
     "RenderedColor",
     "color_for_luminance",
     "color_palette",
