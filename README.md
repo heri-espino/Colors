@@ -23,6 +23,32 @@ Y_k=rac{Y_0+0.05}{r^k}-0.05.
 The library then solves for an sRGB-representable OKLCH color at each requested
 luminance and hue.
 
+## Well-known built-in colour palettes
+
+Scientific reference palettes are available by name without registration.
+Their original HEX coordinates are preserved; they are **not** replaced by
+the luminance-constrained OKLCH generator.
+
+```python
+import contrastcolors as cc
+
+cc.available_named_palettes()
+cc.color_palette("okabe-ito", as_hex=True)
+cc.plot_scheme("tol-high-contrast")
+cc.set_style("elegante", palette="tol-bright", use_tex=False)
+
+# Sequential and diverging colormaps for ordered values:
+image = ax.imshow(values, cmap=cc.named_colormap("cividis"))
+```
+
+Seven exact categorical sets: Okabe–Ito, Paul Tol Bright, High Contrast and
+Muted, Tableau 10, ColorBrewer Set2 and Dark2. The original Matplotlib
+colormaps viridis, cividis, plasma, magma, inferno and RdBu are also named
+built-ins. See the [visual palette atlas](docs/source/named_palettes.rst) and
+[Palette Studio](https://heri-espino.github.io/Colors/studio.html).
+These schemes are useful starting points, not certifications of universal
+accessibility.
+
 ## Matplotlib styles
 
 The package provides three selectable styles: `heri`, `elegante`,
