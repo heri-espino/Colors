@@ -1,9 +1,11 @@
 Styles
 ======
 
-``contrastcolors`` currently exposes two style states through
-``set_style``: the publication preset ``heri`` and Matplotlib
-``default``.
+``contrastcolors`` includes three style states: ``heri`` (publication
+colours, fonts, and redundant line identifiers), ``elegante`` (those
+publication defaults plus rigorously aligned endpoint ticks and inset
+markers), and Matplotlib ``default``. Use ``available_styles()`` to
+inspect the installed presets.
 
 Heri
 ----
@@ -73,6 +75,114 @@ colors remain in ``cc.HERI_PALETTE`` and can be activated with:
    cc.set_style("heri", palette="legacy")
 
 The continuous heatmap colormap is ``cc.HERI_CMAP``.
+
+Elegante — balanced ticks and inset markers
+---------------------------------------------
+
+The ``elegante`` preset improves a specific editorial detail: the left
+and right spines coincide with the **first and last x-axis ticks**, while
+the bottom and top limits coincide with the **first and last y-axis ticks**.
+Tick spacing is chosen from readable decimal families, rather than using
+an arbitrary padded interval. Every division is uniformly spaced, and
+the step size is selected jointly with the axis boundaries.
+
+It also separates **curves** from **visible markers**: spline/line data
+remain unchanged and can touch the axes, but circles, squares, triangles
+and other Line2D markers inside the plot have room around them.
+A marker that would overlap a spine is suppressed *only visually*;
+no interpolation knot is deleted. Dense lines use up to nine spaced
+markers by default, keeping their original continuous curve.
+
+.. plot::
+   :include-source:
+
+   import numpy as np
+   import matplotlib.pyplot as plt
+   import contrastcolors as cc
+
+   cc.set_style("elegante", font="DejaVu Sans", use_tex=False, rasterize=False)
+   x = np.linspace(0, 100, 501)
+   fig, ax = plt.subplots(figsize=(8, 3.7))
+
+   ax.plot(x, .86*np.sin(2*np.pi*x/100) + .2,
+           label="A", marker="o", markersize=6)
+   ax.plot(x, .60*np.cos(2*np.pi*x/100) - .25,
+           label="B", marker="s", markersize=6)
+   ax.set(xlabel="Time", ylabel="Response", title="Elegant endpoint alignment")
+   ax.legend()
+   fig.canvas.draw()
+
+Observe that ``x = 0`` and ``x = 100`` are both labelled ticks and
+lie on the vertical boundaries. When a curve is defined at an endpoint,
+the stroke reaches the boundary, but its marker is not clipped. The
+library does **not** extrapolate a spline whose data stop short of the
+chosen nice view limits.
+
+How the tick algorithm works
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For observed extrema ``a`` and ``b``, let ``h = m*10**k`` be a
+candidate step, with ``m`` chosen from ``(1, 2, 2.5, 5, 10)``.
+Each candidate produces tick-aligned limits
+
+.. math::
+
+   L = h\left\lfloor\frac{a}{h}\right\rfloor,\quad
+   U = h\left\lceil\frac{b}{h}\right\rceil,\quad
+   t_j=L+jh.
+
+The selected candidate trades off relative unused axis space against the
+difference between its tick count and a requested target. The endpoint
+condition is exact up to floating-point precision:
+
+.. math::
+
+   x_{\min}=t_0,\qquad x_{\max}=t_{N-1}.
+
+The same reasoning applies independently to ``y``.
+
+**Configure** the result after plotting, before rendering:
+
+.. code-block:: python
+
+   cc.set_style("elegante", font="Arial", use_tex=False)
+   fig, ax = plt.subplots()
+   ax.plot(x, y, marker="^")
+
+   cc.apply_elegant_axes(
+       ax,
+       target_xticks=6,
+       target_yticks=5,
+       marker_inset_pt=4.0,
+       marker_count=9,
+       force_zero=False,
+       padding=0.0,
+   )
+   fig.savefig("elegant.pdf")
+
+``apply_elegant_axes()`` can also be called with the ``heri`` or
+Matplotlib default style. It returns the same Axes for chaining. Under
+``elegante``, the calculation also runs automatically when the figure
+is drawn, displayed, or saved. Use ``nice_tick_bounds(a,b,target_ticks=6)``
+for tick generation without creating a plot.
+
+.. code-block:: python
+
+   low, high, ticks = cc.nice_tick_bounds(7, 94, target_ticks=6)
+   # 0.0, 100.0, array([0., 20., 40., 60., 80., 100.])
+
+**Limits and reproducibility:** user-set ``set_xlim()`` and
+``set_ylim()`` are respected. The alignment helper intentionally skips
+logarithmic, date, categorical, shared, inverted, and non-Cartesian axes;
+no misleading linear tick arithmetic is applied. Manually specified
+marker intervals based on point indices are preserved except near the
+frame. Floating-point/arc-length ``markevery`` patterns keep Matplotlib
+behaviour unchanged. Scatter observations are never deleted; scatter-only
+figures receive a small outward extension to protect boundary symbols.
+
+This finishing pass controls geometry, not data smoothing. It does not
+create spline samples, infer the scientific domain, or change interpolation
+knots. Its PDF/PGF geometry remains vectorial.
 
 Default
 -------
