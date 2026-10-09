@@ -11,6 +11,7 @@
        </p>
        <div class="cc-actions">
          <a class="cc-button primary" href="studio.html">Open Palette Studio</a>
+         <a class="cc-button" href="style.html">Explore styles</a>
          <a class="cc-button" href="gallery.html">See the plot gallery</a>
          <a class="cc-button" href="notebooks/index.html">Browse 13 notebooks</a>
          <a class="cc-button" href="quickstart.html">Quickstart</a>
