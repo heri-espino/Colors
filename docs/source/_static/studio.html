@@ -1057,7 +1057,11 @@ function renderCode(){
     '',
     'scheme = cc.plot_scheme(',
     '    '+JSON.stringify(activeBuiltin||name)+',',
-    ...(activeBuiltin?['    n='+series.length+',']:[]),
+    ...(activeBuiltin?[
+      '    n='+series.length+',',
+      '    markers='+pyList(series.map(item=>item.marker),true)+',',
+      '    linestyles=['+series.map(item=>lineDefs[item.line].py).join(', ')+'],'
+    ]:[]),
     '    alpha='+Number($('alpha').value)+',',
     '    background='+JSON.stringify($('background').value)+',',
     '    preserve_apparent='+($('preserve').checked?'True':'False')+',',
@@ -1090,7 +1094,7 @@ function renderAll(){
 $('builtinPalette').addEventListener('change',()=>chooseBuiltin($('builtinPalette').value));
 $('applyStrategy').addEventListener('click',applyHueStrategy);
 $('hueStrategy').addEventListener('change',applyHueStrategy);
-$('contrastPreset').addEventListener('change',()=>{applyContrastPreset();renderAll()});
+$('contrastPreset').addEventListener('change',()=>{leaveBuiltin();applyContrastPreset();renderAll()});
 $('baseHue').addEventListener('input',()=>{$('baseHueLabel').textContent=$('baseHue').value+'°';});
 $('baseHue').addEventListener('change',()=>{$('baseHueColor').value=hueColor(Number($('baseHue').value));applyHueStrategy()});
 $('baseHueColor').addEventListener('change',()=>{
@@ -1303,7 +1307,9 @@ $('downloadPy').addEventListener('click',()=>{
     ...(activeBuiltin
       ? ['# Built-in scheme: original RGB values are supplied by contrastcolors.',
          'colors = cc.named_palette('+JSON.stringify(activeBuiltin)+', n='+series.length+')',
-         'scheme = cc.plot_scheme('+JSON.stringify(activeBuiltin)+', n='+series.length+')']
+         'scheme = cc.plot_scheme('+JSON.stringify(activeBuiltin)+', n='+series.length+',',
+         '    markers='+pyList(series.map(item=>item.marker),true)+',',
+         '    linestyles=['+series.map(item=>lineDefs[item.line].py).join(', ')+'])']
       : [paletteRegistration(name)]),
     '',
     '# Import this module once before requesting its named palette:',
