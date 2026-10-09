@@ -142,8 +142,24 @@ input[type=color]{height:37px;width:43px;min-width:43px;border:1px solid var(--l
 
 <section class="panel soft" id="palette">
   <h2>1. Palette</h2>
-  <p class="muted" style="margin-bottom:12px">Start with systematic hue spacing; fine-tune each hue below. OKLCH hue angles are evenly spaced, not guaranteed perceptually distinct. The luminance ladder supplies additional contrast.</p>
+  <p class="muted" style="margin-bottom:12px">Choose a famous palette to preserve its exact published RGB coordinates, or use the custom WCAG/OKLCH generator. Named historical palettes do not guarantee a particular adjacent WCAG ratio. Start with systematic hue spacing; fine-tune each hue below. OKLCH hue angles are evenly spaced, not guaranteed perceptually distinct. The luminance ladder supplies additional contrast.</p>
   <div class="strategy-controls">
+    <label>Built-in published palette
+      <select id="builtinPalette">
+        <option value="">Custom WCAG / OKLCH generator</option>
+        <optgroup label="Colour-vision-aware starting points">
+          <option value="okabe-ito">Okabe–Ito · 8</option>
+          <option value="tol-bright">Paul Tol Bright · 7</option>
+          <option value="tol-high-contrast">Paul Tol High Contrast · 3</option>
+          <option value="tol-muted">Paul Tol Muted · 9</option>
+        </optgroup>
+        <optgroup label="Famous categorical palettes">
+          <option value="tableau-10">Tableau 10</option>
+          <option value="brewer-set2">ColorBrewer Set2 · 8</option>
+          <option value="brewer-dark2">ColorBrewer Dark2 · 8</option>
+        </optgroup>
+      </select>
+    </label>
     <label>Hue distribution
       <select id="hueStrategy">
         <option value="equidistant" selected>Equidistant around hue circle</option>
@@ -279,7 +295,7 @@ input[type=color]{height:37px;width:43px;min-width:43px;border:1px solid var(--l
   <h2>5. Plot style</h2>
   <div class="controls">
     <label>Style
-      <select id="styleName"><option value="heri">heri</option><option value="default">Matplotlib default</option></select>
+      <select id="styleName"><option value="heri">heri</option><option value="elegante">elegante</option><option value="default">Matplotlib default</option></select>
     </label>
     <label>Font family
       <input id="font" type="text" value="Arial" list="fontSuggestions">
@@ -339,6 +355,34 @@ input[type=color]{height:37px;width:43px;min-width:43px;border:1px solid var(--l
 const $=id=>document.getElementById(id);
 const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
 const hueDefaults=[25,97,169,241,313,61,133,205,277,349];
+const builtinPalettes={
+  'okabe-ito':['#E69F00','#56B4E9','#009E73','#F0E442','#0072B2','#D55E00','#CC79A7','#000000'],
+  'tol-bright':['#4477AA','#EE6677','#228833','#CCBB44','#66CCEE','#AA3377','#BBBBBB'],
+  'tol-high-contrast':['#004488','#DDAA33','#BB5566'],
+  'tol-muted':['#332288','#88CCEE','#44AA99','#117733','#999933','#DDCC77','#CC6677','#882255','#AA4499'],
+  'tableau-10':['#4E79A7','#F28E2B','#E15759','#76B7B2','#59A14F','#EDC948','#B07AA1','#FF9DA7','#9C755F','#BAB0AC'],
+  'brewer-set2':['#66C2A5','#FC8D62','#8DA0CB','#E78AC3','#A6D854','#FFD92F','#E5C494','#B3B3B3'],
+  'brewer-dark2':['#1B9E77','#D95F02','#7570B3','#E7298A','#66A61E','#E6AB02','#A6761D','#666666']
+};
+let activeBuiltin=''; 
+function leaveBuiltin(){
+  if(activeBuiltin){activeBuiltin='';$('builtinPalette').value='';}
+}
+function chooseBuiltin(name){
+  if(name&&!Object.hasOwn(builtinPalettes,name))return;
+  activeBuiltin=name;
+  if(name){
+    const selected=builtinPalettes[name];
+    $('nColors').value=selected.length;
+    $('hueStrategy').value='custom';
+    series=selected.map((value,i)=>({
+      hue:hueFromHex(value)??0,
+      marker:markerDefaults[i%markerDefaults.length],
+      line:lineDefaults[i%lineDefaults.length]
+    }));
+  }
+  renderAll();
+}
 const markerDefaults=['o','s','^','D','X','P','v','<','>','*'];
 const lineDefaults=['-','--',':','-.','long','dashdot2'];
 const lineDefs={
@@ -411,6 +455,7 @@ function applyContrastPreset(){
   $('ratio').value=Math.min(proposed,Math.max(1,maxRatio-.006)).toFixed(3);
 }
 function applyHueStrategy(){
+  leaveBuiltin();
   const method=$('hueStrategy').value,n=clamp(Number($('nColors').value)||5,2,10);
   if(method!=='custom'){
     const angles=methodHues(n,method,Number($('baseHue').value));
@@ -425,8 +470,9 @@ function applyHueStrategy(){
 function renderStrategy(){
   const m=$('hueStrategy').value;
   $('baseHueLabel').textContent=Math.round(Number($('baseHue').value))+'°';
-  $('strategyNote').textContent=hueDefinitions[m]+
-    ' Always check grayscale and colour-vision previews, especially with more than five series.';
+  $('strategyNote').textContent=(activeBuiltin
+    ? 'The original HEX colours are preserved without contrast-ladder adjustment. Hue/contrast editing returns to generated mode; markers and line patterns remain customizable.'
+    : hueDefinitions[m]+' Always check grayscale and colour-vision previews, especially with more than five series.');
   const spectrum=[];
   for(let h=0;h<=360;h+=10)spectrum.push(hueColor(h));
   $('hueWheel').style.background='linear-gradient(90deg,'+spectrum.map((c,i)=>c+' '+i*100/(spectrum.length-1)+'%').join(',')+')';
@@ -537,12 +583,15 @@ function compensate(target,bg,a){
 function grayscaleRgb(Y){const g=clamp(linearToSrgb(Y),0,1);return[g,g,g]}
 function stressY(Y){return .20+.60*Y}
 function luminances(){
+  if(activeBuiltin)return builtinPalettes[activeBuiltin]
+    .slice(0,Number($('nColors').value)).map(value=>rgbY(parseHex(value)));
   const n=Number($('nColors').value),r=Number($('ratio').value),start=Number($('startY').value),ys=[];
   for(let k=0;k<n;k++)ys.push((start+.05)/Math.pow(r,k)-.05);
   return ys;
 }
 function ensureSeries(){
-  const n=clamp(Math.round(Number($('nColors').value)||5),2,10);$('nColors').value=n;
+  let n=clamp(Math.round(Number($('nColors').value)||5),2,10);
+  if(activeBuiltin)n=Math.min(n,builtinPalettes[activeBuiltin].length);$('nColors').value=n;
   while(series.length<n){
     const i=series.length;
     series.push({hue:hueDefaults[i%hueDefaults.length],marker:markerDefaults[i%markerDefaults.length],line:lineDefaults[i%lineDefaults.length]});
@@ -550,6 +599,10 @@ function ensureSeries(){
   if(series.length>n)series=series.slice(0,n);
 }
 function validConfig(){
+  if(activeBuiltin){
+    const box=$('configError');box.style.display='none';box.textContent='';
+    return true;
+  }
   const ys=luminances(),r=Number($('ratio').value),start=Number($('startY').value),C=Number($('chroma').value);
   const issues=[];
   if(!Number.isFinite(r)||r<1)issues.push('CR must be at least 1.');
@@ -560,6 +613,11 @@ function validConfig(){
   return issues.length===0;
 }
 function colors(){
+  if(activeBuiltin)return builtinPalettes[activeBuiltin]
+    .slice(0,Number($('nColors').value)).map(value=>{
+      const rgb=parseHex(value);
+      return {rgb,Y:rgbY(rgb),h:hueFromHex(value)??0,C:null,L:null};
+    });
   const ys=luminances(),C=Number($('chroma').value);
   return ys.map((y,i)=>colorForY(y,((series[i].hue%360)+360)%360,C));
 }
@@ -569,10 +627,17 @@ function renderPalette(){
   const cs=colors(),bar=$('paletteBar');bar.innerHTML='';
   cs.forEach(c=>{const d=document.createElement('div');d.className='palette-color';d.style.background=hex(c.rgb);d.style.color=textColor(c.rgb);d.textContent=hex(c.rgb);bar.appendChild(d)});
   const ratios=cs.slice(0,-1).map((c,i)=>crY(c.Y,cs[i+1].Y));
-  $('contrastText').textContent='Adjacent CR: '+ratios.map(x=>x.toFixed(3)).join(' · ');
+  $('contrastText').textContent=(activeBuiltin
+    ? 'Measured adjacent CR (not a WCAG design constraint): '
+    : 'Adjacent CR: ')+ratios.map(x=>x.toFixed(3)).join(' · ');
   renderMatrix(cs);return true;
 }
 function renderMatrix(cs){
+  if(activeBuiltin){
+    $('matrix').innerHTML='<p class="muted">Published categorical colours are shown above in their original order. A WCAG hue/luminance matrix would alter these original colours; choose the custom generator to edit that matrix.</p>';
+    $('matrix').style.gridTemplateColumns='1fr';
+    return;
+  }
   const m=$('matrix'),n=series.length,ys=luminances(),C=Number($('chroma').value);
   m.style.gridTemplateColumns='74px repeat('+n+', minmax(86px,1fr))';m.innerHTML='';
   const corner=document.createElement('div');m.appendChild(corner);
@@ -602,13 +667,14 @@ function renderSeries(palette){
     const hueWrap=document.createElement('div');hueWrap.className='hue-wrap wide';
     const range=document.createElement('input');range.type='range';range.min='0';range.max='359';range.step='1';range.value=s.hue;
     const num=document.createElement('input');num.type='number';num.min='0';num.max='359';num.step='1';num.value=Math.round(s.hue);
-    const changeHue=v=>{s.hue=clamp(Number(v)||0,0,359);$('hueStrategy').value='custom';range.value=s.hue;num.value=Math.round(s.hue);renderAll()};
+    const changeHue=v=>{leaveBuiltin();s.hue=clamp(Number(v)||0,0,359);$('hueStrategy').value='custom';range.value=s.hue;num.value=Math.round(s.hue);renderAll()};
     range.addEventListener('input',()=>changeHue(range.value));num.addEventListener('change',()=>changeHue(num.value));
     const pick=document.createElement('input');pick.type='color';pick.className='series-color-picker';
     pick.value=palette?hex(palette[i].rgb):hueColor(s.hue);
     pick.title='Select the hue for series '+(i+1)+' (luminance and chroma stay controlled)';
     pick.setAttribute('aria-label','Color hue for series '+(i+1));
     pick.addEventListener('change',()=>{
+      leaveBuiltin();
       const hue=hueFromHex(pick.value);
       if(hue!==null){s.hue=hue;$('hueStrategy').value='custom';renderAll()}
     });
@@ -984,10 +1050,14 @@ function renderCode(){
     '    rasterize='+($('rasterize').value==='true'?'True':'False')+',',
     ')',
     '',
-    paletteRegistration(name),
+    ...(activeBuiltin?[
+      '# Published named colours are not transformed into a WCAG ladder.',
+      '# Original HEX values: '+builtinPalettes[activeBuiltin].slice(0,series.length).join(', ')
+    ]:[paletteRegistration(name)]),
     '',
     'scheme = cc.plot_scheme(',
-    '    '+JSON.stringify(name)+',',
+    '    '+JSON.stringify(activeBuiltin||name)+',',
+    ...(activeBuiltin?['    n='+series.length+',']:[]),
     '    alpha='+Number($('alpha').value)+',',
     '    background='+JSON.stringify($('background').value)+',',
     '    preserve_apparent='+($('preserve').checked?'True':'False')+',',
@@ -1017,6 +1087,7 @@ function renderAll(){
   renderVisionComparison();
 }
 
+$('builtinPalette').addEventListener('change',()=>chooseBuiltin($('builtinPalette').value));
 $('applyStrategy').addEventListener('click',applyHueStrategy);
 $('hueStrategy').addEventListener('change',applyHueStrategy);
 $('contrastPreset').addEventListener('change',()=>{applyContrastPreset();renderAll()});
@@ -1027,9 +1098,9 @@ $('baseHueColor').addEventListener('change',()=>{
   if(hue!==null){$('baseHue').value=hue;applyHueStrategy();}
 });
 $('nColors').addEventListener('change',()=>{$('hueStrategy').value==='custom'?renderAll():applyHueStrategy()});
-$('ratio').addEventListener('input',()=>{$('contrastPreset').value='manual';renderAll()});
-$('startY').addEventListener('input',()=>{$('contrastPreset').value='manual';renderAll()});
-$('chroma').addEventListener('input',renderAll);
+$('ratio').addEventListener('input',()=>{leaveBuiltin();$('contrastPreset').value='manual';renderAll()});
+$('startY').addEventListener('input',()=>{leaveBuiltin();$('contrastPreset').value='manual';renderAll()});
+$('chroma').addEventListener('input',()=>{leaveBuiltin();renderAll()});
 renderEncodingAtlas();
 
 ['alpha','background','preserve','font','rasterize','dpi','styleName','presetName'].forEach(id=>$(id).addEventListener('input',()=>{renderChart();renderReport();renderAlpha();renderCode()}));
@@ -1059,6 +1130,7 @@ function designSnapshot(){
     hueStrategy:$('hueStrategy').value,
     baseHue:Number($('baseHue').value),
     contrastPreset:$('contrastPreset').value,
+    builtinPalette:activeBuiltin,
     palette:{
       hues:series.map(item=>Number(item.hue)),
       ratio:Number($('ratio').value),
@@ -1121,7 +1193,8 @@ function normalizeDesign(raw){
     preserve:a.preserve_apparent!==false,
     font:typeof style.font==='string'?style.font.slice(0,100):'Arial',
     rasterize:style.rasterize!==false,dpi:Number.isFinite(dpi)?clamp(Math.round(dpi),72,2400):600,
-    style:['heri','default'].includes(style.name)?style.name:'heri',
+    style:['heri','elegante','default'].includes(style.name)?style.name:'heri',
+    builtinPalette:Object.hasOwn(builtinPalettes,raw.builtinPalette)?raw.builtinPalette:'',
     plot:Object.keys({lines:1,time:1,histogram:1,box:1,violin:1,ridge:1,scatter:1,heatmap:1,bar:1,pie:1}).includes(raw.plotType)?raw.plotType:'lines',
     mode:['color','gray','print','deuteranopia','protanopia','tritanopia'].includes(raw.previewMode)?raw.previewMode:'color',
     hueStrategy:['equidistant','golden','qualitative','analogous','monochrome','custom'].includes(raw.hueStrategy)?raw.hueStrategy:'custom',
@@ -1147,6 +1220,8 @@ function applyDesign(raw){
   $('baseHue').value=d.baseHue;
   $('baseHueColor').value=hueColor(d.baseHue);
   $('contrastPreset').value=d.contrastPreset;
+  activeBuiltin=d.builtinPalette;
+  $('builtinPalette').value=activeBuiltin;
   series=d.hues.map((hue,i)=>({hue:hue,marker:d.markers[i],line:d.lines[i]}));
   plotType=d.plot;
   previewMode=d.mode;
@@ -1222,10 +1297,14 @@ $('downloadPy').addEventListener('click',()=>{
   const name=getPresetName();
   if(!name){$('presetStatus').textContent='Enter a valid Python preset name first.';return}
   const content=[
-    '"""contrastcolors palette registration exported from Palette Studio."""',
+    '"""contrastcolors palette selection exported from Palette Studio."""',
     'import contrastcolors as cc',
     '',
-    paletteRegistration(name),
+    ...(activeBuiltin
+      ? ['# Built-in scheme: original RGB values are supplied by contrastcolors.',
+         'colors = cc.named_palette('+JSON.stringify(activeBuiltin)+', n='+series.length+')',
+         'scheme = cc.plot_scheme('+JSON.stringify(activeBuiltin)+', n='+series.length+')']
+      : [paletteRegistration(name)]),
     '',
     '# Import this module once before requesting its named palette:',
     '# import '+name,
