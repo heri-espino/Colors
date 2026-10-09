@@ -302,6 +302,7 @@ Explore next
    customization
    quickstart
    palettes
+   named_palettes
    alpha
    style
    picker
