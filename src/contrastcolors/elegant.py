@@ -188,12 +188,12 @@ def apply_elegant_axes(
             or ax.get_xscale() != "linear" or ax.get_yscale() != "linear"
             or ax.xaxis.converter is not None or ax.yaxis.converter is not None
             or ax.xaxis.get_inverted() or ax.yaxis.get_inverted()
-            or ax.get_shared_x_axes().get_siblings(ax) != {ax}
-            or ax.get_shared_y_axes().get_siblings(ax) != {ax}):
+            or len(ax.get_shared_x_axes().get_siblings(ax)) > 1
+            or len(ax.get_shared_y_axes().get_siblings(ax)) > 1):
         return ax
 
     def apply_one(axis, data, target):
-        if not axis.get_autoscale_on():
+        if not axis._get_autoscale_on():
             return
         lo, hi = (float(data[0]), float(data[1]))
         if not (math.isfinite(lo) and math.isfinite(hi)):
@@ -207,7 +207,10 @@ def apply_elegant_axes(
             lo, hi, target_ticks=target, padding=extra, force_zero=force_zero
         )
         axis.set_ticks(ticks)
-        axis.axes.set_xlim(start, stop, auto=True) if axis.axis_name == "x" else axis.axes.set_ylim(start, stop, auto=True)
+        if axis.axis_name == "x":
+            ax.set_xlim(start, stop, auto=True)
+        else:
+            ax.set_ylim(start, stop, auto=True)
 
     apply_one(ax.xaxis, ax.dataLim.intervalx, target_xticks)
     apply_one(ax.yaxis, ax.dataLim.intervaly, target_yticks)
