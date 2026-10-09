@@ -52,8 +52,37 @@ the exact document font. Unsupported artist types raise explicitly.
 
 .. autofunction:: contrastcolors.save_accessibility_panel
 
-Named palette presets
----------------------
+Preinstalled historical palettes and colormaps
+----------------------------------------------
+
+The original named categorical palettes preserve their source HEX
+values; their contrast ratios are not rebuilt by the OKLCH solver.
+Continuous maps use Matplotlib's original colormap implementations.
+The two systems can be selected from high-level plotting helpers.
+
+.. autoclass:: contrastcolors.NamedPalette
+   :members:
+
+.. autofunction:: contrastcolors.available_named_palettes
+
+.. autofunction:: contrastcolors.get_named_palette
+
+.. autofunction:: contrastcolors.named_palette
+
+.. autofunction:: contrastcolors.named_colormap
+
+.. code-block:: python
+
+   cc.color_palette("okabe-ito", as_hex=True)
+   cc.plot_scheme("tol-bright", n=5)
+   cc.set_style("elegante", palette="brewer-dark2")
+   ax.imshow(values, cmap=cc.named_colormap("cividis"))
+
+See :doc:`named_palettes` for full visual examples, exact HEX sets and
+source attribution.
+
+User-defined palette presets
+----------------------------
 
 Presets register palettes for the current Python process. Put the registration
 in a project module, then import it in each script that needs those names.
