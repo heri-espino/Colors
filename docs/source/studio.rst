@@ -38,6 +38,11 @@ Python interpreter, or account and works with the Sphinx site on GitHub Pages.
 What you can customize
 ----------------------
 
+- **Published categorical palettes**: built-in Okabe–Ito, Paul Tol Bright,
+  High Contrast and Muted, Tableau 10, and ColorBrewer Set2/Dark2. Selecting
+  one uses its original RGB coordinates in charts, simulations, saved JSON
+  and generated Python code. Editing luminance/hue returns to the generator.
+  Exact historical colours are not a WCAG ratio construction.
 - **Palette**: 2 to 10 hues with equidistant, golden-angle,
   balanced-family, analogous, single-hue or manual hue methods; hue
   sliders and color pickers; OKLCH chroma and a WCAG luminance ladder.
