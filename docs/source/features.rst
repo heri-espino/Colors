@@ -53,9 +53,22 @@ Convert Matplotlib/RGB colors, calculate relative luminance and WCAG contrast of
 Matplotlib styling and exports
 ------------------------------
 
-Activate the Heri style or a scoped context, choose fonts and a categorical cycle, label multi-panel results and save vector/hybrid outputs. For older figures choose palette='legacy'. The original HERI_PALETTE and the continuous HERI_CMAP remain public.
+Choose among the Heri publication style, the **elegante** tick-aligned
+scientific style, and Matplotlib defaults. Elegante chooses readable equal
+tick steps with endpoints on spines; its spline lines are preserved while
+Line2D markers are inset so their glyphs do not touch the axes. Its
+configuration supports tick targets, marker clearance, sparse visual
+markers, optional zero inclusion and padding. Explicit user limits are
+preserved. Use a scoped context, choose fonts and categorical cycles, label
+multi-panel results and save vector/hybrid outputs. For older figures choose
+``palette="legacy"``. The original HERI_PALETTE and continuous
+HERI_CMAP remain public. :doc:`style` includes rendered examples and the
+mathematical boundary-selection rule.
 
-**Public exports:** ``set_style``, ``style_context``, ``available_styles``, ``panel_label``, ``save_figure``, ``HERI_PALETTE``, ``HERI_CMAP``, ``HERI_IRIDESCENT_HEX``, ``HERI_NEUTRAL``.
+**Public exports:** ``set_style``, ``style_context``, ``available_styles``,
+``apply_elegant_axes``, ``nice_tick_bounds``, ``panel_label``,
+``save_figure``, ``HERI_PALETTE``, ``HERI_CMAP``,
+``HERI_IRIDESCENT_HEX``, ``HERI_NEUTRAL``.
 
 Accessibility previews and true-vector dashboards
 -------------------------------------------------
