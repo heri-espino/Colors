@@ -253,6 +253,29 @@ marker and line shapes. These fixed hex values are
 Equation~\ref{eq:ladder} exactly. The independent
 luminance-controlled grid is how to request that guarantee.
 
+\subsection{Well-known reference palettes}
+The library also includes ready-to-use scientific colour standards:
+Okabe--Ito, Paul Tol Bright/High Contrast/Muted, Tableau 10,
+and ColorBrewer Set2/Dark2, as well as Matplotlib's sequential
+\texttt{viridis}, \texttt{cividis}, \texttt{plasma},
+\texttt{magma}, \texttt{inferno}, and diverging \texttt{RdBu}.
+They are named references whose original RGB values are retained,
+not transformed to match Equation~\ref{eq:ladder}.
+They can be selected across figures without copying HEX codes.
+
+\begin{verbatim}
+import contrastcolors as cc
+colors = cc.color_palette("okabe-ito")
+lines = cc.plot_scheme("tol-bright")
+cc.set_style("elegante",
+             palette="okabe-ito")
+cmap = cc.named_colormap("cividis")
+\end{verbatim}
+The full illustrated \href{https://heri-espino.github.io/Colors/named_palettes.html}
+{named-palette catalogue} includes source attribution.
+As with the three fixed demonstration colours, combining
+hue with distinct markers and line patterns remains necessary.
+
 \subsection{User choices and reusable presets}
 These public functions can construct or inspect a
 user-defined palette:
