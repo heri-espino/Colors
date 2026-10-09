@@ -14,13 +14,14 @@ import contrastcolors as cc
 
 HERE = Path(__file__).resolve().parent
 
-# Okabe-Ito colors: orange / blue / bluish green. These are a useful
-# color-vision-friendly starting point, not a universal accessibility proof.
-# Markers and line patterns provide redundant categorical identification.
+# Three original Okabe-Ito colours: #E69F00, #0072B2, #009E73.
+# Obtain the canonical values from the library instead of duplicating HEX
+# constants in the publication generator. Shapes remain redundant encodings.
+_OKABE_ITO = cc.named_palette("okabe-ito", as_hex=True)
 COLORBLIND3 = (
-    {"color": "#E69F00", "marker": "o", "linestyle": "-"},
-    {"color": "#0072B2", "marker": "s", "linestyle": "--"},
-    {"color": "#009E73", "marker": "^", "linestyle": ":"},
+    {"color": _OKABE_ITO[0], "marker": "o", "linestyle": "-"},
+    {"color": _OKABE_ITO[4], "marker": "s", "linestyle": "--"},
+    {"color": _OKABE_ITO[2], "marker": "^", "linestyle": ":"},
 )
 
 
@@ -307,6 +308,7 @@ def main() -> int:
             "luminances": palette_grid.luminances.tolist(),
         },
         "categorical_palette": [item["color"] for item in COLORBLIND3],
+        "categorical_palette_source": "okabe-ito canonical colours, indices [0, 4, 2]",
         "categorical_markers": [item["marker"] for item in COLORBLIND3],
         "group_scatter_alpha": 0.68,
         "group_scatter_white_edge_linewidth_pt": 0.22,
