@@ -4,6 +4,21 @@ Customization
 The style, the colors, and the series identifiers are separate pieces. You can
 change one without rebuilding the others.
 
+Choose the plotting style
+-------------------------
+
+The available presets are ``heri``, ``elegante``, and ``default``.
+The new ``elegante`` preset uses tick-aligned plot boundaries and
+keeps decorative markers inside the axes without changing spline data.
+
+.. code-block:: python
+
+   cc.set_style("elegante", font="Arial")
+   ax.plot(x, y, marker="o")
+   cc.apply_elegant_axes(ax, target_xticks=6, marker_inset_pt=4)
+
+For a visual comparison of all three styles, see :doc:`style`.
+
 Change the number of colors
 ---------------------------
 
