@@ -2,7 +2,7 @@
 
 The Heri preset follows the publication figures in
 heri-espino/Bayesian-Uncertainty-in-WTI-APOs: compact Wiley-like typography,
-white-grid axes, Paul Tol categorical colors, an iridescent continuous map,
+white-grid axes, a custom categorical cycle, an iridescent continuous map,
 and hybrid PDF output with only dense artists rasterized.
 """
 
@@ -33,7 +33,7 @@ HERI_LATEX_PREAMBLE = (
     r"\usepackage{amsmath,amssymb}"
 )
 
-# Paul Tol high-contrast categorical palette used by the WTI publication figures.
+# Original WTI publication categorical palette (not an official Paul Tol scheme).
 HERI_PALETTE = (
     "#97001c",
     "#0083f9",
