@@ -56,6 +56,18 @@ Matplotlib applies before the figure is exported.
       The familiar baseline, available to restore native Matplotlib
       behavior at any time.
 
+Recognized palettes, ready to use
+----------------------------------
+
+Use published palettes without retyping colours: Okabe–Ito, Paul Tol Bright,
+High Contrast and Muted, Tableau 10, and ColorBrewer Set2 and Dark2.
+For ordered data choose continuous maps such as cividis, viridis, plasma,
+magma and inferno, or a diverging map such as RdBu.
+
+Read :doc:`named_palettes` for a visual atlas of every included scheme, its
+historical source and reproducible code. The colour values remain exact,
+rather than silently changing them to satisfy a WCAG luminance ladder.
+
 Notebook cookbook: 13 executable demos
 --------------------------------------
 
