@@ -21,6 +21,7 @@ from matplotlib.colors import LinearSegmentedColormap
 
 from .palette import color_for_luminance
 from .color_spaces import to_hex
+from .named_palettes import get_named_palette, named_palette
 
 
 StyleName = Literal["heri", "elegante", "default", "matplotlib"]
@@ -330,9 +331,25 @@ def _heri_rcparams(*, font: str, use_tex: bool, palette: str) -> dict:
         "legend.borderaxespad": 0.25,
         "legend.handlelength": 1.8,
         "axes.prop_cycle": (
-            mpl.cycler(color=_HERI_PRINT_PALETTE if palette == "print-safe" else HERI_PALETTE)
-            + mpl.cycler(marker=("o", "s", "^", "D", "X"))
-            + mpl.cycler(linestyle=("-", "--", ":", "-.", (0, (5, 2))))
+            mpl.cycler(color=(
+                list(_HERI_PRINT_PALETTE) if palette == "print-safe" else
+                list(HERI_PALETTE) if palette == "legacy" else
+                named_palette(palette, as_hex=True)
+            ))
+            + mpl.cycler(marker=[
+                ("o", "s", "^", "D", "X", "P", "v", "<", ">", "*")[i % 10]
+                for i in range(
+                    5 if palette in {"print-safe", "legacy"}
+                    else len(get_named_palette(palette).colors)
+                )
+            ])
+            + mpl.cycler(linestyle=[
+                ("-", "--", ":", "-.", (0, (5, 2)), (0, (3, 1, 1, 1)))[i % 6]
+                for i in range(
+                    5 if palette in {"print-safe", "legacy"}
+                    else len(get_named_palette(palette).colors)
+                )
+            ])
         ),
     }
     params.update(_font_rcparams(font, use_tex=use_tex))
@@ -345,7 +362,7 @@ def set_style(
     font: str = "utopia",
     use_tex: bool | Literal["auto"] = "auto",
     rasterize: bool = True,
-    palette: Literal["print-safe", "legacy"] = "print-safe",
+    palette: str = "print-safe",
 ) -> None:
     """Apply a named global Matplotlib style.
 
@@ -378,7 +395,19 @@ def set_style(
     if not isinstance(font, str) or not font.strip():
         raise ValueError("font must be a non-empty Matplotlib font-family name.")
     if palette not in ("print-safe", "legacy"):
-        raise ValueError("palette must be 'print-safe' or 'legacy'.")
+        try:
+            selected = get_named_palette(palette)
+        except KeyError as exc:
+            raise ValueError(
+                "Unknown palette. Use 'print-safe', 'legacy', or a "
+                "categorical name from available_named_palettes()."
+            ) from exc
+        if selected.kind != "categorical":
+            raise ValueError(
+                "Sequential/diverging colormaps cannot be line-cycle palettes. "
+                "Use named_colormap(name) for heatmaps."
+            )
+        palette = selected.name
 
     try:
         plt.style.use("seaborn-v0_8-whitegrid")
@@ -429,7 +458,7 @@ def style_context(
     font: str = "utopia",
     use_tex: bool | Literal["auto"] = "auto",
     rasterize: bool = True,
-    palette: Literal["print-safe", "legacy"] = "print-safe",
+    palette: str = "print-safe",
 ) -> Iterator[None]:
     """Temporarily apply a style and restore previous Matplotlib state."""
     global _RASTERIZE_DENSE, _ACCESSIBLE_SCATTER, _ELEGANT_ENABLED
