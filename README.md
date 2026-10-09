@@ -23,6 +23,32 @@ Y_k=rac{Y_0+0.05}{r^k}-0.05.
 The library then solves for an sRGB-representable OKLCH color at each requested
 luminance and hue.
 
+## Matplotlib styles
+
+The package provides three selectable styles: `heri`, `elegante`,
+and `default`. The new **elegante** style aligns both axis endpoints
+with readable ticks and keeps curve markers clear of the frame while
+leaving the curve and its data intact.
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+import contrastcolors as cc
+
+cc.set_style("elegante", font="DejaVu Sans", use_tex=False)
+x = np.linspace(0, 100, 301)
+fig, ax = plt.subplots()
+ax.plot(x, np.sin(x / 17), marker="o")
+ax.set(xlabel="Time", ylabel="Response")
+fig.savefig("elegant.pdf")
+```
+
+This finishes axes automatically at rendering. Fine-tune tick counts,
+padding, zero inclusion and the minimum marker distance using
+`cc.apply_elegant_axes(ax, target_xticks=6, marker_inset_pt=4)`.
+See the rendered [Styles guide](https://heri-espino.github.io/Colors/style.html)
+for comparisons and technical limitations.
+
 ## Windows: run the entire project with Conda
 
 Install [Miniforge](https://github.com/conda-forge/miniforge) or Miniconda,
