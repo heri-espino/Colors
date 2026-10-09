@@ -1,6 +1,31 @@
 Palettes and grids
 ==================
 
+Famous preinstalled palettes
+---------------------------
+
+You can use exact published schemes without registration.
+
+.. code-block:: python
+
+   import contrastcolors as cc
+
+   print(cc.available_named_palettes())
+   okabe_ito = cc.color_palette("okabe-ito", as_hex=True)
+   tol = cc.plot_scheme("tol-bright", n=4)
+   image = ax.imshow(values, cmap=cc.named_colormap("cividis"))
+
+``okabe-ito`` and its ``colorblind`` alias preserve the original eight
+HEX values. Paul Tol and ColorBrewer presets also preserve their historical
+colours. Continuous maps retain their native Matplotlib interpolation.
+For the complete illustrated catalogue and source references see
+:doc:`named_palettes`.
+
+Unlike a contrast-controlled palette, these palettes are **not**
+recomputed for a requested adjacent WCAG ratio. Passing ``ratio``,
+``start_luminance``, or ``chroma`` alongside a historical scheme raises
+an informative exception rather than changing its identity.
+
 High-level palette
 ------------------
 
