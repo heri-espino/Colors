@@ -89,7 +89,7 @@ def test_studio_historical_palettes_match_python_exactly():
     el.feed(html)
     assert "builtinPalette" in el.ids
     for name in cc.available_named_palettes("categorical"):
-        match = re.search(r"'" + re.escape(name) + r"':\\[([^]]+)\\]", html)
+        match = re.search(r"'" + re.escape(name) + r"':\[([^]]+)\]", html)
         assert match, f"Missing browser palette: {name}"
         actual = re.findall(r"#[A-F0-9]{6}", match.group(1))
         assert actual == cc.named_palette(name, as_hex=True)
