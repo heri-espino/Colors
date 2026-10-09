@@ -41,6 +41,7 @@ from .publication import (
     verify_latex_placement,
 )
 from .charts import pie_plot
+from .elegant import apply_elegant_axes, nice_tick_bounds
 from .contrast import print_safe_luminances
 from .style import (
     HERI_CMAP,
@@ -106,6 +107,8 @@ __all__ = [
     "srgb_to_oklab",
     "show_palette",
     "available_styles",
+    "apply_elegant_axes",
+    "nice_tick_bounds",
     "panel_label",
     "plot_scheme",
     "pie_plot",
