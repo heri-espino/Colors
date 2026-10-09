@@ -1,7 +1,7 @@
 # Colors
 
 **Implementation catalogue:** [Complete feature inventory](FEATURES.md)
-([Sphinx reference](docs/source/features.rst)) lists all 65 current public
+([Sphinx reference](docs/source/features.rst)) lists all 70 current public
 exports and the separate browser, notebook, TeX and automation tools.
 A CI test detects when a new public API symbol has not been documented.
 
