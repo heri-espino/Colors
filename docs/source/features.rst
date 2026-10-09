@@ -16,7 +16,7 @@ palettes, identifiers, publication styles, diagnostics, or wrappers.
    :depth: 1
 
 Famous built-in palettes and Matplotlib colormaps
-------------------------------------------------
+-------------------------------------------------
 
 Built-in categorical palettes retain their original RGB codes and are ready to
 use without registration: **Okabe–Ito (alias colorblind/Wong)**, Paul Tol Bright,
