@@ -186,7 +186,7 @@ def apply_elegant_axes(
     )
     if (ax.name != "rectilinear"
             or ax.get_xscale() != "linear" or ax.get_yscale() != "linear"
-            or ax.xaxis.converter is not None or ax.yaxis.converter is not None
+            or ax.xaxis.get_converter() is not None or ax.yaxis.get_converter() is not None
             or ax.xaxis.get_inverted() or ax.yaxis.get_inverted()
             or len(ax.get_shared_x_axes().get_siblings(ax)) > 1
             or len(ax.get_shared_y_axes().get_siblings(ax)) > 1):
