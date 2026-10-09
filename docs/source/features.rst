@@ -15,6 +15,22 @@ palettes, identifiers, publication styles, diagnostics, or wrappers.
    :local:
    :depth: 1
 
+Famous built-in palettes and Matplotlib colormaps
+------------------------------------------------
+
+Built-in categorical palettes retain their original RGB codes and are ready to
+use without registration: **Okabe–Ito (alias colorblind/Wong)**, Paul Tol Bright,
+High Contrast and Muted, Tableau 10, ColorBrewer Set2 and Dark2. Named sequential
+and diverging maps are supplied through Matplotlib: viridis, cividis, plasma,
+magma, inferno and RdBu. Exact RGB palettes are kept separate from the
+WCAG-constructed hue/luminance grid. They work through ``color_palette``,
+``plot_scheme``, ``scatter_scheme``, and the ``palette`` argument of
+``set_style``/``style_context``. The :doc:`named_palettes` gallery documents
+provenance, correct use and examples.
+
+**Public exports:** ``NamedPalette``, ``available_named_palettes``,
+``get_named_palette``, ``named_palette``, ``named_colormap``.
+
 Palette construction and contrast
 ---------------------------------
 
