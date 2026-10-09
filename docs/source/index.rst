@@ -25,6 +25,36 @@
      </div>
    </section>
 
+Styles: from raw plots to publication-ready axes
+------------------------------------------------
+
+Three complementary styles let you decide how much layout discipline
+Matplotlib applies before the figure is exported.
+
+.. grid:: 1 2 2 3
+   :gutter: 2
+
+   .. grid-item-card:: Elegante
+      :link: style
+      :link-type: doc
+
+      Endpoint-aligned readable ticks, no arbitrary axis margin, and inset
+      line markers that never collide with the frame.
+
+   .. grid-item-card:: Heri
+      :link: style
+      :link-type: doc
+
+      Print-aware hues, distinct markers and line patterns, compact
+      publication typography, and vector-first exports.
+
+   .. grid-item-card:: Matplotlib default
+      :link: style
+      :link-type: doc
+
+      The familiar baseline, available to restore native Matplotlib
+      behavior at any time.
+
 Notebook cookbook: 13 executable demos
 --------------------------------------
 
