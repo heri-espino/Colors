@@ -203,6 +203,10 @@ Publication style
 
 .. autofunction:: contrastcolors.style_context
 
+.. autofunction:: contrastcolors.apply_elegant_axes
+
+.. autofunction:: contrastcolors.nice_tick_bounds
+
 .. autofunction:: contrastcolors.save_figure
 
 .. autofunction:: contrastcolors.panel_label
